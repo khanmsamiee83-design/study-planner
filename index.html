@@ -69,12 +69,12 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 .loader-small{border:3px solid rgba(255,255,255,.2);border-top:3px solid var(--primary-color);border-radius:50%;width:30px;height:30px;animation:spin 1s linear infinite;margin:10px auto}
 @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-@media(max-width:768px){body{padding:10px}.container{padding:15px}.app-header h1{font-size:1.2em}.floating-btn{bottom:15px;right:15px;padding:12px 18px;font-size:.9em}.charts-row{grid-template-columns:1fr}}
 .admin-user-card{background:rgba(255,255,255,.08);border-radius:12px;padding:15px;margin-bottom:12px;border-right:4px solid var(--primary-color)}
 .admin-user-card.approved{border-right-color:var(--success-color)}
 .admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .search-box{display:flex;gap:10px;margin-bottom:20px}
 .search-box input{flex:1}
+@media(max-width:768px){body{padding:10px}.container{padding:15px}.app-header h1{font-size:1.2em}.floating-btn{bottom:15px;right:15px;padding:12px 18px;font-size:.9em}.charts-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -303,14 +303,16 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 
 <script>
 // ================== CONFIG ==================
-const JSONBIN_API_KEY = "$2a$10$cmR.OJ9OgytXFIQjNCR3o.ScH572wakolkRZOIuMnwB8gZNArqd3G";
-const JSONBIN_BIN_ID = "6aab2dfcac6210b5ad676ae";
-const JSONBIN_URL = "https://api.jsonbin.io/v3/b/" + JSONBIN_BIN_ID;
-const EMAILJS_SERVICE_ID = "service_g8n6df8";
-const EMAILJS_TEMPLATE_ID = "template_wf2v48k";
-const EMAILJS_PUBLIC_KEY = "cPmVI8hnhCa8Hn3vZ";
-const ALLOWED_DOMAIN = "khanmsamiee83-design.github.io";
-const OTP_EXPIRY_MINUTES = 10;
+var CONFIG = {
+  JSONBIN_KEY: "$2a$10$cmR.OJ9OgytXFIQjNCR3o.ScH572wakolkRZOIuMnwB8gZNArqd3G",
+  JSONBIN_BIN: "6aab2dfcac6210b5ad676ae",
+  EMAILJS_SERVICE: "service_g8n6df8",
+  EMAILJS_TEMPLATE: "template_wf2v48k",
+  EMAILJS_KEY: "cPmVI8hnhCa8Hn3vZ",
+  ADMIN_EMAIL: "khanmsamiee83@gmail.com",
+  ALLOWED_DOMAIN: "khanmsamiee83-design.github.io",
+  OTP_MINUTES: 10
+};
 
 // ================== GLOBAL VARIABLES ==================
 var currentUser = null;
@@ -326,6 +328,9 @@ var isAdmin = false;
 var pendingUser = null;
 var adminOTP = null;
 var adminOTPExpiry = 0;
+var allUsers = [];
+var archivedUsers = [];
+var currentTab = 'pending';
 
 var subjectsByGrade = {
   '7': ['ریاضی','علوم تجربی','فارسی','عربی','مطالعات اجتماعی','قرآن','ورزش'],
@@ -339,75 +344,112 @@ var daysOfWeek = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چ
 
 // ================== SECURITY CHECK ==================
 (function() {
-  var hostname = window.location.hostname;
-  var isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
-  var isFile = window.location.protocol === 'file:';
-  if (!isLocal && !isFile && hostname !== ALLOWED_DOMAIN) {
-    document.body.innerHTML = '<div style="padding:50px;text-align:center;font-family:Tahoma;"><h1 style="color:#f44336;">⛔ دسترسی غیرمجاز</h1><p>این برنامه فقط از دامنه رسمی قابل اجراست.</p></div>';
-    throw new Error('Unauthorized domain');
-  }
+  try {
+    var h = window.location.hostname;
+    var isLocal = h === 'localhost' || h === '127.0.0.1' || h === '' || h === '0.0.0.0';
+    var isFile = window.location.protocol === 'file:';
+    if (!isLocal && !isFile && h !== CONFIG.ALLOWED_DOMAIN) {
+      document.body.innerHTML = '<div style="padding:50px;text-align:center;font-family:Tahoma;direction:rtl;"><h1 style="color:#f44336;">⛔ دسترسی غیرمجاز</h1><p>این برنامه فقط از دامنه رسمی قابل اجراست.</p></div>';
+      throw new Error('Unauthorized');
+    }
+  } catch(e) {}
 })();
 
-// ================== DATE FUNCTIONS ==================
-function getPersianDate(date){date=date||new Date();try{return new Intl.DateTimeFormat('fa-IR',{year:'numeric',month:'2-digit',day:'2-digit'}).format(date)}catch(e){return date.toLocaleDateString()}}
-function getPersianDateFull(date){date=date||new Date();try{return new Intl.DateTimeFormat('fa-IR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(date)}catch(e){return date.toLocaleDateString()}}
-function getPersianDateShort(date){date=date||new Date();try{return new Intl.DateTimeFormat('fa-IR',{month:'short',day:'numeric'}).format(date)}catch(e){return date.toLocaleDateString()}}
-function getSaturdayOfWeek(date){date=date||new Date();var d=new Date(date);var day=d.getDay();var diff=day===6?0:-(day+1);d.setDate(d.getDate()+diff);d.setHours(0,0,0,0);return d}
-function getWeekInfo(){var ws=getSaturdayOfWeek(new Date());var we=new Date(ws);we.setDate(we.getDate()+6);var nws=new Date(ws);nws.setDate(nws.getDate()+7);var nwe=new Date(nws);nwe.setDate(nwe.getDate()+6);return{start:getPersianDate(ws),end:getPersianDate(we),startFull:getPersianDateFull(ws),endFull:getPersianDateFull(we),nextStart:getPersianDate(nws),nextEnd:getPersianDate(nwe),nextStartFull:getPersianDateFull(nws),nextEndFull:getPersianDateFull(nwe),weekKey:getPersianDate(ws)+'-'+getPersianDate(we)}}
-function isFriday(){return new Date().getDay()===5}
-function getToday(){var d=['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];return d[new Date().getDay()]}
-function formatTime(s){var h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')}
+// ================== UTILITIES ==================
+function $(id) { return document.getElementById(id); }
+
+function getPersianDate(date) {
+  date = date || new Date();
+  try { return new Intl.DateTimeFormat('fa-IR', {year:'numeric',month:'2-digit',day:'2-digit'}).format(date); }
+  catch(e) { return date.toLocaleDateString(); }
+}
+function getPersianDateFull(date) {
+  date = date || new Date();
+  try { return new Intl.DateTimeFormat('fa-IR', {weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(date); }
+  catch(e) { return date.toLocaleDateString(); }
+}
+function getPersianDateShort(date) {
+  date = date || new Date();
+  try { return new Intl.DateTimeFormat('fa-IR', {month:'short',day:'numeric'}).format(date); }
+  catch(e) { return date.toLocaleDateString(); }
+}
+function getSaturdayOfWeek(date) {
+  date = date || new Date();
+  var d = new Date(date);
+  var day = d.getDay();
+  var diff = day === 6 ? 0 : -(day + 1);
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function getWeekInfo() {
+  var ws = getSaturdayOfWeek(new Date());
+  var we = new Date(ws); we.setDate(we.getDate() + 6);
+  var nws = new Date(ws); nws.setDate(nws.getDate() + 7);
+  var nwe = new Date(nws); nwe.setDate(nwe.getDate() + 6);
+  return {
+    start: getPersianDate(ws), end: getPersianDate(we),
+    startFull: getPersianDateFull(ws), endFull: getPersianDateFull(we),
+    nextStart: getPersianDate(nws), nextEnd: getPersianDate(nwe),
+    nextStartFull: getPersianDateFull(nws), nextEndFull: getPersianDateFull(nwe)
+  };
+}
+function isFriday() { return new Date().getDay() === 5; }
+function getToday() {
+  var d = ['یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه','شنبه'];
+  return d[new Date().getDay()];
+}
+function formatTime(s) {
+  var h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
 
 // ================== UI HELPERS ==================
-function showSection(sectionId){
-  var sections=document.querySelectorAll('.section');
-  for(var i=0;i<sections.length;i++){sections[i].classList.remove('active')}
-  var t=document.getElementById(sectionId);
-  if(t){t.classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}
-  var isLogin=['login','signup','adminLogin','eitaMessage','activation'].indexOf(sectionId)>-1;
-  var hi=document.getElementById('header-user-info');
-  var hb=document.getElementById('hamburger-btn');
-  var fb_btn=document.getElementById('floating-btn');
-  if(isLogin){
-    if(hi)hi.classList.add('hidden');
-    if(hb)hb.classList.add('hidden');
-    if(fb_btn)fb_btn.classList.add('hidden');
-  }else{
-    if(hi&&currentUser){hi.textContent='👤 '+currentUser.username;hi.classList.remove('hidden')}
-    if(hb)hb.classList.remove('hidden');
-    if(fb_btn&&currentUser&&!isAdmin)fb_btn.classList.remove('hidden');
+function showSection(sectionId) {
+  var sections = document.querySelectorAll('.section');
+  for (var i = 0; i < sections.length; i++) sections[i].classList.remove('active');
+  var t = $(sectionId);
+  if (t) { t.classList.add('active'); window.scrollTo({top:0, behavior:'smooth'}); }
+  var isLogin = ['login','signup','adminLogin','eitaMessage','activation'].indexOf(sectionId) > -1;
+  var hi = $('header-user-info');
+  var hb = $('hamburger-btn');
+  var fb = $('floating-btn');
+  if (isLogin) {
+    if (hi) hi.classList.add('hidden');
+    if (hb) hb.classList.add('hidden');
+    if (fb) fb.classList.add('hidden');
+  } else {
+    if (hi && currentUser) { hi.textContent = '👤 ' + currentUser.username; hi.classList.remove('hidden'); }
+    if (hb) hb.classList.remove('hidden');
+    if (fb && currentUser && !isAdmin) fb.classList.remove('hidden');
   }
 }
-function showMessage(id,msg,ok){
-  if(ok===undefined)ok=true;
-  var el=document.getElementById(id);if(!el)return;
-  el.textContent=msg;el.classList.remove('hidden');
-  el.className=ok?'success-msg':'error-msg';
-  setTimeout(function(){el.classList.add('hidden')},6000);
+function showMessage(id, msg, ok) {
+  if (ok === undefined) ok = true;
+  var el = $(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  el.className = ok ? 'success-msg' : 'error-msg';
+  setTimeout(function() { el.classList.add('hidden'); }, 6000);
 }
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebar-overlay').classList.add('open')}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('open')}
+function openSidebar() { $('sidebar').classList.add('open'); $('sidebar-overlay').classList.add('open'); }
+function closeSidebar() { $('sidebar').classList.remove('open'); $('sidebar-overlay').classList.remove('open'); }
 
 // ================== JSONBIN API ==================
 function jsonbinGet() {
-  return fetch(JSONBIN_URL + "/latest", {
+  return fetch('https://api.jsonbin.io/v3/b/' + CONFIG.JSONBIN_BIN + '/latest', {
     method: 'GET',
-    headers: {
-      'X-Access-Key': JSONBIN_API_KEY,
-      'X-Bin-Meta': 'false'
-    }
+    headers: { 'X-Access-Key': CONFIG.JSONBIN_KEY, 'X-Bin-Meta': 'false' }
   }).then(function(r) {
     if (!r.ok) throw new Error('خطا در خواندن داده');
     return r.json();
   });
 }
 function jsonbinUpdate(data) {
-  return fetch(JSONBIN_URL, {
+  return fetch('https://api.jsonbin.io/v3/b/' + CONFIG.JSONBIN_BIN, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Access-Key': JSONBIN_API_KEY
-    },
+    headers: { 'Content-Type': 'application/json', 'X-Access-Key': CONFIG.JSONBIN_KEY },
     body: JSON.stringify(data)
   }).then(function(r) {
     if (!r.ok) throw new Error('خطا در ذخیره داده');
@@ -415,19 +457,16 @@ function jsonbinUpdate(data) {
   });
 }
 
-// ================== EMAILJS API ==================
+// ================== EMAILJS ==================
 function sendEmailOTP(toEmail, passcode) {
   return fetch('https://api.emailjs.com/api/v1.0/email/send', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      service_id: EMAILJS_SERVICE_ID,
-      template_id: EMAILJS_TEMPLATE_ID,
-      user_id: EMAILJS_PUBLIC_KEY,
-      template_params: {
-        email: toEmail,
-        passcode: passcode
-      }
+      service_id: CONFIG.EMAILJS_SERVICE,
+      template_id: CONFIG.EMAILJS_TEMPLATE,
+      user_id: CONFIG.EMAILJS_KEY,
+      template_params: { email: toEmail, passcode: passcode }
     })
   }).then(function(r) {
     if (!r.ok) return r.text().then(function(t) { throw new Error(t); });
@@ -435,12 +474,42 @@ function sendEmailOTP(toEmail, passcode) {
   });
 }
 
+// ================== GENERATORS ==================
+function generateCode() {
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var code = '';
+  for (var i = 0; i < 8; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+  return code;
+}
+function generateOTP() {
+  var otp = '';
+  for (var i = 0; i < 6; i++) otp += Math.floor(Math.random() * 10);
+  return otp;
+}
+
+// ================== USER DATA (localStorage) ==================
+function loadUserDataLocal(userId) {
+  try {
+    var data = localStorage.getItem('userData_' + userId);
+    if (data) return JSON.parse(data);
+  } catch(e) {}
+  return {
+    schedule: {}, nextWeekSchedule: {}, weeklyTimes: {}, weeklyHistory: [],
+    hasSeenWelcome: false, hasCompletedSetup: false, theme: 'light'
+  };
+}
+function saveUserDataLocal() {
+  if (!currentUser || !currentUserData) return;
+  try { localStorage.setItem('userData_' + currentUser.id, JSON.stringify(currentUserData)); }
+  catch(e) {}
+}
+
 // ================== AUTH: SIGNUP ==================
 function signupStudent() {
-  var username = document.getElementById('signup-username').value.trim();
-  var phone = document.getElementById('signup-phone').value.trim();
-  var password = document.getElementById('signup-password').value.trim();
-  var grade = document.getElementById('signup-grade').value;
+  var username = $('signup-username').value.trim();
+  var phone = $('signup-phone').value.trim();
+  var password = $('signup-password').value.trim();
+  var grade = $('signup-grade').value;
   
   if (!username || !phone || !password || !grade) {
     showMessage('signup-error', 'همه فیلدها را پر کنید', false);
@@ -451,41 +520,34 @@ function signupStudent() {
     return;
   }
   
-  var code = generateCode();
   var newUser = {
     id: Date.now().toString(),
     username: username,
     phone: phone,
     password: password,
     grade: grade,
-    code: code,
+    code: generateCode(),
     approved: false,
     createdAt: new Date().toISOString()
   };
   
   jsonbinGet().then(function(data) {
     var users = data.users || [];
-    // چک تکراری بودن
     for (var i = 0; i < users.length; i++) {
-      if (users[i].username === username) {
-        throw new Error('این نام کاربری وجود دارد');
-      }
+      if (users[i].username === username) throw new Error('این نام کاربری وجود دارد');
     }
     users.push(newUser);
     data.users = users;
     return jsonbinUpdate(data);
   }).then(function() {
     pendingUser = newUser;
-    // ذخیره توی localStorage کاربر
     localStorage.setItem('myUsername', username);
     localStorage.setItem('myPassword', password);
     localStorage.setItem('myGrade', grade);
-    
-    document.getElementById('signup-username').value = '';
-    document.getElementById('signup-phone').value = '';
-    document.getElementById('signup-password').value = '';
-    document.getElementById('signup-grade').value = '';
-    
+    $('signup-username').value = '';
+    $('signup-phone').value = '';
+    $('signup-password').value = '';
+    $('signup-grade').value = '';
     showSection('eitaMessage');
   }).catch(function(e) {
     showMessage('signup-error', e.message || 'خطا در ثبت‌نام', false);
@@ -494,8 +556,8 @@ function signupStudent() {
 
 // ================== AUTH: LOGIN STUDENT ==================
 function loginStudent() {
-  var username = document.getElementById('login-username').value.trim();
-  var password = document.getElementById('login-password').value.trim();
+  var username = $('login-username').value.trim();
+  var password = $('login-password').value.trim();
   
   if (!username || !password) {
     showMessage('login-error', 'همه فیلدها را پر کنید', false);
@@ -507,39 +569,34 @@ function loginStudent() {
     var user = null;
     for (var i = 0; i < users.length; i++) {
       if (users[i].username === username && users[i].password === password) {
-        user = users[i];
-        break;
+        user = users[i]; break;
       }
     }
     
     if (!user) throw new Error('نام کاربری یا رمز نادرست است');
+    
     if (!user.approved) {
-      // نمایش صفحه فعال‌سازی
       pendingUser = user;
       showSection('activation');
-      throw new Error('NEED_ACTIVATION');
+      $('activation-error').classList.add('hidden');
+      return;
     }
     
-    // ورود موفق
     currentUser = user;
-    currentUserData = loadUserDataFromLocal(user.id);
-    
-    document.getElementById('login-username').value = '';
-    document.getElementById('login-password').value = '';
-    
+    currentUserData = loadUserDataLocal(user.id);
+    $('login-username').value = '';
+    $('login-password').value = '';
     if (!currentUserData.hasSeenWelcome) loadWelcomeScreen();
     else if (!currentUserData.hasCompletedSetup) loadSubjectSelection(false);
     else goToPage('home');
   }).catch(function(e) {
-    if (e.message !== 'NEED_ACTIVATION') {
-      showMessage('login-error', e.message || 'خطا در ورود', false);
-    }
+    showMessage('login-error', e.message || 'خطا در ورود', false);
   });
 }
 
 // ================== ACTIVATION ==================
 function activateAccount() {
-  var code = document.getElementById('activation-code').value.trim().toUpperCase();
+  var code = $('activation-code').value.trim().toUpperCase();
   
   if (!code || code.length !== 8) {
     showMessage('activation-error', 'کد باید ۸ کاراکتر باشد', false);
@@ -555,30 +612,23 @@ function activateAccount() {
     var found = false;
     for (var i = 0; i < users.length; i++) {
       if (users[i].id === pendingUser.id) {
-        if (users[i].code !== code) {
-          throw new Error('کد فعال‌سازی نادرست است');
-        }
+        if (users[i].code !== code) throw new Error('کد فعال‌سازی نادرست است');
         users[i].approved = true;
         users[i].approvedAt = new Date().toISOString();
-        // کد یکبار مصرف - باطل میشه
         users[i].code = null;
         found = true;
         break;
       }
     }
     if (!found) throw new Error('کاربر پیدا نشد');
-    
     data.users = users;
     return jsonbinUpdate(data);
   }).then(function() {
-    // بعد از فعال‌سازی، ورود کن
     currentUser = pendingUser;
     currentUser.approved = true;
-    currentUserData = loadUserDataFromLocal(currentUser.id);
+    currentUserData = loadUserDataLocal(currentUser.id);
     pendingUser = null;
-    
-    document.getElementById('activation-code').value = '';
-    
+    $('activation-code').value = '';
     if (!currentUserData.hasSeenWelcome) loadWelcomeScreen();
     else if (!currentUserData.hasCompletedSetup) loadSubjectSelection(false);
     else goToPage('home');
@@ -587,81 +637,48 @@ function activateAccount() {
   });
 }
 
-// ================== ADMIN LOGIN: SEND OTP ==================
+// ================== ADMIN LOGIN ==================
 function sendOTP() {
-  var email = document.getElementById('admin-email').value.trim();
-  
-  if (!email) {
-    showMessage('admin-error', 'ایمیل را وارد کنید', false);
-    return;
-  }
+  var email = $('admin-email').value.trim();
+  if (!email) { showMessage('admin-error', 'ایمیل را وارد کنید', false); return; }
   
   jsonbinGet().then(function(data) {
-    var adminEmail = data.adminEmail || '';
-    if (email !== adminEmail) {
-      throw new Error('این ایمیل مجاز نیست');
-    }
-    
-    // ساخت OTP
+    var adminEmail = data.adminEmail || CONFIG.ADMIN_EMAIL;
+    if (email !== adminEmail) throw new Error('این ایمیل مجاز نیست');
     adminOTP = generateOTP();
-    adminOTPExpiry = Date.now() + (OTP_EXPIRY_MINUTES * 60 * 1000);
-    
+    adminOTPExpiry = Date.now() + (CONFIG.OTP_MINUTES * 60 * 1000);
     return sendEmailOTP(email, adminOTP);
   }).then(function() {
-    document.getElementById('otp-section').classList.remove('hidden');
+    $('otp-section').classList.remove('hidden');
     showMessage('admin-error', 'کد به ایمیل شما ارسال شد (۱۰ دقیقه اعتبار)', true);
   }).catch(function(e) {
     showMessage('admin-error', e.message || 'خطا در ارسال کد', false);
   });
 }
-
-// ================== ADMIN LOGIN: VERIFY OTP ==================
 function verifyOTP() {
-  var otp = document.getElementById('admin-otp').value.trim();
-  
-  if (!otp) {
-    showMessage('admin-error', 'کد را وارد کنید', false);
-    return;
-  }
-  
+  var otp = $('admin-otp').value.trim();
+  if (!otp) { showMessage('admin-error', 'کد را وارد کنید', false); return; }
   if (!adminOTP || Date.now() > adminOTPExpiry) {
     showMessage('admin-error', 'کد منقضی شده. دوباره درخواست بدید', false);
     return;
   }
-  
-  if (otp !== adminOTP) {
-    showMessage('admin-error', 'کد نادرست است', false);
-    return;
-  }
-  
-  // موفق
+  if (otp !== adminOTP) { showMessage('admin-error', 'کد نادرست است', false); return; }
   adminOTP = null;
   isAdmin = true;
-  document.getElementById('admin-otp').value = '';
-  document.getElementById('admin-email').value = '';
+  $('admin-otp').value = '';
+  $('admin-email').value = '';
   loadAdminDashboard();
 }
-
-// ================== EMERGENCY LOGIN ==================
-function showEmergencyLogin() {
-  document.getElementById('emergency-section').classList.toggle('hidden');
-}
+function showEmergencyLogin() { $('emergency-section').classList.toggle('hidden'); }
 function emergencyLogin() {
-  var pass = document.getElementById('emergency-pass').value.trim();
-  if (!pass) {
-    showMessage('admin-error', 'رمز را وارد کنید', false);
-    return;
-  }
+  var pass = $('emergency-pass').value.trim();
+  if (!pass) { showMessage('admin-error', 'رمز را وارد کنید', false); return; }
   jsonbinGet().then(function(data) {
-    if (pass !== data.emergencyPass) {
-      throw new Error('رمز اضطراری نادرست');
-    }
+    if (pass !== data.emergencyPass) throw new Error('رمز اضطراری نادرست');
     isAdmin = true;
-    document.getElementById('emergency-pass').value = '';
+    $('emergency-pass').value = '';
     loadAdminDashboard();
-  }).catch(function(e) {
-    showMessage('admin-error', e.message, false);
-  });
+  }).catch(function(e) { showMessage('admin-error', e.message, false); });
 }
 
 // ================== LOGOUT ==================
@@ -674,42 +691,6 @@ function logout() {
   showSection('login');
 }
 
-// ================== HELPERS ==================
-function generateCode() {
-  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  var code = '';
-  for (var i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-}
-function generateOTP() {
-  var otp = '';
-  for (var i = 0; i < 6; i++) {
-    otp += Math.floor(Math.random() * 10);
-  }
-  return otp;
-}
-
-// ================== USER DATA (localStorage) ==================
-function loadUserDataFromLocal(userId) {
-  try {
-    var data = localStorage.getItem('userData_' + userId);
-    if (data) return JSON.parse(data);
-  } catch(e) {}
-  return {
-    schedule: {}, nextWeekSchedule: {}, weeklyTimes: {}, weeklyHistory: [],
-    hasSeenWelcome: false, hasCompletedSetup: false,
-    theme: 'light'
-  };
-}
-function saveUserDataLocal() {
-  if (!currentUser || !currentUserData) return;
-  try {
-    localStorage.setItem('userData_' + currentUser.id, JSON.stringify(currentUserData));
-  } catch(e) {}
-}
-
 // ================== ADMIN DASHBOARD ==================
 function loadAdminDashboard() {
   showSection('adminDashboard');
@@ -717,45 +698,39 @@ function loadAdminDashboard() {
   switchAdminTab('pending');
 }
 function switchAdminTab(tab) {
-  document.getElementById('tab-pending').className = tab === 'pending' ? 'btn btn-info' : 'btn btn-secondary';
-  document.getElementById('tab-approved').className = tab === 'approved' ? 'btn btn-success' : 'btn btn-secondary';
-  document.getElementById('tab-archived').className = tab === 'archived' ? 'btn btn-info' : 'btn btn-secondary';
-  window._currentTab = tab;
+  currentTab = tab;
+  $('tab-pending').className = tab === 'pending' ? 'btn btn-info' : 'btn btn-secondary';
+  $('tab-approved').className = tab === 'approved' ? 'btn btn-success' : 'btn btn-secondary';
+  $('tab-archived').className = tab === 'archived' ? 'btn btn-info' : 'btn btn-secondary';
   renderAdminUsers();
 }
 function refreshUsers() {
-  document.getElementById('admin-users-list').innerHTML = '<div class="loader-small"></div>';
+  $('admin-users-list').innerHTML = '<div class="loader-small"></div>';
   jsonbinGet().then(function(data) {
-    window._allUsers = data.users || [];
-    window._archivedUsers = data.archived || [];
+    allUsers = data.users || [];
+    archivedUsers = data.archived || [];
     renderAdminUsers();
     updateAdminStats();
   }).catch(function(e) {
-    document.getElementById('admin-users-list').innerHTML = '<div class="error-msg">خطا: ' + e.message + '</div>';
+    $('admin-users-list').innerHTML = '<div class="error-msg">خطا: ' + e.message + '</div>';
   });
 }
 function updateAdminStats() {
-  var users = window._allUsers || [];
-  var archived = window._archivedUsers || [];
-  var pending = users.filter(function(u) { return !u.approved; }).length;
-  var approved = users.filter(function(u) { return u.approved; }).length;
-  document.getElementById('stat-pending').textContent = pending;
-  document.getElementById('stat-approved').textContent = approved;
-  document.getElementById('stat-archived').textContent = archived.length;
+  var pending = allUsers.filter(function(u) { return !u.approved; }).length;
+  var approved = allUsers.filter(function(u) { return u.approved; }).length;
+  $('stat-pending').textContent = pending;
+  $('stat-approved').textContent = approved;
+  $('stat-archived').textContent = archivedUsers.length;
 }
 function renderAdminUsers() {
-  var div = document.getElementById('admin-users-list');
-  var users = window._allUsers || [];
-  var archived = window._archivedUsers || [];
-  var tab = window._currentTab || 'pending';
-  var searchTerm = (document.getElementById('search-input') || {}).value || '';
-  searchTerm = searchTerm.trim().toLowerCase();
-  
+  var div = $('admin-users-list');
   var list = [];
-  if (tab === 'pending') list = users.filter(function(u) { return !u.approved; });
-  else if (tab === 'approved') list = users.filter(function(u) { return u.approved; });
-  else if (tab === 'archived') list = archived;
+  if (currentTab === 'pending') list = allUsers.filter(function(u) { return !u.approved; });
+  else if (currentTab === 'approved') list = allUsers.filter(function(u) { return u.approved; });
+  else list = archivedUsers;
   
+  var searchTerm = ($('search-input') || {}).value || '';
+  searchTerm = searchTerm.trim().toLowerCase();
   if (searchTerm) {
     list = list.filter(function(u) {
       return (u.username || '').toLowerCase().indexOf(searchTerm) > -1 ||
@@ -778,11 +753,9 @@ function renderAdminUsers() {
     if (u.code) html += '<div style="margin-top:8px;"><strong style="color:var(--primary-color);">🎫 کد: ' + u.code + '</strong></div>';
     if (u.approved) html += '<div style="font-size:.85em;color:var(--success-color);">✅ تایید شده</div>';
     html += '<div class="admin-actions">';
-    if (u.code) {
-      html += '<button class="btn btn-info" style="font-size:.85em;padding:6px 12px;" onclick="copyCode(\'' + u.code + '\')">📋 کپی کد</button>';
-    }
+    if (u.code) html += '<button class="btn btn-info" style="font-size:.85em;padding:6px 12px;" onclick="copyCode(\'' + u.code + '\')">📋 کپی کد</button>';
     html += '<button class="btn btn-success" style="font-size:.85em;padding:6px 12px;" onclick="generateNewCode(\'' + u.id + '\')">🔑 کد جدید</button>';
-    if (tab === 'archived') {
+    if (currentTab === 'archived') {
       html += '<button class="btn btn-info" style="font-size:.85em;padding:6px 12px;" onclick="restoreUser(\'' + u.id + '\')">♻️ بازیابی</button>';
     }
     html += '<button class="btn btn-danger" style="font-size:.85em;padding:6px 12px;" onclick="archiveUser(\'' + u.id + '\')">🗑 حذف</button>';
@@ -793,12 +766,8 @@ function renderAdminUsers() {
 function searchUsers() { renderAdminUsers(); }
 function copyCode(code) {
   if (navigator.clipboard) {
-    navigator.clipboard.writeText(code).then(function() {
-      alert('✅ کد کپی شد: ' + code);
-    });
-  } else {
-    alert('کد: ' + code);
-  }
+    navigator.clipboard.writeText(code).then(function() { alert('✅ کد کپی شد: ' + code); });
+  } else alert('کد: ' + code);
 }
 function generateNewCode(userId) {
   if (!confirm('کد جدید ساخته بشه؟ کد قدیمی باطل میشه.')) return;
@@ -814,10 +783,8 @@ function generateNewCode(userId) {
     }
     data.users = users;
     return jsonbinUpdate(data);
-  }).then(function() {
-    alert('✅ کد جدید ساخته شد');
-    refreshUsers();
-  }).catch(function(e) { alert('خطا: ' + e.message); });
+  }).then(function() { alert('✅ کد جدید ساخته شد'); refreshUsers(); })
+    .catch(function(e) { alert('خطا: ' + e.message); });
 }
 function archiveUser(userId) {
   if (!confirm('کاربر به آرشیو منتقل بشه؟')) return;
@@ -825,9 +792,7 @@ function archiveUser(userId) {
     var users = data.users || [];
     var archived = data.archived || [];
     var idx = -1;
-    for (var i = 0; i < users.length; i++) {
-      if (users[i].id === userId) { idx = i; break; }
-    }
+    for (var i = 0; i < users.length; i++) if (users[i].id === userId) { idx = i; break; }
     if (idx === -1) throw new Error('کاربر پیدا نشد');
     var user = users.splice(idx, 1)[0];
     user.archivedAt = new Date().toISOString();
@@ -835,19 +800,15 @@ function archiveUser(userId) {
     data.users = users;
     data.archived = archived;
     return jsonbinUpdate(data);
-  }).then(function() {
-    alert('✅ کاربر آرشیو شد');
-    refreshUsers();
-  }).catch(function(e) { alert('خطا: ' + e.message); });
+  }).then(function() { alert('✅ کاربر آرشیو شد'); refreshUsers(); })
+    .catch(function(e) { alert('خطا: ' + e.message); });
 }
 function restoreUser(userId) {
   jsonbinGet().then(function(data) {
     var users = data.users || [];
     var archived = data.archived || [];
     var idx = -1;
-    for (var i = 0; i < archived.length; i++) {
-      if (archived[i].id === userId) { idx = i; break; }
-    }
+    for (var i = 0; i < archived.length; i++) if (archived[i].id === userId) { idx = i; break; }
     if (idx === -1) throw new Error('کاربر پیدا نشد');
     var user = archived.splice(idx, 1)[0];
     delete user.archivedAt;
@@ -855,165 +816,183 @@ function restoreUser(userId) {
     data.users = users;
     data.archived = archived;
     return jsonbinUpdate(data);
-  }).then(function() {
-    alert('✅ کاربر بازیابی شد');
-    refreshUsers();
-  }).catch(function(e) { alert('خطا: ' + e.message); });
+  }).then(function() { alert('✅ کاربر بازیابی شد'); refreshUsers(); })
+    .catch(function(e) { alert('خطا: ' + e.message); });
 }
 </script>
 
+
+
 <script>
 // ================== WELCOME ==================
-function loadWelcomeScreen(){
+function loadWelcomeScreen() {
   showSection('welcomeScreen');
-  document.getElementById('welcome-username').textContent = currentUser.username;
+  $('welcome-username').textContent = currentUser.username;
 }
-function startSubjectSelection(){
+function startSubjectSelection() {
   currentUserData.hasSeenWelcome = true;
   saveUserDataLocal();
   loadSubjectSelection(false);
 }
 
 // ================== NAV ==================
-function goToPage(page){
+function goToPage(page) {
   closeSidebar();
-  if(page==='home'){showSection('home');renderSchedule();updateStats();renderCharts();checkFridayReminder()}
-  else if(page==='plan-new'){loadSubjectSelection(false)}
-  else if(page==='next-week'){showSection('next-week');renderNextWeekScheduleDisplay();checkFridayReminder()}
-  else if(page==='stats'){showSection('stats');renderStatsPage()}
-  else if(page==='lessons'){showSection('lessons');renderLessonsPage()}
-  else if(page==='settings'){showSection('settings');renderSettingsPage()}
+  if (page === 'home') { showSection('home'); renderSchedule(); updateStats(); renderCharts(); checkFridayReminder(); }
+  else if (page === 'plan-new') { loadSubjectSelection(false); }
+  else if (page === 'next-week') { showSection('next-week'); renderNextWeekScheduleDisplay(); checkFridayReminder(); }
+  else if (page === 'stats') { showSection('stats'); renderStatsPage(); }
+  else if (page === 'lessons') { showSection('lessons'); renderLessonsPage(); }
+  else if (page === 'settings') { showSection('settings'); renderSettingsPage(); }
 }
-function checkFridayReminder(){
-  var rs=document.querySelectorAll('.friday-reminder');
-  for(var i=0;i<rs.length;i++){if(isFriday())rs[i].classList.add('show');else rs[i].classList.remove('show')}
+function checkFridayReminder() {
+  var rs = document.querySelectorAll('.friday-reminder');
+  for (var i = 0; i < rs.length; i++) {
+    if (isFriday()) rs[i].classList.add('show');
+    else rs[i].classList.remove('show');
+  }
 }
 
 // ================== SUBJECT SELECTION ==================
-function loadSubjectSelection(forNextWeek){
-  isPlanningNextWeek=forNextWeek;
+function loadSubjectSelection(forNextWeek) {
+  isPlanningNextWeek = forNextWeek;
   showSection('subjectSelection');
-  document.getElementById('subject-selection-title').textContent=forNextWeek?'📚 هفته آینده':'📚 این هفته';
+  $('subject-selection-title').textContent = forNextWeek ? '📚 هفته آینده' : '📚 این هفته';
   renderSubjectSelectionGrid();
   updateSelectedSummary();
 }
-function openNextWeekPlanning(){loadSubjectSelection(true)}
-function renderSubjectSelectionGrid(){
-  var grid=document.getElementById('subject-selection-grid');
-  grid.innerHTML='';
-  var subjects=subjectsByGrade[currentUser.grade]||[];
-  var existing=getAllSubjectsInPlanningSchedule();
-  subjects.forEach(function(subject){
-    var card=document.createElement('div');
-    card.className='subject-card'+(existing.indexOf(subject)>-1?' selected':'');
-    card.innerHTML=existing.indexOf(subject)>-1?
-      '<div style="font-size:1.1em;font-weight:bold;">'+subject+'</div><div style="font-size:.8em;color:var(--success-color);margin-top:5px;">✓ انتخاب شده</div>':
-      '<div style="font-size:1.1em;font-weight:bold;">'+subject+'</div><div style="font-size:.8em;color:var(--highlight-color);margin-top:5px;">کلیک کن</div>';
-    card.onclick=function(){openSubjectDrawer(subject)};
+function openNextWeekPlanning() { loadSubjectSelection(true); }
+
+function renderSubjectSelectionGrid() {
+  var grid = $('subject-selection-grid');
+  grid.innerHTML = '';
+  var subjects = subjectsByGrade[currentUser.grade] || [];
+  var existing = getAllSubjectsInPlanningSchedule();
+  subjects.forEach(function(subject) {
+    var card = document.createElement('div');
+    card.className = 'subject-card' + (existing.indexOf(subject) > -1 ? ' selected' : '');
+    card.innerHTML = existing.indexOf(subject) > -1
+      ? '<div style="font-size:1.1em;font-weight:bold;">' + subject + '</div><div style="font-size:.8em;color:var(--success-color);margin-top:5px;">✓ انتخاب شده</div>'
+      : '<div style="font-size:1.1em;font-weight:bold;">' + subject + '</div><div style="font-size:.8em;color:var(--highlight-color);margin-top:5px;">کلیک کن</div>';
+    card.onclick = function() { openSubjectDrawer(subject); };
     grid.appendChild(card);
   });
 }
-function getAllSubjectsInPlanningSchedule(){
-  var arr=[];
-  var sched=isPlanningNextWeek?currentUserData.nextWeekSchedule:currentUserData.schedule;
-  Object.keys(sched||{}).forEach(function(day){
-    (sched[day]||[]).forEach(function(i){if(!i.isCustom&&arr.indexOf(i.subject)===-1)arr.push(i.subject)});
+
+function getAllSubjectsInPlanningSchedule() {
+  var arr = [];
+  var sched = isPlanningNextWeek ? currentUserData.nextWeekSchedule : currentUserData.schedule;
+  Object.keys(sched || {}).forEach(function(day) {
+    (sched[day] || []).forEach(function(i) {
+      if (!i.isCustom && arr.indexOf(i.subject) === -1) arr.push(i.subject);
+    });
   });
   return arr;
 }
-function openSubjectDrawer(subject){
-  var old=document.getElementById('subject-drawer');if(old)old.remove();
-  var existing=findSubjectInPlanningSchedule(subject);
-  var drawer=document.createElement('div');
-  drawer.className='drawer-overlay';drawer.id='subject-drawer';
-  var sd=existing?existing.days:[];
-  var sh=existing?existing.hours:1;
-  var sm=existing?existing.minutes:0;
-  var nt=existing?existing.noTime:false;
-  var te=existing?existing.timerEnabled:true;
-  var daysHtml='';
-  daysOfWeek.forEach(function(d){
-    daysHtml+='<label class="day-checkbox-label"><input type="checkbox" value="'+d+'" '+(sd.indexOf(d)>-1?'checked':'')+' class="day-cb" style="width:20px;height:20px;accent-color:var(--primary-color);"><span>'+d+'</span></label>';
+
+function openSubjectDrawer(subject) {
+  var old = $('subject-drawer');
+  if (old) old.remove();
+  var existing = findSubjectInPlanningSchedule(subject);
+  var drawer = document.createElement('div');
+  drawer.className = 'drawer-overlay';
+  drawer.id = 'subject-drawer';
+  var sd = existing ? existing.days : [];
+  var sh = existing ? existing.hours : 1;
+  var sm = existing ? existing.minutes : 0;
+  var nt = existing ? existing.noTime : false;
+  var te = existing ? existing.timerEnabled : true;
+  var daysHtml = '';
+  daysOfWeek.forEach(function(d) {
+    daysHtml += '<label class="day-checkbox-label"><input type="checkbox" value="' + d + '" ' + (sd.indexOf(d) > -1 ? 'checked' : '') + ' class="day-cb" style="width:20px;height:20px;accent-color:var(--primary-color);"><span>' + d + '</span></label>';
   });
-  drawer.innerHTML='<div class="drawer-content" onclick="event.stopPropagation()">'+
-    '<h3 style="color:var(--primary-color);text-align:center;margin-bottom:20px;">📖 '+subject+'</h3>'+
-    '<label style="color:var(--highlight-color);margin-bottom:10px;font-weight:bold;">📅 روزها:</label>'+
-    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">'+daysHtml+'</div>'+
-    '<label style="color:var(--highlight-color);margin:20px 0 10px;font-weight:bold;">⏱ زمان:</label>'+
-    '<div id="time-picker-section" style="'+(nt?'display:none;':'')+'">'+
-    '<div style="display:flex;justify-content:center;gap:20px;margin:15px 0;padding:15px;background:rgba(0,0,0,.3);border-radius:12px;">'+
-    '<div style="display:flex;flex-direction:column;align-items:center;gap:5px;">'+
-    '<label style="color:var(--highlight-color);font-size:.9em;">ساعت</label>'+
-    '<button type="button" onclick="changeTime(\'hours\',1)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▲</button>'+
-    '<div class="time-wheel-display" id="hours-display">'+String(sh).padStart(2,'0')+'</div>'+
-    '<button type="button" onclick="changeTime(\'hours\',-1)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▼</button>'+
-    '</div>'+
-    '<div style="display:flex;align-items:center;font-size:2em;color:var(--primary-color);">:</div>'+
-    '<div style="display:flex;flex-direction:column;align-items:center;gap:5px;">'+
-    '<label style="color:var(--highlight-color);font-size:.9em;">دقیقه</label>'+
-    '<button type="button" onclick="changeTime(\'minutes\',5)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▲</button>'+
-    '<div class="time-wheel-display" id="minutes-display">'+String(sm).padStart(2,'0')+'</div>'+
-    '<button type="button" onclick="changeTime(\'minutes\',-5)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▼</button>'+
-    '</div></div></div>'+
-    '<div style="display:flex;justify-content:center;gap:20px;margin:15px 0;padding:12px;background:rgba(255,255,255,.08);border-radius:10px;">'+
-    '<label><input type="radio" name="time-option" value="hasTime" '+(!nt?'checked':'')+' onchange="toggleTimeOption()"> با زمان</label>'+
-    '<label><input type="radio" name="time-option" value="noTime" '+(nt?'checked':'')+' onchange="toggleTimeOption()"> بدون زمان</label>'+
-    '</div>'+
-    '<div style="display:flex;justify-content:center;gap:15px;margin:15px 0;padding:12px;background:rgba(255,255,255,.08);border-radius:10px;">'+
-    '<span style="color:var(--highlight-color);">⏱ تایمر:</span>'+
-    '<label><input type="radio" name="timer-opt" value="yes" '+(te?'checked':'')+'> فعال</label>'+
-    '<label><input type="radio" name="timer-opt" value="no" '+(!te?'checked':'')+'> غیرفعال</label>'+
-    '</div>'+
-    '<div style="display:flex;gap:10px;margin-top:20px;">'+
-    '<button class="btn btn-danger" style="flex:1;margin:0;" onclick="cancelDrawer()">✖ انصراف</button>'+
-    '<button class="btn btn-success" style="flex:1;margin:0;" onclick="confirmDrawer(\''+subject+'\')">✔ تایید</button>'+
+  drawer.innerHTML = '<div class="drawer-content" onclick="event.stopPropagation()">' +
+    '<h3 style="color:var(--primary-color);text-align:center;margin-bottom:20px;">📖 ' + subject + '</h3>' +
+    '<label style="color:var(--highlight-color);margin-bottom:10px;font-weight:bold;">📅 روزها:</label>' +
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">' + daysHtml + '</div>' +
+    '<label style="color:var(--highlight-color);margin:20px 0 10px;font-weight:bold;">⏱ زمان:</label>' +
+    '<div id="time-picker-section" style="' + (nt ? 'display:none;' : '') + '">' +
+    '<div style="display:flex;justify-content:center;gap:20px;margin:15px 0;padding:15px;background:rgba(0,0,0,.3);border-radius:12px;">' +
+    '<div style="display:flex;flex-direction:column;align-items:center;gap:5px;">' +
+    '<label style="color:var(--highlight-color);font-size:.9em;">ساعت</label>' +
+    '<button type="button" onclick="changeTime(\'hours\',1)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▲</button>' +
+    '<div class="time-wheel-display" id="hours-display">' + String(sh).padStart(2,'0') + '</div>' +
+    '<button type="button" onclick="changeTime(\'hours\',-1)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▼</button>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;font-size:2em;color:var(--primary-color);">:</div>' +
+    '<div style="display:flex;flex-direction:column;align-items:center;gap:5px;">' +
+    '<label style="color:var(--highlight-color);font-size:.9em;">دقیقه</label>' +
+    '<button type="button" onclick="changeTime(\'minutes\',5)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▲</button>' +
+    '<div class="time-wheel-display" id="minutes-display">' + String(sm).padStart(2,'0') + '</div>' +
+    '<button type="button" onclick="changeTime(\'minutes\',-5)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▼</button>' +
+    '</div></div></div>' +
+    '<div style="display:flex;justify-content:center;gap:20px;margin:15px 0;padding:12px;background:rgba(255,255,255,.08);border-radius:10px;">' +
+    '<label><input type="radio" name="time-option" value="hasTime" ' + (!nt ? 'checked' : '') + ' onchange="toggleTimeOption()"> با زمان</label>' +
+    '<label><input type="radio" name="time-option" value="noTime" ' + (nt ? 'checked' : '') + ' onchange="toggleTimeOption()"> بدون زمان</label>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:center;gap:15px;margin:15px 0;padding:12px;background:rgba(255,255,255,.08);border-radius:10px;">' +
+    '<span style="color:var(--highlight-color);">⏱ تایمر:</span>' +
+    '<label><input type="radio" name="timer-opt" value="yes" ' + (te ? 'checked' : '') + '> فعال</label>' +
+    '<label><input type="radio" name="timer-opt" value="no" ' + (!te ? 'checked' : '') + '> غیرفعال</label>' +
+    '</div>' +
+    '<div style="display:flex;gap:10px;margin-top:20px;">' +
+    '<button class="btn btn-danger" style="flex:1;margin:0;" onclick="cancelDrawer()">✖ انصراف</button>' +
+    '<button class="btn btn-success" style="flex:1;margin:0;" onclick="confirmDrawer(\'' + subject + '\')">✔ تایید</button>' +
     '</div></div>';
-  drawer.onclick=function(e){if(e.target===drawer)cancelDrawer()};
+  drawer.onclick = function(e) { if (e.target === drawer) cancelDrawer(); };
   document.body.appendChild(drawer);
-  window._tempDrawer={hours:sh,minutes:sm};
+  window._tempDrawer = { hours: sh, minutes: sm };
 }
-function changeTime(type,delta){
-  if(type==='hours'){
-    var h=window._tempDrawer.hours+delta;
-    if(h<0)h=23;if(h>23)h=0;
-    window._tempDrawer.hours=h;
-    document.getElementById('hours-display').textContent=String(h).padStart(2,'0');
-  }else{
-    var m=window._tempDrawer.minutes+delta;
-    if(m<0)m=55;if(m>55)m=0;
-    window._tempDrawer.minutes=m;
-    document.getElementById('minutes-display').textContent=String(m).padStart(2,'0');
+
+function changeTime(type, delta) {
+  if (type === 'hours') {
+    var h = window._tempDrawer.hours + delta;
+    if (h < 0) h = 23;
+    if (h > 23) h = 0;
+    window._tempDrawer.hours = h;
+    $('hours-display').textContent = String(h).padStart(2,'0');
+  } else {
+    var m = window._tempDrawer.minutes + delta;
+    if (m < 0) m = 55;
+    if (m > 55) m = 0;
+    window._tempDrawer.minutes = m;
+    $('minutes-display').textContent = String(m).padStart(2,'0');
   }
 }
-function toggleTimeOption(){
-  var sel=document.querySelector('input[name="time-option"]:checked').value;
-  document.getElementById('time-picker-section').style.display=sel==='noTime'?'none':'block';
+function toggleTimeOption() {
+  var sel = document.querySelector('input[name="time-option"]:checked').value;
+  $('time-picker-section').style.display = sel === 'noTime' ? 'none' : 'block';
 }
-function cancelDrawer(){var d=document.getElementById('subject-drawer');if(d)d.remove()}
-function confirmDrawer(subject){
-  var days=[];
-  var cbs=document.querySelectorAll('.day-cb:checked');
-  for(var i=0;i<cbs.length;i++)days.push(cbs[i].value);
-  if(days.length===0){alert('حداقل یک روز انتخاب کن');return}
-  var to=document.querySelector('input[name="time-option"]:checked').value;
-  var topt=document.querySelector('input[name="timer-opt"]:checked').value;
-  var noTime=to==='noTime';
-  var timerEnabled=topt==='yes';
-  var h=window._tempDrawer.hours,m=window._tempDrawer.minutes;
-  var target=isPlanningNextWeek?'nextWeekSchedule':'schedule';
-  if(!currentUserData[target])currentUserData[target]={};
-  daysOfWeek.forEach(function(day){
-    if(currentUserData[target][day]){
-      currentUserData[target][day]=currentUserData[target][day].filter(function(i){return!(i.subject===subject&&!i.isCustom)});
+function cancelDrawer() { var d = $('subject-drawer'); if (d) d.remove(); }
+
+function confirmDrawer(subject) {
+  var days = [];
+  var cbs = document.querySelectorAll('.day-cb:checked');
+  for (var i = 0; i < cbs.length; i++) days.push(cbs[i].value);
+  if (days.length === 0) { alert('حداقل یک روز انتخاب کن'); return; }
+  var to = document.querySelector('input[name="time-option"]:checked').value;
+  var topt = document.querySelector('input[name="timer-opt"]:checked').value;
+  var noTime = to === 'noTime';
+  var timerEnabled = topt === 'yes';
+  var h = window._tempDrawer.hours, m = window._tempDrawer.minutes;
+  var target = isPlanningNextWeek ? 'nextWeekSchedule' : 'schedule';
+  if (!currentUserData[target]) currentUserData[target] = {};
+  daysOfWeek.forEach(function(day) {
+    if (currentUserData[target][day]) {
+      currentUserData[target][day] = currentUserData[target][day].filter(function(i) {
+        return !(i.subject === subject && !i.isCustom);
+      });
     }
   });
-  days.forEach(function(day){
-    if(!currentUserData[target][day])currentUserData[target][day]=[];
+  days.forEach(function(day) {
+    if (!currentUserData[target][day]) currentUserData[target][day] = [];
     currentUserData[target][day].push({
-      id:Date.now().toString()+Math.random().toString(36).substr(2,5),
-      subject:subject,time:noTime?0:(h*3600+m*60),
-      savedTime:0,isDone:false,noTime:noTime,timerEnabled:timerEnabled,isCustom:false,
-      createdAt:new Date().toISOString()
+      id: Date.now().toString() + Math.random().toString(36).substr(2,5),
+      subject: subject,
+      time: noTime ? 0 : (h * 3600 + m * 60),
+      savedTime: 0, isDone: false, noTime: noTime,
+      timerEnabled: timerEnabled, isCustom: false,
+      createdAt: new Date().toISOString()
     });
   });
   saveUserDataLocal();
@@ -1021,529 +1000,700 @@ function confirmDrawer(subject){
   renderSubjectSelectionGrid();
   updateSelectedSummary();
 }
-function findSubjectInPlanningSchedule(subject){
-  var sched=isPlanningNextWeek?currentUserData.nextWeekSchedule:currentUserData.schedule;
-  for(var i=0;i<daysOfWeek.length;i++){
-    var day=daysOfWeek[i];
-    var items=sched[day]||[];
-    var item=null;
-    for(var j=0;j<items.length;j++){if(items[j].subject===subject&&!items[j].isCustom){item=items[j];break}}
-    if(item){
-      var days=[];
-      Object.keys(sched).forEach(function(d){
-        if(sched[d].some(function(x){return x.subject===subject&&!x.isCustom}))days.push(d);
+
+function findSubjectInPlanningSchedule(subject) {
+  var sched = isPlanningNextWeek ? currentUserData.nextWeekSchedule : currentUserData.schedule;
+  for (var i = 0; i < daysOfWeek.length; i++) {
+    var day = daysOfWeek[i];
+    var items = sched[day] || [];
+    var item = null;
+    for (var j = 0; j < items.length; j++) {
+      if (items[j].subject === subject && !items[j].isCustom) { item = items[j]; break; }
+    }
+    if (item) {
+      var days = [];
+      Object.keys(sched).forEach(function(d) {
+        if (sched[d].some(function(x) { return x.subject === subject && !x.isCustom; })) days.push(d);
       });
-      return{days:days,hours:Math.floor(item.time/3600),minutes:Math.floor((item.time%3600)/60),noTime:item.noTime||false,timerEnabled:item.timerEnabled!==false};
+      return {
+        days: days,
+        hours: Math.floor(item.time/3600),
+        minutes: Math.floor((item.time%3600)/60),
+        noTime: item.noTime || false,
+        timerEnabled: item.timerEnabled !== false
+      };
     }
   }
   return null;
 }
-function updateSelectedSummary(){
-  var summary=document.getElementById('selected-subjects-summary');
-  var selected=getAllSubjectsInPlanningSchedule();
-  if(selected.length===0){summary.innerHTML='';document.getElementById('final-submit-section').style.display='none';return}
-  var html='<h3 style="color:var(--primary-color);margin-bottom:15px;">📋 خلاصه:</h3><div style="background:rgba(255,255,255,.08);border-radius:10px;padding:15px;">';
-  selected.forEach(function(s){
-    var info=findSubjectInPlanningSchedule(s);
-    if(info){
-      var ts=info.noTime?'بدون زمان':String(info.hours).padStart(2,'0')+':'+String(info.minutes).padStart(2,'0');
-      html+='<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--primary-color);">'+s+'</strong><div style="color:var(--highlight-color);font-size:.9em;">📅 '+info.days.join('، ')+' • ⏱ '+ts+' • '+(info.timerEnabled?'⏱ فعال':'⏱ غیرفعال')+'</div></div>';
+
+function updateSelectedSummary() {
+  var summary = $('selected-subjects-summary');
+  var selected = getAllSubjectsInPlanningSchedule();
+  if (selected.length === 0) {
+    summary.innerHTML = '';
+    $('final-submit-section').style.display = 'none';
+    return;
+  }
+  var html = '<h3 style="color:var(--primary-color);margin-bottom:15px;">📋 خلاصه:</h3><div style="background:rgba(255,255,255,.08);border-radius:10px;padding:15px;">';
+  selected.forEach(function(s) {
+    var info = findSubjectInPlanningSchedule(s);
+    if (info) {
+      var ts = info.noTime ? 'بدون زمان' : String(info.hours).padStart(2,'0') + ':' + String(info.minutes).padStart(2,'0');
+      html += '<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--primary-color);">' + s + '</strong><div style="color:var(--highlight-color);font-size:.9em;">📅 ' + info.days.join('، ') + ' • ⏱ ' + ts + ' • ' + (info.timerEnabled ? '⏱ فعال' : '⏱ غیرفعال') + '</div></div>';
     }
   });
-  html+='</div>';
-  summary.innerHTML=html;
-  document.getElementById('final-submit-section').style.display='block';
-  document.getElementById('selected-count').textContent=selected.length;
+  html += '</div>';
+  summary.innerHTML = html;
+  $('final-submit-section').style.display = 'block';
+  $('selected-count').textContent = selected.length;
 }
-function submitFinalPlan(){
-  var selected=getAllSubjectsInPlanningSchedule();
-  if(selected.length===0){alert('حداقل یک درس انتخاب کن');return}
-  if(isPlanningNextWeek){
+
+function submitFinalPlan() {
+  var selected = getAllSubjectsInPlanningSchedule();
+  if (selected.length === 0) { alert('حداقل یک درس انتخاب کن'); return; }
+  if (isPlanningNextWeek) {
     saveUserDataLocal();
     alert('✅ برنامه هفته آینده ثبت شد!');
     goToPage('next-week');
-  }else{
-    currentUserData.hasCompletedSetup=true;
+  } else {
+    currentUserData.hasCompletedSetup = true;
     saveUserDataLocal();
     alert('✅ برنامه هفتگی ثبت شد!');
     goToPage('home');
   }
 }
 
-// ================== SCHEDULE ==================
-function renderSchedule(){
-  var div=document.getElementById('weekly-schedule');if(!div)return;
-  div.innerHTML='';
-  var wi=getWeekInfo();
-  document.getElementById('week-info-display').textContent='📅 این هفته: '+wi.startFull+' تا '+wi.endFull;
-  document.getElementById('student-welcome').textContent='👋 خوش آمدید، '+currentUser.username+'!';
-  daysOfWeek.forEach(function(day){
-    var items=currentUserData.schedule[day]||[];
-    var dd=document.createElement('div');dd.className='day-section';
-    var isToday=day===getToday();
-    var total=0;items.forEach(function(i){total+=i.savedTime||0});
-    dd.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:2px solid var(--primary-color);padding-bottom:8px;flex-wrap:wrap;gap:8px;">'+
-      '<span style="font-size:1.2em;color:'+(isToday?'var(--primary-color)':'var(--highlight-color)')+';font-weight:bold;">'+(isToday?'🔸 ':'')+day+'</span>'+
-      '<span style="font-size:.95em;color:var(--highlight-color);background:rgba(255,215,0,.2);padding:6px 12px;border-radius:10px;">⏱ '+formatTime(total)+'</span>'+
-      '<button class="btn" style="font-size:.8em;padding:6px 12px;margin:0;" onclick="quickAddToDay(\''+day+'\')">➕ برنامه</button>'+
+// ================== SCHEDULE RENDER ==================
+function renderSchedule() {
+  var div = $('weekly-schedule');
+  if (!div) return;
+  div.innerHTML = '';
+  var wi = getWeekInfo();
+  $('week-info-display').textContent = '📅 این هفته: ' + wi.startFull + ' تا ' + wi.endFull;
+  $('student-welcome').textContent = '👋 خوش آمدید، ' + currentUser.username + '!';
+  
+  daysOfWeek.forEach(function(day) {
+    var items = currentUserData.schedule[day] || [];
+    var dd = document.createElement('div');
+    dd.className = 'day-section';
+    var isToday = day === getToday();
+    var total = 0;
+    items.forEach(function(i) { total += i.savedTime || 0; });
+    dd.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:2px solid var(--primary-color);padding-bottom:8px;flex-wrap:wrap;gap:8px;">' +
+      '<span style="font-size:1.2em;color:' + (isToday ? 'var(--primary-color)' : 'var(--highlight-color)') + ';font-weight:bold;">' + (isToday ? '🔸 ' : '') + day + '</span>' +
+      '<span style="font-size:.95em;color:var(--highlight-color);background:rgba(255,215,0,.2);padding:6px 12px;border-radius:10px;">⏱ ' + formatTime(total) + '</span>' +
+      '<button class="btn" style="font-size:.8em;padding:6px 12px;margin:0;" onclick="quickAddToDay(\'' + day + '\')">➕ برنامه</button>' +
       '</div><div class="day-items"></div>';
-    var itemsDiv=dd.querySelector('.day-items');
-    if(items.length===0)itemsDiv.innerHTML='<p style="color:var(--accent-color);font-size:.9em;text-align:center;padding:10px;">برنامه‌ای نیست.</p>';
-    else items.forEach(function(item){itemsDiv.appendChild(createStudyItem(item))});
+    var itemsDiv = dd.querySelector('.day-items');
+    if (items.length === 0) {
+      itemsDiv.innerHTML = '<p style="color:var(--accent-color);font-size:.9em;text-align:center;padding:10px;">برنامه‌ای نیست.</p>';
+    } else {
+      items.forEach(function(item) { itemsDiv.appendChild(createStudyItem(item)); });
+    }
     div.appendChild(dd);
   });
 }
-function createStudyItem(item){
-  var div=document.createElement('div');
-  div.className='study-item'+(item.isDone?' completed':'')+(item.isCustom?' extra':'');
-  var td=item.noTime?'<span style="background:var(--accent-color);color:#fff;padding:2px 8px;border-radius:10px;font-size:.8em;">بدون زمان</span>':'<span style="color:var(--highlight-color);font-size:.85em;">⏱ مرجع: '+formatTime(item.time)+'</span>';
-  var th='';
-  if(item.timerEnabled!==false){
-    th='<span id="timer-'+item.id+'" class="timer-display">'+formatTime(item.savedTime||0)+'</span>'+
-      '<button onclick="startTimer(\''+item.id+'\')" id="start-'+item.id+'" style="background:var(--success-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;">▶ شروع</button>'+
-      '<button onclick="stopTimer(\''+item.id+'\')" id="stop-'+item.id+'" style="background:var(--danger-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;display:none;">⏸ توقف</button>'+
-      '<button onclick="saveTimer(\''+item.id+'\')" style="background:var(--primary-color);color:var(--secondary-color);border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;font-weight:bold;">💾 ذخیره</button>';
+
+function createStudyItem(item) {
+  var div = document.createElement('div');
+  div.className = 'study-item' + (item.isDone ? ' completed' : '') + (item.isCustom ? ' extra' : '');
+  var td = item.noTime
+    ? '<span style="background:var(--accent-color);color:#fff;padding:2px 8px;border-radius:10px;font-size:.8em;">بدون زمان</span>'
+    : '<span style="color:var(--highlight-color);font-size:.85em;">⏱ مرجع: ' + formatTime(item.time) + '</span>';
+  var th = '';
+  if (item.timerEnabled !== false) {
+    th = '<span id="timer-' + item.id + '" class="timer-display">' + formatTime(item.savedTime || 0) + '</span>' +
+      '<button onclick="startTimer(\'' + item.id + '\')" id="start-' + item.id + '" style="background:var(--success-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;">▶ شروع</button>' +
+      '<button onclick="stopTimer(\'' + item.id + '\')" id="stop-' + item.id + '" style="background:var(--danger-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;display:none;">⏸ توقف</button>' +
+      '<button onclick="saveTimer(\'' + item.id + '\')" style="background:var(--primary-color);color:var(--secondary-color);border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;font-weight:bold;">💾 ذخیره</button>';
   }
-  div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">'+
-    '<div><span class="subject-name" style="font-size:1.05em;font-weight:bold;color:'+(item.isDone?'var(--success-color)':'var(--text-color)')+';">'+(item.isCustom?'🎯 ':'📖 ')+item.subject+'</span><br>'+td+'</div>'+
-    '<div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" '+(item.isDone?'checked':'')+' onchange="toggleComplete(\''+item.id+'\')" style="width:22px;height:22px;accent-color:var(--success-color);"><span style="font-size:.85em;">انجام شد</span></div>'+
-    '</div>'+
-    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;">'+th+
-    '<button onclick="deleteItem(\''+item.id+'\')" style="background:var(--danger-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;margin-right:auto;">🗑</button>'+
+  div.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">' +
+    '<div><span class="subject-name" style="font-size:1.05em;font-weight:bold;color:' + (item.isDone ? 'var(--success-color)' : 'var(--text-color)') + ';">' + (item.isCustom ? '🎯 ' : '📖 ') + item.subject + '</span><br>' + td + '</div>' +
+    '<div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" ' + (item.isDone ? 'checked' : '') + ' onchange="toggleComplete(\'' + item.id + '\')" style="width:22px;height:22px;accent-color:var(--success-color);"><span style="font-size:.85em;">انجام شد</span></div>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;">' + th +
+    '<button onclick="deleteItem(\'' + item.id + '\')" style="background:var(--danger-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;margin-right:auto;">🗑</button>' +
     '</div>';
   return div;
 }
-function startTimer(id){
-  var item=findScheduleItem(id);if(!item)return;
-  if(!timers[id])timers[id]={intervalId:null,seconds:item.savedTime||0,isRunning:false};
-  var t=timers[id];if(t.isRunning)return;
-  t.isRunning=true;
-  document.getElementById('start-'+id).style.display='none';
-  document.getElementById('stop-'+id).style.display='inline-block';
-  t.intervalId=setInterval(function(){
+
+// ================== TIMERS ==================
+function startTimer(id) {
+  var item = findScheduleItem(id);
+  if (!item) return;
+  if (!timers[id]) timers[id] = { intervalId: null, seconds: item.savedTime || 0, isRunning: false };
+  var t = timers[id];
+  if (t.isRunning) return;
+  t.isRunning = true;
+  var sb = $('start-' + id); var stb = $('stop-' + id);
+  if (sb) sb.style.display = 'none';
+  if (stb) stb.style.display = 'inline-block';
+  t.intervalId = setInterval(function() {
     t.seconds++;
-    var d=document.getElementById('timer-'+id);if(d)d.textContent=formatTime(t.seconds);
+    var d = $('timer-' + id);
+    if (d) d.textContent = formatTime(t.seconds);
     updateStats();
-  },1000);
+  }, 1000);
 }
-function stopTimer(id){
-  var t=timers[id];if(!t||!t.isRunning)return;
-  clearInterval(t.intervalId);t.isRunning=false;
-  var s=document.getElementById('start-'+id);var st=document.getElementById('stop-'+id);
-  if(s)s.style.display='inline-block';if(st)st.style.display='none';
+function stopTimer(id) {
+  var t = timers[id];
+  if (!t || !t.isRunning) return;
+  clearInterval(t.intervalId);
+  t.isRunning = false;
+  var s = $('start-' + id); var st = $('stop-' + id);
+  if (s) s.style.display = 'inline-block';
+  if (st) st.style.display = 'none';
 }
-function saveTimer(id){
-  var item=findScheduleItem(id);var t=timers[id];
-  if(!item||!t)return;
-  stopTimer(id);item.savedTime=t.seconds;
-  var cur=getPersianDateShort(getSaturdayOfWeek());
-  if(!currentUserData.weeklyTimes)currentUserData.weeklyTimes={};
-  var wt=0;
-  daysOfWeek.forEach(function(day){(currentUserData.schedule[day]||[]).forEach(function(i){wt+=i.savedTime||0})});
-  currentUserData.weeklyTimes[cur]=wt;
+function saveTimer(id) {
+  var item = findScheduleItem(id);
+  var t = timers[id];
+  if (!item || !t) return;
+  stopTimer(id);
+  item.savedTime = t.seconds;
+  var cur = getPersianDateShort(getSaturdayOfWeek());
+  if (!currentUserData.weeklyTimes) currentUserData.weeklyTimes = {};
+  var wt = 0;
+  daysOfWeek.forEach(function(day) {
+    (currentUserData.schedule[day] || []).forEach(function(i) { wt += i.savedTime || 0; });
+  });
+  currentUserData.weeklyTimes[cur] = wt;
   saveUserDataLocal();
   delete timers[id];
-  renderSchedule();updateStats();renderCharts();checkMotivationalMessage();
+  renderSchedule();
+  updateStats();
+  renderCharts();
+  checkMotivationalMessage();
   alert('✅ ذخیره شد');
 }
-function stopAllTimers(){
-  Object.keys(timers).forEach(function(id){if(timers[id].isRunning)stopTimer(id)});
+function stopAllTimers() {
+  Object.keys(timers).forEach(function(id) { if (timers[id].isRunning) stopTimer(id); });
 }
-function findScheduleItem(id){
-  for(var i=0;i<daysOfWeek.length;i++){
-    var day=daysOfWeek[i];
-    var items=currentUserData.schedule[day]||[];
-    for(var j=0;j<items.length;j++){if(items[j].id===id)return items[j]}
+function findScheduleItem(id) {
+  for (var i = 0; i < daysOfWeek.length; i++) {
+    var day = daysOfWeek[i];
+    var items = currentUserData.schedule[day] || [];
+    for (var j = 0; j < items.length; j++) {
+      if (items[j].id === id) return items[j];
+    }
   }
   return null;
 }
-function toggleComplete(id){
-  var item=findScheduleItem(id);if(!item)return;
-  item.isDone=!item.isDone;
+function toggleComplete(id) {
+  var item = findScheduleItem(id);
+  if (!item) return;
+  item.isDone = !item.isDone;
   saveUserDataLocal();
-  renderSchedule();updateStats();renderCharts();checkMotivationalMessage();
+  renderSchedule();
+  updateStats();
+  renderCharts();
+  checkMotivationalMessage();
 }
-function deleteItem(id){
-  if(!confirm('حذف شود؟'))return;
-  for(var i=0;i<daysOfWeek.length;i++){
-    var day=daysOfWeek[i];
-    var items=currentUserData.schedule[day]||[];
-    for(var j=0;j<items.length;j++){
-      if(items[j].id===id){items.splice(j,1);break}
+function deleteItem(id) {
+  if (!confirm('حذف شود؟')) return;
+  for (var i = 0; i < daysOfWeek.length; i++) {
+    var day = daysOfWeek[i];
+    var items = currentUserData.schedule[day] || [];
+    for (var j = 0; j < items.length; j++) {
+      if (items[j].id === id) { items.splice(j, 1); break; }
     }
   }
   saveUserDataLocal();
-  renderSchedule();updateStats();renderCharts();
+  renderSchedule();
+  updateStats();
+  renderCharts();
 }
-function quickAddToDay(day){
-  document.getElementById('add-day').value=day;
-  document.getElementById('add-custom-title').focus();
-  document.getElementById('add-custom-title').scrollIntoView({behavior:'smooth',block:'center'});
+function quickAddToDay(day) {
+  $('add-day').value = day;
+  $('add-custom-title').focus();
+  $('add-custom-title').scrollIntoView({behavior:'smooth', block:'center'});
 }
-function addCustomScheduleItem(){
-  var day=document.getElementById('add-day').value;
-  var title=document.getElementById('add-custom-title').value.trim();
-  var h=parseInt(document.getElementById('add-hours').value)||0;
-  var m=parseInt(document.getElementById('add-minutes').value)||0;
-  var topt=document.querySelector('input[name="add-timer"]:checked').value;
-  if(!day||!title){alert('روز و عنوان لازمه');return}
-  if(!currentUserData.schedule[day])currentUserData.schedule[day]=[];
+function addCustomScheduleItem() {
+  var day = $('add-day').value;
+  var title = $('add-custom-title').value.trim();
+  var h = parseInt($('add-hours').value) || 0;
+  var m = parseInt($('add-minutes').value) || 0;
+  var topt = document.querySelector('input[name="add-timer"]:checked').value;
+  if (!day || !title) { alert('روز و عنوان لازمه'); return; }
+  if (!currentUserData.schedule[day]) currentUserData.schedule[day] = [];
   currentUserData.schedule[day].push({
-    id:Date.now().toString()+Math.random().toString(36).substr(2,5),
-    subject:title,time:(h*3600)+(m*60),savedTime:0,isDone:false,
-    noTime:(h===0&&m===0),timerEnabled:topt==='yes',isCustom:true,
-    createdAt:new Date().toISOString()
+    id: Date.now().toString() + Math.random().toString(36).substr(2,5),
+    subject: title,
+    time: (h * 3600) + (m * 60),
+    savedTime: 0, isDone: false,
+    noTime: (h === 0 && m === 0),
+    timerEnabled: topt === 'yes',
+    isCustom: true,
+    createdAt: new Date().toISOString()
   });
   saveUserDataLocal();
-  document.getElementById('add-day').value='';
-  document.getElementById('add-custom-title').value='';
-  document.getElementById('add-hours').value='';
-  document.getElementById('add-minutes').value='';
+  $('add-day').value = '';
+  $('add-custom-title').value = '';
+  $('add-hours').value = '';
+  $('add-minutes').value = '';
   alert('✅ اضافه شد');
-  renderSchedule();updateStats();renderCharts();
+  renderSchedule();
+  updateStats();
+  renderCharts();
 }
-function renderNextWeekScheduleDisplay(){
-  var div=document.getElementById('next-week-schedule-display');if(!div)return;
-  div.innerHTML='';
-  var wi=getWeekInfo();
-  document.getElementById('next-week-info').textContent='📅 '+wi.nextStartFull+' تا '+wi.nextEndFull;
-  var ns=currentUserData.nextWeekSchedule||{};
-  var has=Object.keys(ns).some(function(k){return ns[k]&&ns[k].length>0});
-  if(!has){
-    div.innerHTML='<div style="background:rgba(33,150,243,.15);border:2px dashed var(--info-color);border-radius:15px;padding:30px;text-align:center;"><p style="color:var(--highlight-color);margin-bottom:15px;">📭 هنوز برنامه‌ای تنظیم نکردی</p><button class="btn btn-info" onclick="openNextWeekPlanning()">📝 تنظیم کن</button></div>';
+
+// ================== NEXT WEEK ==================
+function renderNextWeekScheduleDisplay() {
+  var div = $('next-week-schedule-display');
+  if (!div) return;
+  div.innerHTML = '';
+  var wi = getWeekInfo();
+  $('next-week-info').textContent = '📅 ' + wi.nextStartFull + ' تا ' + wi.nextEndFull;
+  var ns = currentUserData.nextWeekSchedule || {};
+  var has = Object.keys(ns).some(function(k) { return ns[k] && ns[k].length > 0; });
+  if (!has) {
+    div.innerHTML = '<div style="background:rgba(33,150,243,.15);border:2px dashed var(--info-color);border-radius:15px;padding:30px;text-align:center;"><p style="color:var(--highlight-color);margin-bottom:15px;">📭 هنوز برنامه‌ای تنظیم نکردی</p><button class="btn btn-info" onclick="openNextWeekPlanning()">📝 تنظیم کن</button></div>';
     return;
   }
-  daysOfWeek.forEach(function(day){
-    var items=ns[day]||[];
-    if(items.length===0)return;
-    var d=document.createElement('div');
-    d.style.cssText='margin-bottom:20px;background:rgba(33,150,243,.1);border-radius:15px;padding:15px;border-right:5px solid var(--info-color);';
-    var html='<div style="color:var(--info-color);font-weight:bold;margin-bottom:10px;">📅 '+day+'</div>';
-    items.forEach(function(item){
-      var ts=item.noTime?'بدون زمان':formatTime(item.time);
-      html+='<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><div><span style="color:var(--text-color);font-weight:bold;">📖 '+item.subject+'</span><span style="color:var(--highlight-color);font-size:.85em;margin-right:10px;">⏱ '+ts+'</span></div><button onclick="removeFromNextWeek(\''+day+'\',\''+item.id+'\')" style="background:var(--danger-color);color:#fff;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.8em;">🗑</button></div>';
+  daysOfWeek.forEach(function(day) {
+    var items = ns[day] || [];
+    if (items.length === 0) return;
+    var d = document.createElement('div');
+    d.style.cssText = 'margin-bottom:20px;background:rgba(33,150,243,.1);border-radius:15px;padding:15px;border-right:5px solid var(--info-color);';
+    var html = '<div style="color:var(--info-color);font-weight:bold;margin-bottom:10px;">📅 ' + day + '</div>';
+    items.forEach(function(item) {
+      var ts = item.noTime ? 'بدون زمان' : formatTime(item.time);
+      html += '<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><div><span style="color:var(--text-color);font-weight:bold;">📖 ' + item.subject + '</span><span style="color:var(--highlight-color);font-size:.85em;margin-right:10px;">⏱ ' + ts + '</span></div><button onclick="removeFromNextWeek(\'' + day + '\',\'' + item.id + '\')" style="background:var(--danger-color);color:#fff;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.8em;">🗑</button></div>';
     });
-    d.innerHTML=html;div.appendChild(d);
+    d.innerHTML = html;
+    div.appendChild(d);
   });
 }
-function removeFromNextWeek(day,id){
-  if(!confirm('حذف شود؟'))return;
-  if(currentUserData.nextWeekSchedule[day]){
-    currentUserData.nextWeekSchedule[day]=currentUserData.nextWeekSchedule[day].filter(function(i){return i.id!==id});
+function removeFromNextWeek(day, id) {
+  if (!confirm('حذف شود؟')) return;
+  if (currentUserData.nextWeekSchedule[day]) {
+    currentUserData.nextWeekSchedule[day] = currentUserData.nextWeekSchedule[day].filter(function(i) { return i.id !== id; });
   }
   saveUserDataLocal();
   renderNextWeekScheduleDisplay();
 }
-function updateStats(){
-  if(!currentUserData)return;
-  var today=getToday();
-  var tt=(currentUserData.schedule[today]||[]).reduce(function(s,i){return s+(i.savedTime||0)},0);
-  var te=document.getElementById('today-total');if(te)te.textContent=formatTime(tt);
-  var wt=0;
-  daysOfWeek.forEach(function(day){(currentUserData.schedule[day]||[]).forEach(function(i){wt+=i.savedTime||0})});
-  var we=document.getElementById('week-total');if(we)we.textContent=formatTime(wt);
-  var tp=0,tc=0;
-  daysOfWeek.forEach(function(day){(currentUserData.schedule[day]||[]).forEach(function(i){tp+=i.time;if(i.isDone)tc+=i.time})});
-  var prog=tp>0?Math.round((tc/tp)*100):0;
-  var pe=document.getElementById('week-progress');if(pe)pe.textContent=prog+'%';
+
+// ================== STATS ==================
+function updateStats() {
+  if (!currentUserData) return;
+  var today = getToday();
+  var tt = (currentUserData.schedule[today] || []).reduce(function(s,i) { return s + (i.savedTime || 0); }, 0);
+  var te = $('today-total'); if (te) te.textContent = formatTime(tt);
+  var wt = 0;
+  daysOfWeek.forEach(function(day) {
+    (currentUserData.schedule[day] || []).forEach(function(i) { wt += i.savedTime || 0; });
+  });
+  var we = $('week-total'); if (we) we.textContent = formatTime(wt);
+  var tp = 0, tc = 0;
+  daysOfWeek.forEach(function(day) {
+    (currentUserData.schedule[day] || []).forEach(function(i) {
+      tp += i.time;
+      if (i.isDone) tc += i.time;
+    });
+  });
+  var prog = tp > 0 ? Math.round((tc/tp) * 100) : 0;
+  var pe = $('week-progress'); if (pe) pe.textContent = prog + '%';
 }
-function renderStatsPage(){
+function renderStatsPage() {
   updateStats();
-  var total=0,weeks=0;
-  (currentUserData.weeklyHistory||[]).forEach(function(w){total+=w.totalTime||0;weeks++});
-  var wk=0;
-  daysOfWeek.forEach(function(day){(currentUserData.schedule[day]||[]).forEach(function(i){wk+=i.savedTime||0})});
-  total+=wk;weeks+=1;
-  document.getElementById('total-all-time').textContent=formatTime(total);
-  document.getElementById('avg-daily').textContent=formatTime(weeks>0?Math.round(total/(weeks*7)):0);
-  document.getElementById('weeks-count').textContent=weeks;
+  var total = 0, weeks = 0;
+  (currentUserData.weeklyHistory || []).forEach(function(w) { total += w.totalTime || 0; weeks++; });
+  var wk = 0;
+  daysOfWeek.forEach(function(day) {
+    (currentUserData.schedule[day] || []).forEach(function(i) { wk += i.savedTime || 0; });
+  });
+  total += wk;
+  weeks += 1;
+  $('total-all-time').textContent = formatTime(total);
+  $('avg-daily').textContent = formatTime(weeks > 0 ? Math.round(total/(weeks*7)) : 0);
+  $('weeks-count').textContent = weeks;
   renderStatsCharts();
   renderWeeklyArchive();
 }
-function renderWeeklyArchive(){
-  var div=document.getElementById('weekly-archive');
-  var history=currentUserData.weeklyHistory||[];
-  if(history.length===0){div.innerHTML='<p style="color:var(--accent-color);text-align:center;padding:15px;">آرشیوی نیست.</p>';return}
-  var html='';
-  history.slice().reverse().forEach(function(w){
-    var h=Math.floor(w.totalTime/3600),m=Math.floor((w.totalTime%3600)/60);
-    html+='<div style="background:rgba(255,255,255,.08);border-radius:12px;padding:15px;margin-bottom:12px;border-right:4px solid '+(w.progress>=67?'var(--success-color)':(w.progress>=33?'var(--primary-color)':'var(--accent-color)'))+';"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><div><strong style="color:var(--primary-color);">📅 '+w.weekStart+' تا '+w.weekEnd+'</strong><br><small style="color:var(--highlight-color);">⏱ '+h+'س '+m+'د</small><br><small>📊 '+w.progress+'%</small></div><div style="font-size:2em;">'+(w.progress>=67?'🏆':(w.progress>=33?'⭐':'📚'))+'</div></div></div>';
+function renderWeeklyArchive() {
+  var div = $('weekly-archive');
+  var history = currentUserData.weeklyHistory || [];
+  if (history.length === 0) {
+    div.innerHTML = '<p style="color:var(--accent-color);text-align:center;padding:15px;">آرشیوی نیست.</p>';
+    return;
+  }
+  var html = '';
+  history.slice().reverse().forEach(function(w) {
+    var h = Math.floor(w.totalTime/3600), m = Math.floor((w.totalTime%3600)/60);
+    html += '<div style="background:rgba(255,255,255,.08);border-radius:12px;padding:15px;margin-bottom:12px;border-right:4px solid ' + (w.progress>=67?'var(--success-color)':(w.progress>=33?'var(--primary-color)':'var(--accent-color)')) + ';"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><div><strong style="color:var(--primary-color);">📅 ' + w.weekStart + ' تا ' + w.weekEnd + '</strong><br><small style="color:var(--highlight-color);">⏱ ' + h + 'س ' + m + 'د</small><br><small>📊 ' + w.progress + '%</small></div><div style="font-size:2em;">' + (w.progress>=67?'🏆':(w.progress>=33?'⭐':'📚')) + '</div></div></div>';
   });
-  div.innerHTML=html;
+  div.innerHTML = html;
 }
-function renderLessonsPage(){
-  var div=document.getElementById('lessons-list');
-  var html='<h3 style="color:var(--primary-color);margin:20px 0 15px;">📚 درس‌های هفته:</h3>';
-  var sm={};
-  daysOfWeek.forEach(function(day){
-    (currentUserData.schedule[day]||[]).forEach(function(item){
-      if(!item.isCustom){
-        if(!sm[item.subject])sm[item.subject]={days:[],planned:0,saved:0};
+function renderLessonsPage() {
+  var div = $('lessons-list');
+  var html = '<h3 style="color:var(--primary-color);margin:20px 0 15px;">📚 درس‌های هفته:</h3>';
+  var sm = {};
+  daysOfWeek.forEach(function(day) {
+    (currentUserData.schedule[day] || []).forEach(function(item) {
+      if (!item.isCustom) {
+        if (!sm[item.subject]) sm[item.subject] = {days:[], planned:0, saved:0};
         sm[item.subject].days.push(day);
-        sm[item.subject].planned+=item.time;
-        sm[item.subject].saved+=item.savedTime||0;
+        sm[item.subject].planned += item.time;
+        sm[item.subject].saved += item.savedTime || 0;
       }
     });
   });
-  if(Object.keys(sm).length>0){
-    html+='<div style="background:rgba(255,255,255,.08);border-radius:12px;padding:15px;">';
-    Object.keys(sm).forEach(function(s){
-      html+='<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--primary-color);">📖 '+s+'</strong><div style="color:var(--highlight-color);font-size:.9em;">📅 '+sm[s].days.join('، ')+'</div><div style="font-size:.85em;">⏱ مرجع: '+formatTime(sm[s].planned)+' | مطالعه: '+formatTime(sm[s].saved)+'</div></div>';
+  if (Object.keys(sm).length > 0) {
+    html += '<div style="background:rgba(255,255,255,.08);border-radius:12px;padding:15px;">';
+    Object.keys(sm).forEach(function(s) {
+      html += '<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--primary-color);">📖 ' + s + '</strong><div style="color:var(--highlight-color);font-size:.9em;">📅 ' + sm[s].days.join('، ') + '</div><div style="font-size:.85em;">⏱ مرجع: ' + formatTime(sm[s].planned) + ' | مطالعه: ' + formatTime(sm[s].saved) + '</div></div>';
     });
-    html+='</div>';
-  }else html+='<p style="color:var(--accent-color);text-align:center;padding:15px;">درسی انتخاب نکردی</p>';
-  div.innerHTML=html;
+    html += '</div>';
+  } else {
+    html += '<p style="color:var(--accent-color);text-align:center;padding:15px;">درسی انتخاب نکردی</p>';
+  }
+  div.innerHTML = html;
 }
-function openChangePassword(){
-  var cur=prompt('رمز فعلی:');if(!cur)return;
-  if(cur!==currentUser.password){alert('رمز فعلی نادرست');return}
-  var np=prompt('رمز جدید:');if(!np||np.length<4){alert('حداقل ۴ کاراکتر');return}
-  var cf=prompt('تکرار:');if(np!==cf){alert('مطابقت ندارد');return}
-  jsonbinGet().then(function(data){
-    var users=data.users||[];
-    for(var i=0;i<users.length;i++){
-      if(users[i].id===currentUser.id){
-        users[i].password=np;
-        break;
-      }
+
+// ================== SETTINGS ==================
+function openChangePassword() {
+  var cur = prompt('رمز فعلی:');
+  if (!cur) return;
+  if (cur !== currentUser.password) { alert('رمز فعلی نادرست'); return; }
+  var np = prompt('رمز جدید:');
+  if (!np || np.length < 4) { alert('حداقل ۴ کاراکتر'); return; }
+  var cf = prompt('تکرار:');
+  if (np !== cf) { alert('مطابقت ندارد'); return; }
+  jsonbinGet().then(function(data) {
+    var users = data.users || [];
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].id === currentUser.id) { users[i].password = np; break; }
     }
-    data.users=users;
+    data.users = users;
     return jsonbinUpdate(data);
-  }).then(function(){
-    currentUser.password=np;
+  }).then(function() {
+    currentUser.password = np;
     alert('✅ تغییر کرد');
-  }).catch(function(e){alert('خطا: '+e.message)});
+  }).catch(function(e) { alert('خطا: ' + e.message); });
 }
-function downloadBackup(){
-  var data={version:'4.0',user:currentUser,userData:currentUserData,exportedAt:new Date().toISOString()};
-  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');a.href=url;
-  a.download='backup-'+currentUser.username+'-'+getPersianDate().replace(/\//g,'-')+'.json';
-  a.click();URL.revokeObjectURL(url);
+function downloadBackup() {
+  var data = {version:'4.0', user:currentUser, userData:currentUserData, exportedAt:new Date().toISOString()};
+  var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'backup-' + currentUser.username + '-' + getPersianDate().replace(/\//g,'-') + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
 }
-function restoreBackup(event){
-  var file=event.target.files[0];if(!file)return;
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var backup=JSON.parse(e.target.result);
-      if(!confirm('همه داده‌های فعلی جایگزین میشن. مطمئنی؟'))return;
-      currentUserData=backup.userData;
+function restoreBackup(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var backup = JSON.parse(e.target.result);
+      if (!confirm('همه داده‌های فعلی جایگزین میشن. مطمئنی؟')) return;
+      currentUserData = backup.userData;
       saveUserDataLocal();
       alert('✅ بازیابی شد');
       goToPage('home');
-    }catch(err){alert('خطا: '+err.message)}
+    } catch(err) { alert('خطا: ' + err.message); }
   };
   reader.readAsText(file);
 }
-function setTheme(theme){currentUserData.theme=theme;saveUserDataLocal();applyTheme(theme)}
-function applyTheme(theme){
-  if(theme==='auto'){var h=new Date().getHours();theme=(h>=19||h<6)?'dark':'light'}
-  document.body.classList.toggle('dark-mode',theme==='dark');
+function setTheme(theme) {
+  currentUserData.theme = theme;
+  saveUserDataLocal();
+  applyTheme(theme);
 }
-function installPWA(){
-  if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null})}
-  else alert('📱 در اندروید: منو → Add to Home Screen\nدر iOS: Share → Add to Home Screen');
+function applyTheme(theme) {
+  if (theme === 'auto') {
+    var h = new Date().getHours();
+    theme = (h >= 19 || h < 6) ? 'dark' : 'light';
+  }
+  document.body.classList.toggle('dark-mode', theme === 'dark');
 }
-function deleteAccount(){
-  if(!confirm('⚠️ همه داده‌ها پاک میشن!'))return;
-  if(!confirm('مطمئنی؟'))return;
-  jsonbinGet().then(function(data){
-    var users=data.users||[];
-    var archived=data.archived||[];
-    var idx=-1;
-    for(var i=0;i<users.length;i++){
-      if(users[i].id===currentUser.id){idx=i;break}
-    }
-    if(idx===-1)throw new Error('کاربر پیدا نشد');
-    var user=users.splice(idx,1)[0];
-    user.archivedAt=new Date().toISOString();
-    user.deletedBySelf=true;
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function() { deferredPrompt = null; });
+  } else {
+    alert('📱 در اندروید: منو → Add to Home Screen\nدر iOS: Share → Add to Home Screen');
+  }
+}
+function deleteAccount() {
+  if (!confirm('⚠️ همه داده‌ها پاک میشن!')) return;
+  if (!confirm('مطمئنی؟')) return;
+  jsonbinGet().then(function(data) {
+    var users = data.users || [];
+    var archived = data.archived || [];
+    var idx = -1;
+    for (var i = 0; i < users.length; i++) if (users[i].id === currentUser.id) { idx = i; break; }
+    if (idx === -1) throw new Error('کاربر پیدا نشد');
+    var user = users.splice(idx, 1)[0];
+    user.archivedAt = new Date().toISOString();
+    user.deletedBySelf = true;
     archived.push(user);
-    data.users=users;
-    data.archived=archived;
+    data.users = users;
+    data.archived = archived;
     return jsonbinUpdate(data);
-  }).then(function(){
-    localStorage.removeItem('userData_'+currentUser.id);
+  }).then(function() {
+    localStorage.removeItem('userData_' + currentUser.id);
     alert('حساب حذف شد');
     logout();
-  }).catch(function(e){alert('خطا: '+e.message)});
+  }).catch(function(e) { alert('خطا: ' + e.message); });
 }
-function renderSettingsPage(){
-  var el=document.getElementById('profile-info');
-  var gn={'7':'هفتم','8':'هشتم','9':'نهم','10':'دهم','11':'یازدهم','12':'دوازدهم'}[currentUser.grade]||currentUser.grade;
-  el.innerHTML='<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--highlight-color);">👤:</strong> '+currentUser.username+'</div><div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--highlight-color);">📱:</strong> '+currentUser.phone+'</div><div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--highlight-color);">📚:</strong> '+gn+'</div><div style="padding:10px 0;"><strong style="color:var(--highlight-color);">📅:</strong> '+getPersianDate(new Date(currentUser.createdAt))+'</div>';
-  var th=currentUserData.theme||'light';
-  document.querySelectorAll('input[name="theme"]').forEach(function(r){r.checked=r.value===th});
+function renderSettingsPage() {
+  var el = $('profile-info');
+  var gn = {'7':'هفتم','8':'هشتم','9':'نهم','10':'دهم','11':'یازدهم','12':'دوازدهم'}[currentUser.grade] || currentUser.grade;
+  el.innerHTML = '<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--highlight-color);">👤:</strong> ' + currentUser.username + '</div><div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--highlight-color);">📱:</strong> ' + currentUser.phone + '</div><div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--highlight-color);">📚:</strong> ' + gn + '</div><div style="padding:10px 0;"><strong style="color:var(--highlight-color);">📅:</strong> ' + getPersianDate(new Date(currentUser.createdAt)) + '</div>';
+  var th = currentUserData.theme || 'light';
+  document.querySelectorAll('input[name="theme"]').forEach(function(r) { r.checked = r.value === th; });
 }
 </script>
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 // ================== CHARTS ==================
-function getProgressData(){
-  var data=[];
-  daysOfWeek.forEach(function(day){
-    var items=currentUserData.schedule[day]||[];
-    var t=0,d=0;
-    items.forEach(function(i){t+=i.time;if(i.isDone)d+=i.time});
-    data.push(t>0?Math.round((d/t)*100):0);
+function getProgressData() {
+  var data = [];
+  daysOfWeek.forEach(function(day) {
+    var items = currentUserData.schedule[day] || [];
+    var t = 0, d = 0;
+    items.forEach(function(i) { t += i.time; if (i.isDone) d += i.time; });
+    data.push(t > 0 ? Math.round((d/t) * 100) : 0);
   });
-  return{labels:daysOfWeek,data:data};
+  return { labels: daysOfWeek, data: data };
 }
-function getTimeData(){
-  var labels=[],data=[];
-  var wt=currentUserData.weeklyTimes||{};
-  var cur=getPersianDateShort(getSaturdayOfWeek());
-  var w=0;
-  daysOfWeek.forEach(function(day){(currentUserData.schedule[day]||[]).forEach(function(i){w+=i.savedTime||0})});
-  var merged=Object.assign({},wt);
-  merged[cur]=w;
-  Object.keys(merged).sort().forEach(function(k){labels.push(k);data.push(Math.round(merged[k]/60))});
-  if(labels.length===0){labels.push(getPersianDateShort());data.push(0)}
-  return{labels:labels,data:data};
+function getTimeData() {
+  var labels = [], data = [];
+  var wt = currentUserData.weeklyTimes || {};
+  var cur = getPersianDateShort(getSaturdayOfWeek());
+  var w = 0;
+  daysOfWeek.forEach(function(day) {
+    (currentUserData.schedule[day] || []).forEach(function(i) { w += i.savedTime || 0; });
+  });
+  var merged = Object.assign({}, wt);
+  merged[cur] = w;
+  Object.keys(merged).sort().forEach(function(k) {
+    labels.push(k);
+    data.push(Math.round(merged[k] / 60));
+  });
+  if (labels.length === 0) {
+    labels.push(getPersianDateShort());
+    data.push(0);
+  }
+  return { labels: labels, data: data };
 }
-function renderCharts(){
-  var pc=document.getElementById('progressChart');
-  if(pc){
-    if(progressChart)progressChart.destroy();
-    var d=getProgressData();
-    progressChart=new Chart(pc.getContext('2d'),{
-      type:'line',
-      data:{labels:d.labels,datasets:[{label:'پیشرفت',data:d.data,borderColor:'rgba(255,215,0,1)',backgroundColor:'rgba(255,215,0,.2)',fill:true,tension:.4,pointBackgroundColor:'rgba(255,215,0,1)',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:4}]},
-      options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,max:100,ticks:{color:'white',callback:function(v){return v+'%'},font:{size:9}},grid:{color:'rgba(255,255,255,.1)'}},x:{ticks:{color:'white',font:{size:9}},grid:{display:false}}},plugins:{legend:{display:false}}}
+function renderCharts() {
+  var pc = $('progressChart');
+  if (pc) {
+    if (progressChart) progressChart.destroy();
+    var d = getProgressData();
+    progressChart = new Chart(pc.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: d.labels,
+        datasets: [{
+          label: 'پیشرفت',
+          data: d.data,
+          borderColor: 'rgba(255,215,0,1)',
+          backgroundColor: 'rgba(255,215,0,.2)',
+          fill: true, tension: 0.4,
+          pointBackgroundColor: 'rgba(255,215,0,1)',
+          pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, max: 100, ticks: { color: 'white', callback: function(v) { return v + '%'; }, font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.1)' } },
+          x: { ticks: { color: 'white', font: { size: 9 } }, grid: { display: false } }
+        },
+        plugins: { legend: { display: false } }
+      }
     });
   }
-  var tc=document.getElementById('timeChart');
-  if(tc){
-    if(timeChart)timeChart.destroy();
-    var d2=getTimeData();
-    timeChart=new Chart(tc.getContext('2d'),{
-      type:'line',
-      data:{labels:d2.labels,datasets:[{label:'زمان',data:d2.data,borderColor:'rgba(255,215,0,1)',backgroundColor:'rgba(255,215,0,.2)',fill:true,tension:.4,pointBackgroundColor:'rgba(255,215,0,1)',pointBorderColor:'#fff',pointBorderWidth:2,pointRadius:4}]},
-      options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{color:'white',callback:function(v){return v+'د'},font:{size:9}},grid:{color:'rgba(255,255,255,.1)'}},x:{ticks:{color:'white',font:{size:9}},grid:{display:false}}},plugins:{legend:{display:false}}}
+  var tc = $('timeChart');
+  if (tc) {
+    if (timeChart) timeChart.destroy();
+    var d2 = getTimeData();
+    timeChart = new Chart(tc.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: d2.labels,
+        datasets: [{
+          label: 'زمان',
+          data: d2.data,
+          borderColor: 'rgba(255,215,0,1)',
+          backgroundColor: 'rgba(255,215,0,.2)',
+          fill: true, tension: 0.4,
+          pointBackgroundColor: 'rgba(255,215,0,1)',
+          pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, ticks: { color: 'white', callback: function(v) { return v + 'د'; }, font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.1)' } },
+          x: { ticks: { color: 'white', font: { size: 9 } }, grid: { display: false } }
+        },
+        plugins: { legend: { display: false } }
+      }
     });
   }
 }
-function renderStatsCharts(){
-  var pc=document.getElementById('statsProgressChart');
-  if(pc){
-    if(statsProgressChart)statsProgressChart.destroy();
-    var d=getProgressData();
-    statsProgressChart=new Chart(pc.getContext('2d'),{
-      type:'line',
-      data:{labels:d.labels,datasets:[{label:'پیشرفت',data:d.data,borderColor:'rgba(255,215,0,1)',backgroundColor:'rgba(255,215,0,.2)',fill:true,tension:.4,pointRadius:4}]},
-      options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,max:100,ticks:{color:'white',font:{size:9}},grid:{color:'rgba(255,255,255,.1)'}},x:{ticks:{color:'white',font:{size:9}},grid:{display:false}}},plugins:{legend:{display:false}}}
+function renderStatsCharts() {
+  var pc = $('statsProgressChart');
+  if (pc) {
+    if (statsProgressChart) statsProgressChart.destroy();
+    var d = getProgressData();
+    statsProgressChart = new Chart(pc.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: d.labels,
+        datasets: [{
+          label: 'پیشرفت',
+          data: d.data,
+          borderColor: 'rgba(255,215,0,1)',
+          backgroundColor: 'rgba(255,215,0,.2)',
+          fill: true, tension: 0.4, pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, max: 100, ticks: { color: 'white', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.1)' } },
+          x: { ticks: { color: 'white', font: { size: 9 } }, grid: { display: false } }
+        },
+        plugins: { legend: { display: false } }
+      }
     });
   }
-  var tc=document.getElementById('statsTimeChart');
-  if(tc){
-    if(statsTimeChart)statsTimeChart.destroy();
-    var d2=getTimeData();
-    statsTimeChart=new Chart(tc.getContext('2d'),{
-      type:'line',
-      data:{labels:d2.labels,datasets:[{label:'زمان',data:d2.data,borderColor:'rgba(255,215,0,1)',backgroundColor:'rgba(255,215,0,.2)',fill:true,tension:.4,pointRadius:4}]},
-      options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,ticks:{color:'white',font:{size:9}},grid:{color:'rgba(255,255,255,.1)'}},x:{ticks:{color:'white',font:{size:9}},grid:{display:false}}},plugins:{legend:{display:false}}}
+  var tc = $('statsTimeChart');
+  if (tc) {
+    if (statsTimeChart) statsTimeChart.destroy();
+    var d2 = getTimeData();
+    statsTimeChart = new Chart(tc.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: d2.labels,
+        datasets: [{
+          label: 'زمان',
+          data: d2.data,
+          borderColor: 'rgba(255,215,0,1)',
+          backgroundColor: 'rgba(255,215,0,.2)',
+          fill: true, tension: 0.4, pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, ticks: { color: 'white', font: { size: 9 } }, grid: { color: 'rgba(255,255,255,.1)' } },
+          x: { ticks: { color: 'white', font: { size: 9 } }, grid: { display: false } }
+        },
+        plugins: { legend: { display: false } }
+      }
     });
   }
 }
-function checkMotivationalMessage(){
-  var today=getToday();
-  var items=currentUserData.schedule[today]||[];
-  var t=0,d=0;
-  items.forEach(function(i){t+=i.time;if(i.isDone)d+=i.time});
-  var p=t>0?(d/t):0;
-  var el=document.getElementById('motivational-message');
-  if(el)el.classList.toggle('hidden',p<.67);
+function checkMotivationalMessage() {
+  var today = getToday();
+  var items = currentUserData.schedule[today] || [];
+  var t = 0, d = 0;
+  items.forEach(function(i) { t += i.time; if (i.isDone) d += i.time; });
+  var p = t > 0 ? (d/t) : 0;
+  var el = $('motivational-message');
+  if (el) el.classList.toggle('hidden', p < 0.67);
 }
 
 // ================== PWA ==================
-if('serviceWorker' in navigator){
-  window.addEventListener('load',function(){
-    navigator.serviceWorker.register('sw.js').then(function(r){console.log('SW:',r.scope)}).catch(function(e){console.log('SW error:',e)});
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').then(function(r) { console.log('SW:', r.scope); }).catch(function(e) { console.log('SW error:', e); });
   });
 }
-window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e});
-function updateOnlineStatus(){
-  var b=document.getElementById('offline-banner');
-  if(b)b.classList.toggle('show',!navigator.onLine);
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+function updateOnlineStatus() {
+  var b = $('offline-banner');
+  if (b) b.classList.toggle('show', !navigator.onLine);
 }
-window.addEventListener('online',updateOnlineStatus);
-window.addEventListener('offline',updateOnlineStatus);
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
 
 // ================== INIT ==================
-document.addEventListener('DOMContentLoaded',function(){
-  console.log('✅ برنامه‌ریزی تحصیلی v4.0 (jsonbin.io)');
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('✅ v4.0 - jsonbin.io');
   updateOnlineStatus();
   showSection('login');
   applyTheme('light');
-  // اگه کاربر قبلاً وارد شده بود
   var savedUser = localStorage.getItem('myUsername');
   var savedPass = localStorage.getItem('myPassword');
-  if(savedUser && savedPass){
-    document.getElementById('login-username').value = savedUser;
-    document.getElementById('login-password').value = savedPass;
+  if (savedUser && savedPass) {
+    var uEl = $('login-username'); if (uEl) uEl.value = savedUser;
+    var pEl = $('login-password'); if (pEl) pEl.value = savedPass;
   }
 });
-window.addEventListener('beforeunload',function(){stopAllTimers();saveUserDataLocal()});
+window.addEventListener('beforeunload', function() {
+  stopAllTimers();
+  saveUserDataLocal();
+});
 
 // ================== EXPOSE TO WINDOW ==================
-window.signupStudent=signupStudent;
-window.loginStudent=loginStudent;
-window.activateAccount=activateAccount;
-window.sendOTP=sendOTP;
-window.verifyOTP=verifyOTP;
-window.showEmergencyLogin=showEmergencyLogin;
-window.emergencyLogin=emergencyLogin;
-window.logout=logout;
-window.showSection=showSection;
-window.goToPage=goToPage;
-window.openSidebar=openSidebar;
-window.closeSidebar=closeSidebar;
-window.loadWelcomeScreen=loadWelcomeScreen;
-window.startSubjectSelection=startSubjectSelection;
-window.checkFridayReminder=checkFridayReminder;
-window.openNextWeekPlanning=openNextWeekPlanning;
-window.openSubjectDrawer=openSubjectDrawer;
-window.changeTime=changeTime;
-window.toggleTimeOption=toggleTimeOption;
-window.cancelDrawer=cancelDrawer;
-window.confirmDrawer=confirmDrawer;
-window.submitFinalPlan=submitFinalPlan;
-window.renderSchedule=renderSchedule;
-window.startTimer=startTimer;
-window.stopTimer=stopTimer;
-window.saveTimer=saveTimer;
-window.toggleComplete=toggleComplete;
-window.deleteItem=deleteItem;
-window.quickAddToDay=quickAddToDay;
-window.addCustomScheduleItem=addCustomScheduleItem;
-window.removeFromNextWeek=removeFromNextWeek;
-window.openChangePassword=openChangePassword;
-window.downloadBackup=downloadBackup;
-window.restoreBackup=restoreBackup;
-window.setTheme=setTheme;
-window.installPWA=installPWA;
-window.deleteAccount=deleteAccount;
-window.switchAdminTab=switchAdminTab;
-window.refreshUsers=refreshUsers;
-window.searchUsers=searchUsers;
-window.copyCode=copyCode;
-window.generateNewCode=generateNewCode;
-window.archiveUser=archiveUser;
-window.restoreUser=restoreUser;
-window.renderCharts=renderCharts;
-window.renderStatsCharts=renderStatsCharts;
-window.renderStatsPage=renderStatsPage;
-window.renderWeeklyArchive=renderWeeklyArchive;
-window.renderLessonsPage=renderLessonsPage;
-window.updateStats=updateStats;
-window.checkMotivationalMessage=checkMotivationalMessage;
-window.applyTheme=applyTheme;
-window.findScheduleItem=findScheduleItem;
-window.updateOnlineStatus=updateOnlineStatus;
+window.signupStudent = signupStudent;
+window.loginStudent = loginStudent;
+window.activateAccount = activateAccount;
+window.sendOTP = sendOTP;
+window.verifyOTP = verifyOTP;
+window.showEmergencyLogin = showEmergencyLogin;
+window.emergencyLogin = emergencyLogin;
+window.logout = logout;
+window.showSection = showSection;
+window.goToPage = goToPage;
+window.openSidebar = openSidebar;
+window.closeSidebar = closeSidebar;
+window.loadWelcomeScreen = loadWelcomeScreen;
+window.startSubjectSelection = startSubjectSelection;
+window.checkFridayReminder = checkFridayReminder;
+window.openNextWeekPlanning = openNextWeekPlanning;
+window.openSubjectDrawer = openSubjectDrawer;
+window.changeTime = changeTime;
+window.toggleTimeOption = toggleTimeOption;
+window.cancelDrawer = cancelDrawer;
+window.confirmDrawer = confirmDrawer;
+window.submitFinalPlan = submitFinalPlan;
+window.renderSchedule = renderSchedule;
+window.startTimer = startTimer;
+window.stopTimer = stopTimer;
+window.saveTimer = saveTimer;
+window.toggleComplete = toggleComplete;
+window.deleteItem = deleteItem;
+window.quickAddToDay = quickAddToDay;
+window.addCustomScheduleItem = addCustomScheduleItem;
+window.removeFromNextWeek = removeFromNextWeek;
+window.openChangePassword = openChangePassword;
+window.downloadBackup = downloadBackup;
+window.restoreBackup = restoreBackup;
+window.setTheme = setTheme;
+window.installPWA = installPWA;
+window.deleteAccount = deleteAccount;
+window.switchAdminTab = switchAdminTab;
+window.refreshUsers = refreshUsers;
+window.searchUsers = searchUsers;
+window.copyCode = copyCode;
+window.generateNewCode = generateNewCode;
+window.archiveUser = archiveUser;
+window.restoreUser = restoreUser;
+window.renderCharts = renderCharts;
+window.renderStatsCharts = renderStatsCharts;
+window.renderStatsPage = renderStatsPage;
+window.renderWeeklyArchive = renderWeeklyArchive;
+window.renderLessonsPage = renderLessonsPage;
+window.updateStats = updateStats;
+window.checkMotivationalMessage = checkMotivationalMessage;
+window.applyTheme = applyTheme;
+window.findScheduleItem = findScheduleItem;
+window.updateOnlineStatus = updateOnlineStatus;
 </script>
 </body>
 </html>
-
