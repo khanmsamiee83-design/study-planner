@@ -300,7 +300,6 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 <button class="btn btn-danger btn-full" onclick="deleteAccount()">🗑 حذف حساب</button></div>
 </div>
 </div>
-
 <script>
 // ================== CONFIG ==================
 var CONFIG = {
@@ -820,9 +819,6 @@ function restoreUser(userId) {
     .catch(function(e) { alert('خطا: ' + e.message); });
 }
 </script>
-
-
-
 <script>
 // ================== WELCOME ==================
 function loadWelcomeScreen() {
@@ -1446,9 +1442,8 @@ function renderSettingsPage() {
   var th = currentUserData.theme || 'light';
   document.querySelectorAll('input[name="theme"]').forEach(function(r) { r.checked = r.value === th; });
 }
-</script>
-
-
+  </script>
+  
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 // ================== CHARTS ==================
@@ -1697,3 +1692,4 @@ window.updateOnlineStatus = updateOnlineStatus;
 </script>
 </body>
 </html>
+  
