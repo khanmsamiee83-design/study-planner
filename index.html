@@ -437,24 +437,23 @@ function closeSidebar() { $('sidebar').classList.remove('open'); $('sidebar-over
 
 // ================== JSONBIN API ==================
 function jsonbinGet() {
-  return fetch('https://api.jsonbin.io/v3/b/' + CONFIG.JSONBIN_BIN + '/latest', {
-    method: 'GET',
-    headers: { 'X-Access-Key': CONFIG.JSONBIN_KEY, 'X-Bin-Meta': 'false' }
+  return fetch('https://study-planner-api-mocha.vercel.app/api/data', {
+    method: 'GET'
   }).then(function(r) {
     if (!r.ok) throw new Error('خطا در خواندن داده');
     return r.json();
   });
 }
 function jsonbinUpdate(data) {
-  return fetch('https://api.jsonbin.io/v3/b/' + CONFIG.JSONBIN_BIN, {
+  return fetch('https://study-planner-api-mocha.vercel.app/api/data', {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-Access-Key': CONFIG.JSONBIN_KEY },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   }).then(function(r) {
     if (!r.ok) throw new Error('خطا در ذخیره داده');
     return r.json();
   });
-}
+  }
 
 // ================== EMAILJS ==================
 function sendEmailOTP(toEmail, passcode) {
