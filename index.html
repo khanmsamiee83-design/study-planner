@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ت<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -872,7 +872,117 @@ function renderSubjectSelectionGrid() {
     card.onclick = function() { openSubjectDrawer(subject); };
     grid.appendChild(card);
   });
+  // کارت "سایر"
+  var otherCard = document.createElement('div');
+  otherCard.className = 'subject-card';
+  otherCard.style.borderColor = 'var(--info-color)';
+  otherCard.innerHTML = '<div style="font-size:2em;margin-bottom:5px;">➕</div><div style="font-size:1.1em;font-weight:bold;color:var(--info-color);">سایر</div><div style="font-size:.8em;color:var(--highlight-color);margin-top:5px;">درس دلخواه</div>';
+  otherCard.onclick = function() { openCustomSubjectDrawer(); };
+  grid.appendChild(otherCard);
+  }
+function openCustomSubjectDrawer() {
+  var old = $('subject-drawer');
+  if (old) old.remove();
+  var drawer = document.createElement('div');
+  drawer.className = 'drawer-overlay';
+  drawer.id = 'subject-drawer';
+  var sh = 1;
+  var sm = 0;
+  drawer.innerHTML = '<div class="drawer-content" onclick="event.stopPropagation()">' +
+    '<h3 style="color:var(--info-color);text-align:center;margin-bottom:20px;">➕ درس دلخواه</h3>' +
+    '<label style="color:var(--highlight-color);margin-bottom:10px;font-weight:bold;">اسم درس:</label>' +
+    '<input type="text" id="custom-subject-name" placeholder="مثلاً: کلاس زبان، ریاضی تقویتی، ..." style="width:100%;padding:12px;border:2px solid var(--accent-color);border-radius:10px;background:rgba(255,255,255,.95);color:var(--secondary-color);font-size:16px;font-family:inherit;margin-bottom:15px;">' +
+    '<label style="color:var(--highlight-color);margin-bottom:10px;font-weight:bold;">📅 روزها:</label>' +
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">' +
+    daysOfWeek.map(function(d) {
+      return '<label class="day-checkbox-label"><input type="checkbox" value="' + d + '" class="day-cb-custom" style="width:20px;height:20px;accent-color:var(--primary-color);"><span>' + d + '</span></label>';
+    }).join('') +
+    '</div>' +
+    '<label style="color:var(--highlight-color);margin:20px 0 10px;font-weight:bold;">⏱ زمان:</label>' +
+    '<div id="time-picker-section-custom">' +
+    '<div style="display:flex;justify-content:center;gap:20px;margin:15px 0;padding:15px;background:rgba(0,0,0,.3);border-radius:12px;">' +
+    '<div style="display:flex;flex-direction:column;align-items:center;gap:5px;">' +
+    '<label style="color:var(--highlight-color);font-size:.9em;">ساعت</label>' +
+    '<button type="button" onclick="changeTimeCustom(\'hours\',1)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▲</button>' +
+    '<div class="time-wheel-display" id="hours-display-custom">' + String(sh).padStart(2,'0') + '</div>' +
+    '<button type="button" onclick="changeTimeCustom(\'hours\',-1)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▼</button>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;font-size:2em;color:var(--primary-color);">:</div>' +
+    '<div style="display:flex;flex-direction:column;align-items:center;gap:5px;">' +
+    '<label style="color:var(--highlight-color);font-size:.9em;">دقیقه</label>' +
+    '<button type="button" onclick="changeTimeCustom(\'minutes\',5)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▲</button>' +
+    '<div class="time-wheel-display" id="minutes-display-custom">' + String(sm).padStart(2,'0') + '</div>' +
+    '<button type="button" onclick="changeTimeCustom(\'minutes\',-5)" style="background:var(--accent-color);color:#fff;border:none;width:35px;height:35px;border-radius:50%;font-size:1.1em;cursor:pointer;">▼</button>' +
+    '</div></div></div>' +
+    '<div style="display:flex;justify-content:center;gap:20px;margin:15px 0;padding:12px;background:rgba(255,255,255,.08);border-radius:10px;">' +
+    '<label><input type="radio" name="time-option-custom" value="hasTime" checked onchange="toggleTimeOptionCustom()"> با زمان</label>' +
+    '<label><input type="radio" name="time-option-custom" value="noTime" onchange="toggleTimeOptionCustom()"> بدون زمان</label>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:center;gap:15px;margin:15px 0;padding:12px;background:rgba(255,255,255,.08);border-radius:10px;">' +
+    '<span style="color:var(--highlight-color);">⏱ تایمر:</span>' +
+    '<label><input type="radio" name="timer-opt-custom" value="yes" checked> فعال</label>' +
+    '<label><input type="radio" name="timer-opt-custom" value="no"> غیرفعال</label>' +
+    '</div>' +
+    '<div style="display:flex;gap:10px;margin-top:20px;">' +
+    '<button class="btn btn-danger" style="flex:1;margin:0;" onclick="cancelDrawer()">✖ انصراف</button>' +
+    '<button class="btn btn-success" style="flex:1;margin:0;" onclick="confirmCustomDrawer()">✔ تایید</button>' +
+    '</div></div>';
+  drawer.onclick = function(e) { if (e.target === drawer) cancelDrawer(); };
+  document.body.appendChild(drawer);
+  window._tempDrawerCustom = { hours: sh, minutes: sm };
 }
+
+function changeTimeCustom(type, delta) {
+  if (type === 'hours') {
+    var h = window._tempDrawerCustom.hours + delta;
+    if (h < 0) h = 23;
+    if (h > 23) h = 0;
+    window._tempDrawerCustom.hours = h;
+    $('hours-display-custom').textContent = String(h).padStart(2,'0');
+  } else {
+    var m = window._tempDrawerCustom.minutes + delta;
+    if (m < 0) m = 55;
+    if (m > 55) m = 0;
+    window._tempDrawerCustom.minutes = m;
+    $('minutes-display-custom').textContent = String(m).padStart(2,'0');
+  }
+}
+
+function toggleTimeOptionCustom() {
+  var sel = document.querySelector('input[name="time-option-custom"]:checked').value;
+  $('time-picker-section-custom').style.display = sel === 'noTime' ? 'none' : 'block';
+}
+
+function confirmCustomDrawer() {
+  var name = $('custom-subject-name').value.trim();
+  if (!name) { alert('اسم درس رو وارد کن'); return; }
+  var days = [];
+  var cbs = document.querySelectorAll('.day-cb-custom:checked');
+  for (var i = 0; i < cbs.length; i++) days.push(cbs[i].value);
+  if (days.length === 0) { alert('حداقل یک روز انتخاب کن'); return; }
+  var to = document.querySelector('input[name="time-option-custom"]:checked').value;
+  var topt = document.querySelector('input[name="timer-opt-custom"]:checked').value;
+  var noTime = to === 'noTime';
+  var timerEnabled = topt === 'yes';
+  var h = window._tempDrawerCustom.hours, m = window._tempDrawerCustom.minutes;
+  var target = isPlanningNextWeek ? 'nextWeekSchedule' : 'schedule';
+  if (!currentUserData[target]) currentUserData[target] = {};
+  days.forEach(function(day) {
+    if (!currentUserData[target][day]) currentUserData[target][day] = [];
+    currentUserData[target][day].push({
+      id: Date.now().toString() + Math.random().toString(36).substr(2,5),
+      subject: '🎯 ' + name,
+      time: noTime ? 0 : (h * 3600 + m * 60),
+      savedTime: 0, isDone: false, noTime: noTime,
+      timerEnabled: timerEnabled, isCustom: true,
+      createdAt: new Date().toISOString()
+    });
+  });
+  saveUserDataLocal();
+  cancelDrawer();
+  renderSubjectSelectionGrid();
+  updateSelectedSummary();
+  }
 
 function getAllSubjectsInPlanningSchedule() {
   var arr = [];
@@ -1650,6 +1760,10 @@ window.startSubjectSelection = startSubjectSelection;
 window.checkFridayReminder = checkFridayReminder;
 window.openNextWeekPlanning = openNextWeekPlanning;
 window.openSubjectDrawer = openSubjectDrawer;
+window.openCustomSubjectDrawer = openCustomSubjectDrawer;
+window.changeTimeCustom = changeTimeCustom;
+window.toggleTimeOptionCustom = toggleTimeOptionCustom;
+window.confirmCustomDrawer = confirmCustomDrawer;
 window.changeTime = changeTime;
 window.toggleTimeOption = toggleTimeOption;
 window.cancelDrawer = cancelDrawer;
