@@ -23,6 +23,12 @@ body.dark-mode{--secondary-color:#1a1a1a;--bg-gradient-start:#2a2a2a;--bg-gradie
 body.dark-mode .container{background:rgba(26,26,26,.98)}
 .app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid var(--primary-color);flex-wrap:wrap;gap:10px}
 .app-header h1{font-size:1.5em;color:var(--primary-color);text-shadow:2px 2px 10px rgba(0,0,0,.5)}
+.app-header .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.subscription-badge{padding:8px 14px;border-radius:20px;font-size:.85em;font-weight:bold;white-space:nowrap;border:2px solid transparent}
+.subscription-badge.green{background:rgba(76,175,80,.2);color:#4CAF50;border-color:#4CAF50}
+.subscription-badge.yellow{background:rgba(255,193,7,.2);color:#FFC107;border-color:#FFC107}
+.subscription-badge.red{background:rgba(244,67,54,.2);color:#f44336;border-color:#f44336}
+.subscription-badge.expired{background:rgba(120,120,120,.3);color:#ccc;border-color:#666}
 .app-header .user-info{display:flex;align-items:center;gap:10px;color:var(--highlight-color);font-size:.9em}
 .hamburger-btn{background:linear-gradient(45deg,var(--primary-color),#e6c000);color:var(--secondary-color);border:none;width:45px;height:45px;border-radius:12px;font-size:1.5em;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(255,215,0,.3)}
 .sidebar-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:9998;opacity:0;visibility:hidden;transition:all .3s}
@@ -49,6 +55,7 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 .btn-success{background:linear-gradient(45deg,var(--success-color),#388e3c);color:#fff}
 .btn-info{background:linear-gradient(45deg,var(--info-color),#1976D2);color:#fff}
 .btn-secondary{background:linear-gradient(45deg,var(--accent-color),#808080);color:#fff}
+.btn-small{font-size:.82em;padding:6px 12px}
 .card{background:rgba(255,255,255,.08);border-radius:15px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,.1)}
 .card-title{color:var(--primary-color);font-size:1.2em;margin-bottom:15px}
 .hidden{display:none !important}
@@ -71,14 +78,49 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 .admin-user-card{background:rgba(255,255,255,.08);border-radius:12px;padding:15px;margin-bottom:12px;border-right:4px solid var(--primary-color)}
 .admin-user-card.approved{border-right-color:var(--success-color)}
-.admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.admin-user-card.closed{border-right-color:var(--danger-color);opacity:.75}
+.admin-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .search-box{display:flex;gap:10px;margin-bottom:20px}
 .search-box input{flex:1}
-@media(max-width:768px){body{padding:10px}.container{padding:15px}.app-header h1{font-size:1.2em}.floating-btn{bottom:15px;right:15px;padding:12px 18px;font-size:.9em}.charts-row{grid-template-columns:1fr}}
+.tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.tab-btn{background:rgba(255,255,255,.1);color:var(--text-color);border:2px solid transparent;padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:bold;font-family:inherit;font-size:.85em}
+.tab-btn.active{background:rgba(255,215,0,.2);border-color:var(--primary-color);color:var(--primary-color)}
+.locked-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#1a1a1a,#333);z-index:99999;display:flex;justify-content:center;align-items:center;padding:20px;text-align:center;overflow-y:auto}
+.locked-content{max-width:500px;background:rgba(255,255,255,.05);border:3px solid var(--danger-color);border-radius:20px;padding:35px 25px;width:100%}
+.locked-content h2{color:var(--danger-color);font-size:1.8em;margin-bottom:20px}
+.locked-content p{color:#fff;font-size:1.05em;line-height:1.9;margin-bottom:15px}
+.locked-content .lock-icon{font-size:4em;margin-bottom:20px;display:block}
+.locked-content .contact-info{background:rgba(255,215,0,.15);border:2px solid var(--primary-color);border-radius:12px;padding:15px;margin:20px 0}
+.locked-content .contact-info strong{color:var(--primary-color);font-size:1.3em;display:block;margin-top:10px}
+.limited-banner{background:rgba(255,193,7,.2);border:2px solid #FFC107;border-radius:12px;padding:12px;margin-bottom:20px;text-align:center;color:#FFC107;font-weight:bold;font-size:.95em}
+.sub-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:10px}
+.sub-info-item{background:rgba(255,255,255,.05);border-radius:10px;padding:10px;text-align:center}
+.sub-info-item .label{font-size:.8em;color:var(--highlight-color);margin-bottom:5px}
+.sub-info-item .value{font-size:1.1em;font-weight:bold;color:var(--primary-color)}
+.referral-box{background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,215,0,.05));border:2px solid var(--primary-color);border-radius:12px;padding:15px;margin:10px 0}
+.referral-code{font-family:monospace;font-size:1.5em;font-weight:bold;color:var(--primary-color);background:rgba(0,0,0,.4);padding:10px 15px;border-radius:10px;display:inline-block;margin:10px 0;border:2px dashed var(--primary-color);letter-spacing:2px}
+.referral-stats{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.referral-stat{background:rgba(255,255,255,.1);border-radius:10px;padding:8px 15px;font-size:.9em}
+.referral-stat strong{color:var(--primary-color);font-size:1.2em}
+@media(max-width:768px){body{padding:10px}.container{padding:15px}.app-header h1{font-size:1.2em}.floating-btn{bottom:15px;right:15px;padding:12px 18px;font-size:.9em}.charts-row{grid-template-columns:1fr}.subscription-badge{font-size:.72em;padding:6px 10px}.app-header .header-right{gap:5px}}
 </style>
 </head>
 <body>
 <div id="offline-banner" class="offline-banner">📵 آفلاین</div>
+
+<div id="lockedScreen" class="locked-overlay hidden">
+<div class="locked-content">
+<span class="lock-icon">🔒</span>
+<h2 id="locked-title">برنامه بسته است</h2>
+<p id="locked-message">برای باز کردن مجدد، به مدیر پیام بده.</p>
+<div class="contact-info">
+<p style="color:#fff;margin-bottom:5px;">پیام به مدیر:</p>
+<strong>@Ms_Samiee</strong>
+</div>
+<p id="locked-reason" style="color:#aaa;font-size:.9em;"></p>
+</div>
+</div>
+
 <div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
 <div id="sidebar" class="sidebar">
 <div class="sidebar-header"><h2>📚 منو</h2><button class="close-sidebar" onclick="closeSidebar()">✕</button></div>
@@ -92,10 +134,12 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 <div class="menu-item" onclick="logout()" style="color:var(--danger-color);"><span>🚪</span><span>خروج</span></div>
 </div>
 <button id="floating-btn" class="floating-btn hidden" onclick="openNextWeekPlanning()">📅 برنامه هفته بعد</button>
+
 <div class="container">
 <div class="app-header">
 <h1>📚 برنامه‌ریزی تحصیلی</h1>
-<div style="display:flex;align-items:center;gap:10px;">
+<div class="header-right">
+<div id="subscription-badge" class="subscription-badge hidden"></div>
 <div id="header-user-info" class="user-info hidden"></div>
 <button class="hamburger-btn hidden" id="hamburger-btn" onclick="openSidebar()">☰</button>
 </div>
@@ -122,6 +166,7 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 <div class="form-group"><label>پایه:</label>
 <select id="signup-grade"><option value="">-- انتخاب --</option><option value="7">هفتم</option><option value="8">هشتم</option><option value="9">نهم</option><option value="10">دهم</option><option value="11">یازدهم</option><option value="12">دوازدهم</option></select>
 </div>
+<div class="form-group"><label>کد معرف (اختیاری):</label><input type="text" id="signup-referral" placeholder="مثلاً: ALI-2026" style="text-transform:uppercase;"></div>
 <button class="btn btn-full" onclick="signupStudent()">✍️ ثبت‌نام</button>
 <div id="signup-error" class="error-msg hidden" style="margin-top:15px;"></div>
 <div style="margin-top:20px;"><button class="btn btn-secondary btn-full" onclick="showSection('login')">← بازگشت</button></div>
@@ -130,21 +175,17 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 <div id="eitaMessage" class="section">
 <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:15px;padding:30px;border:3px solid var(--primary-color);direction:rtl;text-align:center;">
 <h3 style="color:#fff;font-size:1.5em;margin-bottom:20px;">🌟 ثبت‌نام شما انجام شد</h3>
-
 <p style="color:#fff;font-size:1.1em;margin-bottom:20px;line-height:1.8;">
 برای نهایی کردن حساب کاربری خود به آیدی زیر پیام دهید<br>
 و نام کاربری و پایه خود را ارسال کنید
 </p>
-
 <div style="background:rgba(255,215,0,.2);padding:15px;border-radius:10px;font-size:1.5em;font-weight:bold;color:#FFD700;margin:20px 0;border:2px solid #FFD700;">
 @Ms_Samiee
 </div>
-
 <p style="color:#fff;font-size:1em;margin-bottom:25px;line-height:1.8;">
 کد فعال‌سازی توسط مدیر برای شما ارسال می‌گردد.<br>
 لطفاً منتظر بمانید
 </p>
-
 <button class="btn" style="width:100%;" onclick="showSection('login')">🔙 بازگشت به صفحه ورود</button>
 </div>
 </div>
@@ -181,27 +222,33 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 <button class="btn btn-danger" onclick="logout()">🚪 خروج</button>
 </div>
 <div class="search-box">
-<input type="text" id="search-input" placeholder="🔍 جستجو (نام، تلفن، یوزرنیم)" oninput="searchUsers()">
+<input type="text" id="search-input" placeholder="🔍 جستجو (نام کاربری، رمز، تلفن، پایه)" oninput="searchUsers()">
 </div>
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;">
-<div style="background:rgba(255,255,255,.1);border-radius:12px;padding:15px;text-align:center;">
-<h4 style="color:var(--highlight-color);font-size:.85em;">در انتظار</h4>
-<div style="font-size:1.3em;font-weight:bold;color:var(--primary-color);" id="stat-pending">0</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
+<div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center;">
+<h4 style="color:var(--highlight-color);font-size:.78em;">در انتظار</h4>
+<div style="font-size:1.3em;font-weight:bold;color:var(--info-color);" id="stat-pending">0</div>
 </div>
-<div style="background:rgba(255,255,255,.1);border-radius:12px;padding:15px;text-align:center;">
-<h4 style="color:var(--highlight-color);font-size:.85em;">تایید شده</h4>
-<div style="font-size:1.3em;font-weight:bold;color:var(--primary-color);" id="stat-approved">0</div>
+<div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center;">
+<h4 style="color:var(--highlight-color);font-size:.78em;">تایید شده</h4>
+<div style="font-size:1.3em;font-weight:bold;color:var(--success-color);" id="stat-approved">0</div>
 </div>
-<div style="background:rgba(255,255,255,.1);border-radius:12px;padding:15px;text-align:center;">
-<h4 style="color:var(--highlight-color);font-size:.85em;">آرشیو</h4>
-<div style="font-size:1.3em;font-weight:bold;color:var(--primary-color);" id="stat-archived">0</div>
+<div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center;">
+<h4 style="color:var(--highlight-color);font-size:.78em;">بسته شده</h4>
+<div style="font-size:1.3em;font-weight:bold;color:var(--danger-color);" id="stat-closed">0</div>
+</div>
+<div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px;text-align:center;">
+<h4 style="color:var(--highlight-color);font-size:.78em;">آرشیو</h4>
+<div style="font-size:1.3em;font-weight:bold;color:var(--accent-color);" id="stat-archived">0</div>
 </div>
 </div>
-<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
-<button id="tab-pending" class="btn btn-info" onclick="switchAdminTab('pending')">⏳ در انتظار</button>
-<button id="tab-approved" class="btn btn-success" onclick="switchAdminTab('approved')">✅ تایید شده</button>
-<button id="tab-archived" class="btn btn-secondary" onclick="switchAdminTab('archived')">📦 آرشیو</button>
-<button class="btn" onclick="refreshUsers()" style="margin-right:auto;">🔄 بروزرسانی</button>
+<div id="expiring-warning" class="hidden" style="background:rgba(244,67,54,.15);border:2px solid var(--danger-color);border-radius:12px;padding:15px;margin-bottom:20px;"></div>
+<div class="tabs">
+<button id="tab-pending" class="tab-btn active" onclick="switchAdminTab('pending')">⏳ در انتظار</button>
+<button id="tab-approved" class="tab-btn" onclick="switchAdminTab('approved')">✅ تایید شده</button>
+<button id="tab-closed" class="tab-btn" onclick="switchAdminTab('closed')">🔒 بسته شده</button>
+<button id="tab-archived" class="tab-btn" onclick="switchAdminTab('archived')">📦 آرشیو</button>
+<button class="btn btn-small" onclick="refreshUsers()" style="margin-right:auto;">🔄 بروزرسانی</button>
 </div>
 <div id="admin-users-list"></div>
 </div>
@@ -233,6 +280,7 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 
 <div id="home" class="section">
 <div id="friday-reminder-home" class="friday-reminder" onclick="openNextWeekPlanning()"><strong>📢 امروز جمعه است!</strong>برنامه هفته بعد 👆</div>
+<div id="limited-banner-home" class="limited-banner hidden">⚠️ حالت محدود: فقط می‌تونی ببینی. برای ذخیره، آنلاین شو.</div>
 <div id="student-welcome" style="color:var(--primary-color);margin-bottom:20px;font-size:1.4em;"></div>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:25px;">
 <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:15px;text-align:center;"><h4 style="color:var(--highlight-color);font-size:.9em;">امروز</h4><div style="font-size:1.5em;font-weight:bold;color:var(--primary-color);" id="today-total">00:00:00</div></div>
@@ -242,7 +290,7 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 <div style="background:rgba(255,215,0,.1);border-radius:10px;padding:12px;margin-bottom:20px;text-align:center;border-right:4px solid var(--primary-color);"><span style="color:var(--highlight-color);" id="week-info-display">📅 ...</span></div>
 <h3 style="color:var(--primary-color);margin-bottom:15px;">📅 برنامه هفتگی</h3>
 <div id="weekly-schedule"></div>
-<div style="background:rgba(255,255,255,.1);border-radius:15px;padding:20px;margin-top:20px;border:2px dashed var(--accent-color);">
+<div class="add-schedule-form" style="background:rgba(255,255,255,.1);border-radius:15px;padding:20px;margin-top:20px;border:2px dashed var(--accent-color);">
 <h4 style="color:var(--primary-color);margin-bottom:15px;">➕ افزودن برنامه جدید</h4>
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
 <select id="add-day"><option value="">-- روز --</option><option>شنبه</option><option>یکشنبه</option><option>دوشنبه</option><option>سه‌شنبه</option><option>چهارشنبه</option><option>پنجشنبه</option><option>جمعه</option></select>
@@ -274,6 +322,7 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 
 <div id="stats" class="section">
 <h2 style="color:var(--primary-color);margin-bottom:20px;">📊 آمار</h2>
+<div id="limited-banner-stats" class="limited-banner hidden">⚠️ حالت محدود: نمودارها نمایش داده نمیشن. آنلاین شو.</div>
 <div class="charts-row" style="margin-bottom:25px;">
 <div style="background:rgba(255,255,255,.1);border-radius:15px;padding:15px;height:220px;"><h3 style="color:var(--primary-color);text-align:center;margin-bottom:10px;font-size:1em;">📊 پیشرفت</h3><canvas id="statsProgressChart" style="max-height:160px;"></canvas></div>
 <div style="background:rgba(255,255,255,.1);border-radius:15px;padding:15px;height:220px;"><h3 style="color:var(--primary-color);text-align:center;margin-bottom:10px;font-size:1em;">⏱️ زمان</h3><canvas id="statsTimeChart" style="max-height:160px;"></canvas></div>
@@ -296,6 +345,8 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 <div id="settings" class="section">
 <h2 style="color:var(--primary-color);margin-bottom:20px;">⚙️ تنظیمات</h2>
 <div class="card"><div class="card-title">👤 پروفایل</div><div id="profile-info"></div></div>
+<div class="card"><div class="card-title">📅 اشتراک</div><div id="subscription-info"></div></div>
+<div class="card" id="referral-card"><div class="card-title">🎁 معرفی به دوستان</div><div id="referral-info"></div></div>
 <div class="card"><div class="card-title">🔐 امنیت</div><button class="btn btn-full" onclick="openChangePassword()">🔑 تغییر رمز</button></div>
 <div class="card"><div class="card-title">💾 پشتیبان</div>
 <button class="btn btn-success btn-full" onclick="downloadBackup()" style="margin-bottom:10px;">📥 دانلود</button>
@@ -312,6 +363,8 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 <button class="btn btn-danger btn-full" onclick="deleteAccount()">🗑 حذف حساب</button></div>
 </div>
 </div>
+
+
 <script>
 // ================== CONFIG ==================
 var CONFIG = {
@@ -322,7 +375,11 @@ var CONFIG = {
   EMAILJS_KEY: "cPmVI8hnhCa8Hn3vZ",
   ADMIN_EMAIL: "khanmsamiee83@gmail.com",
   ALLOWED_DOMAIN: "khanmsamiee83-design.github.io",
-  OTP_MINUTES: 10
+  OTP_MINUTES: 10,
+  SUBSCRIPTION_DAYS: 30,
+  MAX_OFFLINE_FREE: 3,
+  MAX_OFFLINE_LIMITED: 6,
+  REFERRAL_BONUS_DAYS: 5
 };
 
 // ================== GLOBAL VARIABLES ==================
@@ -341,7 +398,10 @@ var adminOTP = null;
 var adminOTPExpiry = 0;
 var allUsers = [];
 var archivedUsers = [];
+var closedUsers = [];
 var currentTab = 'pending';
+var isLimitedMode = false;
+var pendingReferralCode = null;
 
 var subjectsByGrade = {
   '7': ['ریاضی','علوم تجربی','فارسی','عربی','مطالعات اجتماعی','قرآن','ورزش'],
@@ -414,6 +474,13 @@ function formatTime(s) {
   var h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
   return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
 }
+function daysBetween(date1, date2) {
+  var d1 = new Date(date1);
+  var d2 = new Date(date2);
+  d1.setHours(0,0,0,0);
+  d2.setHours(0,0,0,0);
+  return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+}
 
 // ================== UI HELPERS ==================
 function showSection(sectionId) {
@@ -432,7 +499,8 @@ function showSection(sectionId) {
   } else {
     if (hi && currentUser) { hi.textContent = '👤 ' + currentUser.username; hi.classList.remove('hidden'); }
     if (hb) hb.classList.remove('hidden');
-    if (fb && currentUser && !isAdmin) fb.classList.remove('hidden');
+    if (fb && currentUser && !isAdmin && !isLimitedMode) fb.classList.remove('hidden');
+    if (fb && isLimitedMode) fb.classList.add('hidden');
   }
 }
 function showMessage(id, msg, ok) {
@@ -447,7 +515,7 @@ function showMessage(id, msg, ok) {
 function openSidebar() { $('sidebar').classList.add('open'); $('sidebar-overlay').classList.add('open'); }
 function closeSidebar() { $('sidebar').classList.remove('open'); $('sidebar-overlay').classList.remove('open'); }
 
-// ================== JSONBIN API ==================
+// ================== JSONBIN API (via Vercel) ==================
 function jsonbinGet() {
   return fetch('https://study-planner-api-mocha.vercel.app/api/data', {
     method: 'GET'
@@ -465,7 +533,7 @@ function jsonbinUpdate(data) {
     if (!r.ok) throw new Error('خطا در ذخیره داده');
     return r.json();
   });
-  }
+}
 
 // ================== EMAILJS ==================
 function sendEmailOTP(toEmail, passcode) {
@@ -497,6 +565,292 @@ function generateOTP() {
   return otp;
 }
 
+// تولید کد معرف یکتا بر اساس نام کاربری
+function generateReferralCode(username) {
+  var cleanUsername = (username || 'USER').toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 8);
+  var randomPart = '';
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  for (var i = 0; i < 4; i++) randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+  return cleanUsername + '-' + randomPart;
+}
+
+// ================== SUBSCRIPTION SYSTEM ==================
+function getRemainingDays(expiresAt) {
+  if (!expiresAt) return 0;
+  var remaining = daysBetween(new Date(), new Date(expiresAt));
+  return remaining;
+}
+
+function updateSubscriptionBadge() {
+  var badge = $('subscription-badge');
+  if (!badge) return;
+  if (!currentUser || isAdmin) { badge.classList.add('hidden'); return; }
+  
+  var sub = currentUserData ? currentUserData.subscription : null;
+  if (!sub || !sub.expiresAt) { badge.classList.add('hidden'); return; }
+  
+  var remaining = getRemainingDays(sub.expiresAt);
+  
+  badge.classList.remove('hidden','green','yellow','red','expired');
+  
+  if (remaining <= 0) {
+    badge.classList.add('expired');
+    badge.textContent = '⛔ اشتراک تمام شد';
+  } else if (remaining <= 3) {
+    badge.classList.add('red');
+    badge.textContent = '⏳ ' + remaining + ' روز از اشتراک باقی مانده است';
+  } else if (remaining <= 7) {
+    badge.classList.add('yellow');
+    badge.textContent = '⏳ ' + remaining + ' روز از اشتراک باقی مانده است';
+  } else {
+    badge.classList.add('green');
+    badge.textContent = '⏳ ' + remaining + ' روز از اشتراک باقی مانده است';
+  }
+}
+
+function checkSubscriptionStatus() {
+  if (!currentUser || !currentUserData) return { active: false, reason: 'no_user' };
+  
+  var sub = currentUserData.subscription;
+  if (!sub) return { active: false, reason: 'no_subscription' };
+  
+  if (sub.manuallyClosed) {
+    return { active: false, reason: 'manually_closed' };
+  }
+  
+  var remaining = getRemainingDays(sub.expiresAt);
+  
+  if (remaining <= 0) {
+    return { active: false, reason: 'expired', remaining: 0 };
+  }
+  
+  var lastOnline = sub.lastOnlineCheck || sub.startDate;
+  var offlineDays = daysBetween(lastOnline, new Date());
+  
+  if (!navigator.onLine && offlineDays >= CONFIG.MAX_OFFLINE_LIMITED) {
+    return { active: false, reason: 'offline_closed', offlineDays: offlineDays };
+  }
+  
+  if (!navigator.onLine && offlineDays >= CONFIG.MAX_OFFLINE_FREE && offlineDays < CONFIG.MAX_OFFLINE_LIMITED) {
+    return { active: true, limited: true, reason: 'offline_limited', offlineDays: offlineDays, remaining: remaining };
+  }
+  
+  return { active: true, limited: false, remaining: remaining };
+}
+
+function showLockedScreen(reason, extraData) {
+  var overlay = $('lockedScreen');
+  var title = $('locked-title');
+  var msg = $('locked-message');
+  var reasonEl = $('locked-reason');
+  
+  if (!overlay) return;
+  
+  if (reason === 'expired') {
+    title.textContent = '🔒 اشتراک شما به پایان رسیده است';
+    msg.textContent = 'برای تمدید اشتراک، به مدیر پیام بده.';
+    reasonEl.textContent = '';
+  } else if (reason === 'offline_closed') {
+    title.textContent = '🔒 برنامه بسته شده است';
+    msg.textContent = 'به دلیل عدم اتصال به اینترنت برای چندین روز، برای باز کردن مجدد به مدیر پیام بده.';
+    reasonEl.textContent = '📵 شما ' + (extraData?.offlineDays || 7) + ' روز است که آنلاین نشده‌اید.';
+  } else if (reason === 'manually_closed') {
+    title.textContent = '🔒 برنامه به دستور مدیر بسته شده است';
+    msg.textContent = 'برای باز کردن مجدد، به مدیر پیام بده.';
+    reasonEl.textContent = '';
+  } else {
+    title.textContent = '🔒 برنامه بسته است';
+    msg.textContent = 'برای باز کردن مجدد، به مدیر پیام بده.';
+    reasonEl.textContent = '';
+  }
+  
+  overlay.classList.remove('hidden');
+}
+
+function applyLimitedMode(limited) {
+  isLimitedMode = limited;
+  
+  var banners = ['limited-banner-home', 'limited-banner-stats'];
+  banners.forEach(function(id) {
+    var el = $(id);
+    if (!el) return;
+    if (limited) el.classList.remove('hidden');
+    else el.classList.add('hidden');
+  });
+  
+  var fb = $('floating-btn');
+  if (fb) {
+    if (limited) fb.classList.add('hidden');
+    else if (currentUser && !isAdmin) fb.classList.remove('hidden');
+  }
+}
+
+function updateLastOnlineCheck() {
+  if (!currentUser || !currentUserData) return;
+  if (!navigator.onLine) return;
+  
+  if (!currentUserData.subscription) return;
+  currentUserData.subscription.lastOnlineCheck = new Date().toISOString();
+  saveUserDataLocal();
+  
+  jsonbinGet().then(function(data) {
+    var users = data.users || [];
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].id === currentUser.id) {
+        if (!users[i].subscription) users[i].subscription = {};
+        users[i].subscription.lastOnlineCheck = new Date().toISOString();
+        break;
+      }
+    }
+    data.users = users;
+    return jsonbinUpdate(data);
+  }).catch(function(e) { console.warn('Last online check update failed:', e); });
+}
+
+function validateUserAccess(user, userData) {
+  if (user.subscription && user.subscription.manuallyClosed) {
+    return { ok: false, reason: 'manually_closed' };
+  }
+  
+  if (user.subscription && user.subscription.expiresAt) {
+    var remaining = getRemainingDays(user.subscription.expiresAt);
+    if (remaining <= 0) {
+      return { ok: false, reason: 'expired' };
+    }
+  }
+  
+  if (!navigator.onLine && user.subscription) {
+    var lastOnline = user.subscription.lastOnlineCheck || user.subscription.startDate || user.subscription.approvedAt;
+    var offlineDays = daysBetween(lastOnline, new Date());
+    
+    if (offlineDays >= CONFIG.MAX_OFFLINE_LIMITED) {
+      return { ok: false, reason: 'offline_closed', offlineDays: offlineDays };
+    }
+    
+    if (offlineDays >= CONFIG.MAX_OFFLINE_FREE) {
+      return { ok: true, limited: true, offlineDays: offlineDays };
+    }
+  }
+  
+  return { ok: true, limited: false };
+}
+
+// ================== REFERRAL SYSTEM ==================
+// اعمال جایزه معرفی (وقتی کاربر فعال شد)
+function applyReferralReward(newUserId, referralCode) {
+  if (!referralCode) return Promise.resolve(false);
+  
+  return jsonbinGet().then(function(data) {
+    var users = data.users || [];
+    
+    // پیدا کردن کسی که کد معرفش اینه
+    var referrer = null;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].myReferralCode === referralCode) {
+        referrer = users[i];
+        break;
+      }
+    }
+    
+    if (!referrer) return false;
+    
+    var now = new Date();
+    
+    // ==== جایزه معرف (referrer) ====
+    if (referrer.subscription && referrer.subscription.expiresAt) {
+      var currentExpiry = new Date(referrer.subscription.expiresAt);
+      // اگه منقضی شده، از الان شروع کن
+      var baseDate = currentExpiry > now ? currentExpiry : now;
+      var newExpiry = new Date(baseDate.getTime() + (CONFIG.REFERRAL_BONUS_DAYS * 24 * 60 * 60 * 1000));
+      referrer.subscription.expiresAt = newExpiry.toISOString();
+      
+      // ذخیره هدیه دریافتی
+      if (!referrer.referralBonus) referrer.referralBonus = 0;
+      referrer.referralBonus += CONFIG.REFERRAL_BONUS_DAYS;
+      if (!referrer.referralBonusTotal) referrer.referralBonusTotal = 0;
+      referrer.referralBonusTotal += CONFIG.REFERRAL_BONUS_DAYS;
+      
+      if (!referrer.referredUsers) referrer.referredUsers = [];
+      referrer.referredUsers.push(newUserId);
+      
+      if (!referrer.subscription.history) referrer.subscription.history = [];
+      referrer.subscription.history.push({
+        type: 'referral_bonus',
+        days: CONFIG.REFERRAL_BONUS_DAYS,
+        date: now.toISOString(),
+        fromUser: newUserId
+      });
+    }
+    
+    // ==== جایزه معرفی‌شده (new user) ====
+    for (var j = 0; j < users.length; j++) {
+      if (users[j].id === newUserId) {
+        if (users[j].subscription && users[j].subscription.expiresAt) {
+          var newUserExpiry = new Date(users[j].subscription.expiresAt);
+          var newUserExpiry2 = new Date(newUserExpiry.getTime() + (CONFIG.REFERRAL_BONUS_DAYS * 24 * 60 * 60 * 1000));
+          users[j].subscription.expiresAt = newUserExpiry2.toISOString();
+          users[j].referralBonus = CONFIG.REFERRAL_BONUS_DAYS;
+          users[j].referralApplied = true;
+        }
+        break;
+      }
+    }
+    
+    data.users = users;
+    return jsonbinUpdate(data).then(function() { return true; });
+  }).catch(function(e) {
+    console.warn('Referral reward failed:', e);
+    return false;
+  });
+}
+
+// ================== AUTO UPDATE SYSTEM ==================
+function checkForUpdates() {
+  if (!navigator.onLine) return;
+  
+  fetch('./version.json?t=' + Date.now())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var remoteVersion = data.version;
+      var localVersion = localStorage.getItem('app_version');
+      
+      console.log('📦 Version check — Remote:', remoteVersion, '| Local:', localVersion);
+      
+      if (!localVersion) {
+        // بار اول
+        localStorage.setItem('app_version', remoteVersion);
+        return;
+      }
+      
+      if (localVersion !== remoteVersion) {
+        console.log('🔄 New version detected! Auto-updating...');
+        localStorage.setItem('app_version', remoteVersion);
+        
+        // پاک کردن کش Service Worker
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' });
+        }
+        
+        // پاک کردن کش‌های مرورگر
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            for (var i = 0; i < names.length; i++) {
+              caches.delete(names[i]);
+            }
+          });
+        }
+        
+        // رفرش خودکار بدون سوال
+        setTimeout(function() {
+          window.location.reload(true);
+        }, 500);
+      }
+    })
+    .catch(function(e) {
+      console.log('Version check skipped:', e.message);
+    });
+}
+
 // ================== USER DATA (localStorage) ==================
 function loadUserDataLocal(userId) {
   try {
@@ -505,7 +859,8 @@ function loadUserDataLocal(userId) {
   } catch(e) {}
   return {
     schedule: {}, nextWeekSchedule: {}, weeklyTimes: {}, weeklyHistory: [],
-    hasSeenWelcome: false, hasCompletedSetup: false, theme: 'light'
+    hasSeenWelcome: false, hasCompletedSetup: false, theme: 'light',
+    subscription: null
   };
 }
 function saveUserDataLocal() {
@@ -513,13 +868,17 @@ function saveUserDataLocal() {
   try { localStorage.setItem('userData_' + currentUser.id, JSON.stringify(currentUserData)); }
   catch(e) {}
 }
+</script>
 
+
+<script>
 // ================== AUTH: SIGNUP ==================
 function signupStudent() {
   var username = $('signup-username').value.trim();
   var phone = $('signup-phone').value.trim();
   var password = $('signup-password').value.trim();
   var grade = $('signup-grade').value;
+  var referralInput = $('signup-referral').value.trim().toUpperCase();
   
   if (!username || !phone || !password || !grade) {
     showMessage('signup-error', 'همه فیلدها را پر کنید', false);
@@ -537,7 +896,17 @@ function signupStudent() {
     password: password,
     grade: grade,
     code: generateCode(),
+    myReferralCode: generateReferralCode(username),
+    referredBy: null,
+    referralApplied: false,
+    referralRewarded: false,
+    referralBonus: 0,
+    referralBonusTotal: 0,
+    referredUsers: [],
     approved: false,
+    closed: false,
+    archived: false,
+    subscription: null,
     createdAt: new Date().toISOString()
   };
   
@@ -546,18 +915,40 @@ function signupStudent() {
     for (var i = 0; i < users.length; i++) {
       if (users[i].username === username) throw new Error('این نام کاربری وجود دارد');
     }
+    
+    // چک کد معرف (اگه وارد شده)
+    if (referralInput) {
+      // کد نباید کد خودش باشه
+      if (referralInput === newUser.myReferralCode) {
+        throw new Error('نمی‌تونی کد خودت رو وارد کنی');
+      }
+      // چک کن کد وجود داره
+      var referrerFound = false;
+      for (var j = 0; j < users.length; j++) {
+        if (users[j].myReferralCode === referralInput) {
+          referrerFound = true;
+          break;
+        }
+      }
+      if (!referrerFound) {
+        throw new Error('کد معرف نامعتبر است');
+      }
+      newUser.referredBy = referralInput;
+    }
+    
     users.push(newUser);
     data.users = users;
     return jsonbinUpdate(data);
   }).then(function() {
     pendingUser = newUser;
+    pendingReferralCode = newUser.referredBy;
     localStorage.setItem('myUsername', username);
     localStorage.setItem('myPassword', password);
-    localStorage.setItem('myGrade', grade);
     $('signup-username').value = '';
     $('signup-phone').value = '';
     $('signup-password').value = '';
     $('signup-grade').value = '';
+    $('signup-referral').value = '';
     showSection('eitaMessage');
   }).catch(function(e) {
     showMessage('signup-error', e.message || 'خطا در ثبت‌نام', false);
@@ -585,21 +976,71 @@ function loginStudent() {
     
     if (!user) throw new Error('نام کاربری یا رمز نادرست است');
     
+    if (user.closed) {
+      currentUser = user;
+      currentUserData = loadUserDataLocal(user.id);
+      if (!currentUserData.subscription) currentUserData.subscription = {};
+      currentUserData.subscription.manuallyClosed = true;
+      saveUserDataLocal();
+      showLockedScreen('manually_closed');
+      throw new Error('LOCKED');
+    }
+    
+    if (user.subscription && user.subscription.expiresAt) {
+      var remaining = getRemainingDays(user.subscription.expiresAt);
+      if (remaining <= 0) {
+        currentUser = user;
+        currentUserData = loadUserDataLocal(user.id);
+        if (!currentUserData.subscription) currentUserData.subscription = user.subscription;
+        currentUserData.subscription.expiresAt = user.subscription.expiresAt;
+        saveUserDataLocal();
+        showLockedScreen('expired');
+        throw new Error('LOCKED');
+      }
+    }
+    
     if (!user.approved) {
       pendingUser = user;
       showSection('activation');
       $('activation-error').classList.add('hidden');
-      return;
+      throw new Error('NEED_ACTIVATION');
     }
     
     currentUser = user;
     currentUserData = loadUserDataLocal(user.id);
+    if (!currentUserData.subscription) currentUserData.subscription = {};
+    if (user.subscription) {
+      currentUserData.subscription = JSON.parse(JSON.stringify(user.subscription));
+    }
+    saveUserDataLocal();
+    
     $('login-username').value = '';
     $('login-password').value = '';
+    
+    if (navigator.onLine) {
+      updateLastOnlineCheck();
+    }
+    
+    var access = validateUserAccess(user, currentUserData);
+    if (!access.ok) {
+      if (access.reason === 'offline_closed') {
+        showLockedScreen('offline_closed', access);
+        throw new Error('LOCKED');
+      }
+    }
+    if (access.limited) {
+      applyLimitedMode(true);
+    } else {
+      applyLimitedMode(false);
+    }
+    
     if (!currentUserData.hasSeenWelcome) loadWelcomeScreen();
     else if (!currentUserData.hasCompletedSetup) loadSubjectSelection(false);
     else goToPage('home');
+    
+    updateSubscriptionBadge();
   }).catch(function(e) {
+    if (e.message === 'NEED_ACTIVATION' || e.message === 'LOCKED') return;
     showMessage('login-error', e.message || 'خطا در ورود', false);
   });
 }
@@ -623,9 +1064,24 @@ function activateAccount() {
     for (var i = 0; i < users.length; i++) {
       if (users[i].id === pendingUser.id) {
         if (users[i].code !== code) throw new Error('کد فعال‌سازی نادرست است');
+        
+        var now = new Date();
+        var expires = new Date(now.getTime() + (CONFIG.SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000));
+        
         users[i].approved = true;
-        users[i].approvedAt = new Date().toISOString();
+        users[i].approvedAt = now.toISOString();
         users[i].code = null;
+        users[i].subscription = {
+          startDate: now.toISOString(),
+          expiresAt: expires.toISOString(),
+          lastOnlineCheck: now.toISOString(),
+          manuallyClosed: false,
+          history: [{
+            type: 'start',
+            days: CONFIG.SUBSCRIPTION_DAYS,
+            date: now.toISOString()
+          }]
+        };
         found = true;
         break;
       }
@@ -634,11 +1090,31 @@ function activateAccount() {
     data.users = users;
     return jsonbinUpdate(data);
   }).then(function() {
-    currentUser = pendingUser;
-    currentUser.approved = true;
-    currentUserData = loadUserDataLocal(currentUser.id);
+    // اعمال جایزه معرفی (اگه کد معرف داشت)
+    if (pendingReferralCode) {
+      return applyReferralReward(pendingUser.id, pendingReferralCode).then(function() {
+        return jsonbinGet();
+      });
+    }
+    return jsonbinGet();
+  }).then(function(data) {
+    var users = data.users || [];
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].id === pendingUser.id) {
+        currentUser = users[i];
+        currentUserData = loadUserDataLocal(currentUser.id);
+        currentUserData.subscription = currentUser.subscription;
+        saveUserDataLocal();
+        break;
+      }
+    }
+    
     pendingUser = null;
+    pendingReferralCode = null;
     $('activation-code').value = '';
+    applyLimitedMode(false);
+    updateSubscriptionBadge();
+    
     if (!currentUserData.hasSeenWelcome) loadWelcomeScreen();
     else if (!currentUserData.hasCompletedSetup) loadSubjectSelection(false);
     else goToPage('home');
@@ -697,7 +1173,15 @@ function logout() {
   currentUser = null;
   currentUserData = null;
   isAdmin = false;
+  isLimitedMode = false;
   closeSidebar();
+  
+  var badge = $('subscription-badge');
+  if (badge) badge.classList.add('hidden');
+  var locked = $('lockedScreen');
+  if (locked) locked.classList.add('hidden');
+  applyLimitedMode(false);
+  
   showSection('login');
 }
 
@@ -709,42 +1193,90 @@ function loadAdminDashboard() {
 }
 function switchAdminTab(tab) {
   currentTab = tab;
-  $('tab-pending').className = tab === 'pending' ? 'btn btn-info' : 'btn btn-secondary';
-  $('tab-approved').className = tab === 'approved' ? 'btn btn-success' : 'btn btn-secondary';
-  $('tab-archived').className = tab === 'archived' ? 'btn btn-info' : 'btn btn-secondary';
+  var tabs = ['pending','approved','closed','archived'];
+  tabs.forEach(function(t) {
+    var btn = $('tab-' + t);
+    if (btn) {
+      btn.className = 'tab-btn' + (t === tab ? ' active' : '');
+    }
+  });
   renderAdminUsers();
 }
 function refreshUsers() {
   $('admin-users-list').innerHTML = '<div class="loader-small"></div>';
   jsonbinGet().then(function(data) {
-    allUsers = data.users || [];
-    archivedUsers = data.archived || [];
+    allUsers = (data.users || []).filter(function(u) { return !u.archived; });
+    archivedUsers = (data.users || []).filter(function(u) { return u.archived; });
+    closedUsers = allUsers.filter(function(u) { return u.closed; });
     renderAdminUsers();
     updateAdminStats();
+    updateExpiringWarning();
   }).catch(function(e) {
     $('admin-users-list').innerHTML = '<div class="error-msg">خطا: ' + e.message + '</div>';
   });
 }
 function updateAdminStats() {
   var pending = allUsers.filter(function(u) { return !u.approved; }).length;
-  var approved = allUsers.filter(function(u) { return u.approved; }).length;
+  var approved = allUsers.filter(function(u) { return u.approved && !u.closed; }).length;
+  var closed = allUsers.filter(function(u) { return u.closed; }).length;
   $('stat-pending').textContent = pending;
   $('stat-approved').textContent = approved;
+  $('stat-closed').textContent = closed;
   $('stat-archived').textContent = archivedUsers.length;
 }
+
+function updateExpiringWarning() {
+  var el = $('expiring-warning');
+  if (!el) return;
+  
+  var expiring = [];
+  
+  allUsers.forEach(function(u) {
+    if (!u.approved || u.closed) return;
+    if (!u.subscription || !u.subscription.expiresAt) return;
+    var remaining = getRemainingDays(u.subscription.expiresAt);
+    if (remaining > 0 && remaining <= 3) {
+      expiring.push({ user: u, remaining: remaining });
+    }
+  });
+  
+  if (expiring.length === 0) {
+    el.classList.add('hidden');
+    return;
+  }
+  
+  el.classList.remove('hidden');
+  var html = '<h4 style="color:var(--danger-color);margin-bottom:10px;">⚠️ کاربران نزدیک به انقضا (≤ ۳ روز):</h4>';
+  expiring.sort(function(a,b){ return a.remaining - b.remaining; });
+  expiring.forEach(function(item) {
+    html += '<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.1);">';
+    html += '<strong style="color:#fff;">👤 ' + item.user.username + '</strong> ';
+    html += '<span style="color:' + (item.remaining <= 1 ? '#f44336' : '#FFC107') + ';">';
+    html += '⏳ ' + item.remaining + ' روز مونده';
+    html += '</span>';
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+// ================== ADMIN: RENDER USERS ==================
 function renderAdminUsers() {
   var div = $('admin-users-list');
   var list = [];
+  
   if (currentTab === 'pending') list = allUsers.filter(function(u) { return !u.approved; });
-  else if (currentTab === 'approved') list = allUsers.filter(function(u) { return u.approved; });
-  else list = archivedUsers;
+  else if (currentTab === 'approved') list = allUsers.filter(function(u) { return u.approved && !u.closed; });
+  else if (currentTab === 'closed') list = allUsers.filter(function(u) { return u.closed; });
+  else if (currentTab === 'archived') list = archivedUsers;
   
   var searchTerm = ($('search-input') || {}).value || '';
   searchTerm = searchTerm.trim().toLowerCase();
   if (searchTerm) {
     list = list.filter(function(u) {
       return (u.username || '').toLowerCase().indexOf(searchTerm) > -1 ||
-             (u.phone || '').indexOf(searchTerm) > -1;
+             (u.phone || '').indexOf(searchTerm) > -1 ||
+             (u.password || '').indexOf(searchTerm) > -1 ||
+             String(u.grade || '').indexOf(searchTerm) > -1;
     });
   }
   
@@ -755,31 +1287,112 @@ function renderAdminUsers() {
   
   var html = '';
   list.forEach(function(u) {
-    var cls = u.approved ? 'admin-user-card approved' : 'admin-user-card';
+    var cls = 'admin-user-card';
+    if (u.closed) cls += ' closed';
+    else if (u.approved) cls += ' approved';
+    
     html += '<div class="' + cls + '">';
     html += '<div><strong style="color:var(--highlight-color);">👤 ' + u.username + '</strong></div>';
     html += '<div style="font-size:.9em;">📱 ' + u.phone + '</div>';
     html += '<div style="font-size:.9em;">🎓 پایه ' + u.grade + '</div>';
-    if (u.code) html += '<div style="margin-top:8px;"><strong style="color:var(--primary-color);">🎫 کد: ' + u.code + '</strong></div>';
-    if (u.approved) html += '<div style="font-size:.85em;color:var(--success-color);">✅ تایید شده</div>';
-    html += '<div class="admin-actions">';
-    if (u.code) html += '<button class="btn btn-info" style="font-size:.85em;padding:6px 12px;" onclick="copyCode(\'' + u.code + '\')">📋 کپی کد</button>';
-    html += '<button class="btn btn-success" style="font-size:.85em;padding:6px 12px;" onclick="generateNewCode(\'' + u.id + '\')">🔑 کد جدید</button>';
-    if (currentTab === 'archived') {
-      html += '<button class="btn btn-info" style="font-size:.85em;padding:6px 12px;" onclick="restoreUser(\'' + u.id + '\')">♻️ بازیابی</button>';
+    html += '<div style="font-size:.85em;color:#aaa;">🔑 رمز: ' + (u.password || '—') + '</div>';
+    
+    if (u.myReferralCode) {
+      html += '<div style="font-size:.85em;color:#FFD700;margin-top:4px;">🎁 کد معرف: ' + u.myReferralCode + '</div>';
     }
-    html += '<button class="btn btn-danger" style="font-size:.85em;padding:6px 12px;" onclick="archiveUser(\'' + u.id + '\')">🗑 حذف</button>';
-    html += '</div></div>';
+    if (u.referredBy) {
+      html += '<div style="font-size:.85em;color:#4CAF50;margin-top:4px;">📥 معرفی‌شده توسط: ' + u.referredBy + '</div>';
+    }
+    if (u.referralBonusTotal && u.referralBonusTotal > 0) {
+      html += '<div style="font-size:.85em;color:#FFD700;margin-top:4px;">🎁 هدیه گرفته: ' + u.referralBonusTotal + ' روز</div>';
+    }
+    
+    if (u.code) {
+      html += '<div style="margin-top:8px;"><strong style="color:var(--primary-color);">🎫 کد: ' + u.code + '</strong></div>';
+    }
+    
+    if (u.subscription && u.subscription.expiresAt) {
+      var remaining = getRemainingDays(u.subscription.expiresAt);
+      var color = remaining <= 0 ? '#f44336' : (remaining <= 3 ? '#f44336' : (remaining <= 7 ? '#FFC107' : '#4CAF50'));
+      html += '<div class="admin-sub-info">';
+      html += '<span style="color:' + color + ';font-weight:bold;">';
+      if (remaining <= 0) html += '⛔ اشتراک تمام شده';
+      else html += '⏳ ' + remaining + ' روز از اشتراک باقی مانده است';
+      html += '</span>';
+      html += '</div>';
+    } else if (u.approved) {
+      html += '<div class="admin-sub-info" style="color:#aaa;">اشتراک ثبت نشده</div>';
+    }
+    
+    if (u.closed) html += '<div style="font-size:.85em;color:var(--danger-color);margin-top:4px;">🔒 بسته شده</div>';
+    else if (u.approved) html += '<div style="font-size:.85em;color:var(--success-color);margin-top:4px;">✅ تایید شده</div>';
+    else html += '<div style="font-size:.85em;color:var(--info-color);margin-top:4px;">⏳ در انتظار تایید</div>';
+    
+    html += '<div class="admin-actions">';
+    
+    if (u.code) {
+      html += '<button class="btn btn-info btn-small" onclick="copyCode(\'' + u.code + '\')">📋 کپی کد</button>';
+    }
+    
+    if (!u.closed) {
+      html += '<button class="btn btn-small" style="background:linear-gradient(45deg,#9C27B0,#7B1FA2);color:#fff;" onclick="generateNewCodeForUser(\'' + u.id + '\')">🔑 کد جدید</button>';
+    }
+    
+    if (!u.approved && !u.closed) {
+      html += '<button class="btn btn-success btn-small" onclick="approveUserQuick(\'' + u.id + '\')">✅ تایید</button>';
+    }
+    
+    if (u.approved || u.closed) {
+      html += '<button class="btn btn-small" style="background:linear-gradient(45deg,#2196F3,#1976D2);color:#fff;" onclick="openRenewDialog(\'' + u.id + '\')">⏱ تمدید</button>';
+    }
+    
+    if (!u.closed && u.approved) {
+      html += '<button class="btn btn-danger btn-small" onclick="closeUserProgram(\'' + u.id + '\')">🔒 بستن</button>';
+    } else if (u.closed) {
+      html += '<button class="btn btn-success btn-small" onclick="openUserProgram(\'' + u.id + '\')">🔓 باز کردن</button>';
+    }
+    
+    if (currentTab !== 'archived') {
+      html += '<button class="btn btn-small" style="background:linear-gradient(45deg,#808080,#555);color:#fff;" onclick="archiveUser(\'' + u.id + '\')">📦 آرشیو</button>';
+    } else {
+      html += '<button class="btn btn-info btn-small" onclick="restoreUser(\'' + u.id + '\')">♻️ بازیابی</button>';
+      html += '<button class="btn btn-danger btn-small" onclick="deleteUserForever(\'' + u.id + '\')">🗑 حذف کامل</button>';
+    }
+    
+    if (!u.approved && !u.closed && currentTab === 'pending') {
+      html += '<button class="btn btn-danger btn-small" onclick="rejectUser(\'' + u.id + '\')">❌ رد</button>';
+    }
+    
+    html += '</div>';
+    html += '</div>';
   });
   div.innerHTML = html;
 }
+
 function searchUsers() { renderAdminUsers(); }
+
 function copyCode(code) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(code).then(function() { alert('✅ کد کپی شد: ' + code); });
-  } else alert('کد: ' + code);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(function() {
+      alert('✅ کد کپی شد: ' + code);
+    }).catch(function() {
+      fallbackCopyCode(code);
+    });
+  } else {
+    fallbackCopyCode(code);
+  }
 }
-function generateNewCode(userId) {
+function fallbackCopyCode(code) {
+  var input = document.createElement('input');
+  input.value = code;
+  document.body.appendChild(input);
+  input.select();
+  try { document.execCommand('copy'); alert('✅ کد کپی شد: ' + code); }
+  catch(e) { prompt('کد رو دستی کپی کن:', code); }
+  document.body.removeChild(input);
+}
+
+function generateNewCodeForUser(userId) {
   if (!confirm('کد جدید ساخته بشه؟ کد قدیمی باطل میشه.')) return;
   jsonbinGet().then(function(data) {
     var users = data.users || [];
@@ -793,50 +1406,270 @@ function generateNewCode(userId) {
     }
     data.users = users;
     return jsonbinUpdate(data);
-  }).then(function() { alert('✅ کد جدید ساخته شد'); refreshUsers(); })
-    .catch(function(e) { alert('خطا: ' + e.message); });
+  }).then(function() {
+    alert('✅ کد جدید ساخته شد');
+    refreshUsers();
+  }).catch(function(e) { alert('خطا: ' + e.message); });
 }
+
+function approveUserQuick(userId) {
+  jsonbinGet().then(function(data) {
+    var users = data.users || [];
+    var now = new Date();
+    var expires = new Date(now.getTime() + (CONFIG.SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000));
+    var approvedUser = null;
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].id === userId) {
+        users[i].approved = true;
+        users[i].approvedAt = now.toISOString();
+        users[i].code = null;
+        if (!users[i].subscription) {
+          users[i].subscription = {
+            startDate: now.toISOString(),
+            expiresAt: expires.toISOString(),
+            lastOnlineCheck: now.toISOString(),
+            manuallyClosed: false,
+            history: [{ type: 'start', days: CONFIG.SUBSCRIPTION_DAYS, date: now.toISOString() }]
+          };
+        }
+        approvedUser = users[i];
+        break;
+      }
+    }
+    data.users = users;
+    return jsonbinUpdate(data).then(function() {
+      // اعمال جایزه معرفی
+      if (approvedUser && approvedUser.referredBy) {
+        return applyReferralReward(approvedUser.id, approvedUser.referredBy);
+      }
+    });
+  }).then(function() {
+    alert('✅ کاربر تایید شد و ۳۰ روز اشتراک فعال شد');
+    refreshUsers();
+  }).catch(function(e) { alert('خطا: ' + e.message); });
+}
+
+function openRenewDialog(userId) {
+  var days = prompt('چند روز تمدید بشه؟\n(30 = یک ماه، 60 = دو ماه، 90 = سه ماه)\n\nعدد دلخواه وارد کن:', '30');
+  if (!days) return;
+  days = parseInt(days);
+  if (!days || days < 1 || days > 365) {
+    alert('عدد نامعتبر');
+    return;
+  }
+  renewSubscription(userId, days);
+}
+
+function renewSubscription(userId, days) {
+  jsonbinGet().then(function(data) {
+    var users = data.users || [];
+    var now = new Date();
+    var found = false;
+    
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].id === userId) {
+        found = true;
+        var currentExpires = users[i].subscription && users[i].subscription.expiresAt 
+          ? new Date(users[i].subscription.expiresAt) 
+          : now;
+        
+        var baseDate = currentExpires > now ? currentExpires : now;
+        var newExpires = new Date(baseDate.getTime() + (days * 24 * 60 * 60 * 1000));
+        
+        if (!users[i].subscription) users[i].subscription = {};
+        users[i].subscription.expiresAt = newExpires.toISOString();
+        if (!users[i].subscription.startDate) users[i].subscription.startDate = now.toISOString();
+        users[i].subscription.lastOnlineCheck = now.toISOString();
+        users[i].subscription.manuallyClosed = false;
+        users[i].closed = false;
+        
+        if (!users[i].subscription.history) users[i].subscription.history = [];
+        users[i].subscription.history.push({
+          type: 'renew',
+          days: days,
+          date: now.toISOString(),
+          previousExpiry: currentExpires.toISOString(),
+          newExpiry: newExpires.toISOString()
+        });
+        break;
+      }
+    }
+    
+    if (!found) throw new Error('کاربر پیدا نشد');
+    data.users = users;
+    return jsonbinUpdate(data);
+  }).then(function() {
+    alert('✅ اشتراک ' + days + ' روز تمدید شد');
+    refreshUsers();
+  }).catch(function(e) { alert('خطا: ' + e.message); });
+}
+
+function closeUserProgram(userId) {
+  if (!confirm('برنامه کاربر بسته بشه؟')) return;
+  jsonbinGet().then(function(data) {
+    var users = data.users || [];
+    var now = new Date();
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].id === userId) {
+        users[i].closed = true;
+        users[i].closedAt = now.toISOString();
+        if (!users[i].subscription) users[i].subscription = {};
+        users[i].subscription.manuallyClosed = true;
+        if (!users[i].subscription.history) users[i].subscription.history = [];
+        users[i].subscription.history.push({
+          type: 'closed',
+          date: now.toISOString()
+        });
+        break;
+      }
+    }
+    data.users = users;
+    return jsonbinUpdate(data);
+  }).then(function() {
+    alert('✅ برنامه کاربر بسته شد');
+    refreshUsers();
+  }).catch(function(e) { alert('خطا: ' + e.message); });
+}
+
+function openUserProgram(userId) {
+  var days = prompt('چند روز اشتراک به این کاربر داده بشه؟\n(30 = یک ماه)', '30');
+  if (!days) return;
+  days = parseInt(days);
+  if (!days || days < 1 || days > 365) { alert('عدد نامعتبر'); return; }
+  
+  jsonbinGet().then(function(data) {
+    var users = data.users || [];
+    var now = new Date();
+    var newExpires = new Date(now.getTime() + (days * 24 * 60 * 60 * 1000));
+    
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].id === userId) {
+        users[i].closed = false;
+        delete users[i].closedAt;
+        if (!users[i].subscription) users[i].subscription = {};
+        users[i].subscription.expiresAt = newExpires.toISOString();
+        users[i].subscription.startDate = now.toISOString();
+        users[i].subscription.lastOnlineCheck = now.toISOString();
+        users[i].subscription.manuallyClosed = false;
+        if (!users[i].subscription.history) users[i].subscription.history = [];
+        users[i].subscription.history.push({
+          type: 'opened',
+          days: days,
+          date: now.toISOString(),
+          newExpiry: newExpires.toISOString()
+        });
+        break;
+      }
+    }
+    data.users = users;
+    return jsonbinUpdate(data);
+  }).then(function() {
+    alert('✅ برنامه کاربر باز شد و ' + days + ' روز اشتراک فعال شد');
+    refreshUsers();
+  }).catch(function(e) { alert('خطا: ' + e.message); });
+}
+
 function archiveUser(userId) {
   if (!confirm('کاربر به آرشیو منتقل بشه؟')) return;
   jsonbinGet().then(function(data) {
     var users = data.users || [];
-    var archived = data.archived || [];
-    var idx = -1;
-    for (var i = 0; i < users.length; i++) if (users[i].id === userId) { idx = i; break; }
-    if (idx === -1) throw new Error('کاربر پیدا نشد');
-    var user = users.splice(idx, 1)[0];
-    user.archivedAt = new Date().toISOString();
-    archived.push(user);
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].id === userId) {
+        users[i].archived = true;
+        users[i].archivedAt = new Date().toISOString();
+        break;
+      }
+    }
     data.users = users;
-    data.archived = archived;
     return jsonbinUpdate(data);
-  }).then(function() { alert('✅ کاربر آرشیو شد'); refreshUsers(); })
-    .catch(function(e) { alert('خطا: ' + e.message); });
+  }).then(function() {
+    alert('✅ کاربر آرشیو شد');
+    refreshUsers();
+  }).catch(function(e) { alert('خطا: ' + e.message); });
 }
+
 function restoreUser(userId) {
   jsonbinGet().then(function(data) {
     var users = data.users || [];
-    var archived = data.archived || [];
-    var idx = -1;
-    for (var i = 0; i < archived.length; i++) if (archived[i].id === userId) { idx = i; break; }
-    if (idx === -1) throw new Error('کاربر پیدا نشد');
-    var user = archived.splice(idx, 1)[0];
-    delete user.archivedAt;
-    users.push(user);
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].id === userId) {
+        users[i].archived = false;
+        delete users[i].archivedAt;
+        break;
+      }
+    }
     data.users = users;
-    data.archived = archived;
     return jsonbinUpdate(data);
-  }).then(function() { alert('✅ کاربر بازیابی شد'); refreshUsers(); })
-    .catch(function(e) { alert('خطا: ' + e.message); });
+  }).then(function() {
+    alert('✅ کاربر بازیابی شد');
+    refreshUsers();
+  }).catch(function(e) { alert('خطا: ' + e.message); });
+}
+
+function deleteUserForever(userId) {
+  if (!confirm('⚠️ کاربر برای همیشه حذف بشه؟ این عمل قابل بازگشت نیست!')) return;
+  if (!confirm('مطمئنی؟')) return;
+  jsonbinGet().then(function(data) {
+    var users = data.users || [];
+    users = users.filter(function(u) { return u.id !== userId; });
+    data.users = users;
+    return jsonbinUpdate(data);
+  }).then(function() {
+    alert('✅ کاربر حذف شد');
+    refreshUsers();
+  }).catch(function(e) { alert('خطا: ' + e.message); });
+}
+
+function rejectUser(userId) {
+  if (!confirm('این درخواست رد بشه؟')) return;
+  jsonbinGet().then(function(data) {
+    var users = data.users || [];
+    users = users.filter(function(u) { return u.id !== userId; });
+    data.users = users;
+    return jsonbinUpdate(data);
+  }).then(function() {
+    alert('✅ درخواست رد شد');
+    refreshUsers();
+  }).catch(function(e) { alert('خطا: ' + e.message); });
 }
 </script>
+
+
 <script>
+// ================== SUBSCRIPTION CHECK ==================
+function canUserModify() {
+  if (!currentUser || !currentUserData) return false;
+  
+  if (isLimitedMode) {
+    alert('⚠️ حالت محدود فعال است!\n\nبه دلیل عدم اتصال به اینترنت برای چندین روز، فعلاً فقط می‌تونی برنامه رو ببینی.\nبرای ذخیره، لطفاً آنلاین شو.');
+    return false;
+  }
+  
+  var sub = currentUserData.subscription;
+  if (sub && sub.expiresAt) {
+    var remaining = getRemainingDays(sub.expiresAt);
+    if (remaining <= 0) {
+      showLockedScreen('expired');
+      return false;
+    }
+  }
+  
+  if (sub && sub.manuallyClosed) {
+    showLockedScreen('manually_closed');
+    return false;
+  }
+  
+  return true;
+}
+
 // ================== WELCOME ==================
 function loadWelcomeScreen() {
   showSection('welcomeScreen');
   $('welcome-username').textContent = currentUser.username;
+  updateSubscriptionBadge();
 }
 function startSubjectSelection() {
+  if (!canUserModify()) return;
   currentUserData.hasSeenWelcome = true;
   saveUserDataLocal();
   loadSubjectSelection(false);
@@ -846,7 +1679,7 @@ function startSubjectSelection() {
 function goToPage(page) {
   closeSidebar();
   if (page === 'home') { showSection('home'); renderSchedule(); updateStats(); renderCharts(); checkFridayReminder(); }
-  else if (page === 'plan-new') { loadSubjectSelection(false); }
+  else if (page === 'plan-new') { if (!canUserModify()) return; loadSubjectSelection(false); }
   else if (page === 'next-week') { showSection('next-week'); renderNextWeekScheduleDisplay(); checkFridayReminder(); }
   else if (page === 'stats') { showSection('stats'); renderStatsPage(); }
   else if (page === 'lessons') { showSection('lessons'); renderLessonsPage(); }
@@ -868,7 +1701,10 @@ function loadSubjectSelection(forNextWeek) {
   renderSubjectSelectionGrid();
   updateSelectedSummary();
 }
-function openNextWeekPlanning() { loadSubjectSelection(true); }
+function openNextWeekPlanning() {
+  if (!canUserModify()) return;
+  loadSubjectSelection(true);
+}
 
 function renderSubjectSelectionGrid() {
   var grid = $('subject-selection-grid');
@@ -884,15 +1720,16 @@ function renderSubjectSelectionGrid() {
     card.onclick = function() { openSubjectDrawer(subject); };
     grid.appendChild(card);
   });
-  // کارت "سایر"
   var otherCard = document.createElement('div');
   otherCard.className = 'subject-card';
   otherCard.style.borderColor = 'var(--info-color)';
   otherCard.innerHTML = '<div style="font-size:2em;margin-bottom:5px;">➕</div><div style="font-size:1.1em;font-weight:bold;color:var(--info-color);">سایر</div><div style="font-size:.8em;color:var(--highlight-color);margin-top:5px;">درس دلخواه</div>';
   otherCard.onclick = function() { openCustomSubjectDrawer(); };
   grid.appendChild(otherCard);
-  }
+}
+
 function openCustomSubjectDrawer() {
+  if (!canUserModify()) return;
   var old = $('subject-drawer');
   if (old) old.remove();
   var drawer = document.createElement('div');
@@ -966,6 +1803,7 @@ function toggleTimeOptionCustom() {
 }
 
 function confirmCustomDrawer() {
+  if (!canUserModify()) { cancelDrawer(); return; }
   var name = $('custom-subject-name').value.trim();
   if (!name) { alert('اسم درس رو وارد کن'); return; }
   var days = [];
@@ -994,7 +1832,7 @@ function confirmCustomDrawer() {
   cancelDrawer();
   renderSubjectSelectionGrid();
   updateSelectedSummary();
-  }
+}
 
 function getAllSubjectsInPlanningSchedule() {
   var arr = [];
@@ -1008,6 +1846,7 @@ function getAllSubjectsInPlanningSchedule() {
 }
 
 function openSubjectDrawer(subject) {
+  if (!canUserModify()) return;
   var old = $('subject-drawer');
   if (old) old.remove();
   var existing = findSubjectInPlanningSchedule(subject);
@@ -1083,6 +1922,7 @@ function toggleTimeOption() {
 function cancelDrawer() { var d = $('subject-drawer'); if (d) d.remove(); }
 
 function confirmDrawer(subject) {
+  if (!canUserModify()) { cancelDrawer(); return; }
   var days = [];
   var cbs = document.querySelectorAll('.day-cb:checked');
   for (var i = 0; i < cbs.length; i++) days.push(cbs[i].value);
@@ -1167,6 +2007,7 @@ function updateSelectedSummary() {
 }
 
 function submitFinalPlan() {
+  if (!canUserModify()) return;
   var selected = getAllSubjectsInPlanningSchedule();
   if (selected.length === 0) { alert('حداقل یک درس انتخاب کن'); return; }
   if (isPlanningNextWeek) {
@@ -1180,7 +2021,10 @@ function submitFinalPlan() {
     goToPage('home');
   }
 }
+</script>
 
+
+<script>
 // ================== SCHEDULE RENDER ==================
 function renderSchedule() {
   var div = $('weekly-schedule');
@@ -1189,6 +2033,12 @@ function renderSchedule() {
   var wi = getWeekInfo();
   $('week-info-display').textContent = '📅 این هفته: ' + wi.startFull + ' تا ' + wi.endFull;
   $('student-welcome').textContent = '👋 خوش آمدید، ' + currentUser.username + '!';
+  
+  var limitedBanner = $('limited-banner-home');
+  if (limitedBanner) {
+    if (isLimitedMode) limitedBanner.classList.remove('hidden');
+    else limitedBanner.classList.add('hidden');
+  }
   
   daysOfWeek.forEach(function(day) {
     var items = currentUserData.schedule[day] || [];
@@ -1200,7 +2050,7 @@ function renderSchedule() {
     dd.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:2px solid var(--primary-color);padding-bottom:8px;flex-wrap:wrap;gap:8px;">' +
       '<span style="font-size:1.2em;color:' + (isToday ? 'var(--primary-color)' : 'var(--highlight-color)') + ';font-weight:bold;">' + (isToday ? '🔸 ' : '') + day + '</span>' +
       '<span style="font-size:.95em;color:var(--highlight-color);background:rgba(255,215,0,.2);padding:6px 12px;border-radius:10px;">⏱ ' + formatTime(total) + '</span>' +
-      '<button class="btn" style="font-size:.8em;padding:6px 12px;margin:0;" onclick="quickAddToDay(\'' + day + '\')">➕ برنامه</button>' +
+      (isLimitedMode ? '' : '<button class="btn" style="font-size:.8em;padding:6px 12px;margin:0;" onclick="quickAddToDay(\'' + day + '\')">➕ برنامه</button>') +
       '</div><div class="day-items"></div>';
     var itemsDiv = dd.querySelector('.day-items');
     if (items.length === 0) {
@@ -1220,23 +2070,35 @@ function createStudyItem(item) {
     : '<span style="color:var(--highlight-color);font-size:.85em;">⏱ مرجع: ' + formatTime(item.time) + '</span>';
   var th = '';
   if (item.timerEnabled !== false) {
-    th = '<span id="timer-' + item.id + '" class="timer-display">' + formatTime(item.savedTime || 0) + '</span>' +
-      '<button onclick="startTimer(\'' + item.id + '\')" id="start-' + item.id + '" style="background:var(--success-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;">▶ شروع</button>' +
-      '<button onclick="stopTimer(\'' + item.id + '\')" id="stop-' + item.id + '" style="background:var(--danger-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;display:none;">⏸ توقف</button>' +
-      '<button onclick="saveTimer(\'' + item.id + '\')" style="background:var(--primary-color);color:var(--secondary-color);border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;font-weight:bold;">💾 ذخیره</button>';
+    if (isLimitedMode) {
+      th = '<span class="timer-display" style="opacity:.5;">' + formatTime(item.savedTime || 0) + '</span>' +
+        '<span style="color:#FFC107;font-size:.8em;padding:6px 12px;">🔒 تایمر غیرفعال</span>';
+    } else {
+      th = '<span id="timer-' + item.id + '" class="timer-display">' + formatTime(item.savedTime || 0) + '</span>' +
+        '<button onclick="startTimer(\'' + item.id + '\')" id="start-' + item.id + '" style="background:var(--success-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;">▶ شروع</button>' +
+        '<button onclick="stopTimer(\'' + item.id + '\')" id="stop-' + item.id + '" style="background:var(--danger-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;display:none;">⏸ توقف</button>' +
+        '<button onclick="saveTimer(\'' + item.id + '\')" style="background:var(--primary-color);color:var(--secondary-color);border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;font-weight:bold;">💾 ذخیره</button>';
+    }
   }
+  
+  var checkboxHtml = isLimitedMode 
+    ? '<input type="checkbox" ' + (item.isDone ? 'checked' : '') + ' disabled style="width:22px;height:22px;opacity:.5;"><span style="font-size:.85em;color:#FFC107;">🔒</span>'
+    : '<input type="checkbox" ' + (item.isDone ? 'checked' : '') + ' onchange="toggleComplete(\'' + item.id + '\')" style="width:22px;height:22px;accent-color:var(--success-color);"><span style="font-size:.85em;">انجام شد</span>';
+  
+  var deleteHtml = isLimitedMode ? '' : '<button onclick="deleteItem(\'' + item.id + '\')" style="background:var(--danger-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;margin-right:auto;">🗑</button>';
+  
   div.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">' +
     '<div><span class="subject-name" style="font-size:1.05em;font-weight:bold;color:' + (item.isDone ? 'var(--success-color)' : 'var(--text-color)') + ';">' + (item.isCustom ? '🎯 ' : '📖 ') + item.subject + '</span><br>' + td + '</div>' +
-    '<div style="display:flex;align-items:center;gap:8px;"><input type="checkbox" ' + (item.isDone ? 'checked' : '') + ' onchange="toggleComplete(\'' + item.id + '\')" style="width:22px;height:22px;accent-color:var(--success-color);"><span style="font-size:.85em;">انجام شد</span></div>' +
+    '<div style="display:flex;align-items:center;gap:8px;">' + checkboxHtml + '</div>' +
     '</div>' +
-    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;">' + th +
-    '<button onclick="deleteItem(\'' + item.id + '\')" style="background:var(--danger-color);color:#fff;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:.85em;margin-right:auto;">🗑</button>' +
+    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;">' + th + deleteHtml +
     '</div>';
   return div;
 }
 
 // ================== TIMERS ==================
 function startTimer(id) {
+  if (!canUserModify()) return;
   var item = findScheduleItem(id);
   if (!item) return;
   if (!timers[id]) timers[id] = { intervalId: null, seconds: item.savedTime || 0, isRunning: false };
@@ -1263,6 +2125,7 @@ function stopTimer(id) {
   if (st) st.style.display = 'none';
 }
 function saveTimer(id) {
+  if (!canUserModify()) return;
   var item = findScheduleItem(id);
   var t = timers[id];
   if (!item || !t) return;
@@ -1297,6 +2160,7 @@ function findScheduleItem(id) {
   return null;
 }
 function toggleComplete(id) {
+  if (!canUserModify()) return;
   var item = findScheduleItem(id);
   if (!item) return;
   item.isDone = !item.isDone;
@@ -1307,6 +2171,7 @@ function toggleComplete(id) {
   checkMotivationalMessage();
 }
 function deleteItem(id) {
+  if (!canUserModify()) return;
   if (!confirm('حذف شود؟')) return;
   for (var i = 0; i < daysOfWeek.length; i++) {
     var day = daysOfWeek[i];
@@ -1321,11 +2186,13 @@ function deleteItem(id) {
   renderCharts();
 }
 function quickAddToDay(day) {
+  if (!canUserModify()) return;
   $('add-day').value = day;
   $('add-custom-title').focus();
   $('add-custom-title').scrollIntoView({behavior:'smooth', block:'center'});
 }
 function addCustomScheduleItem() {
+  if (!canUserModify()) return;
   var day = $('add-day').value;
   var title = $('add-custom-title').value.trim();
   var h = parseInt($('add-hours').value) || 0;
@@ -1353,7 +2220,10 @@ function addCustomScheduleItem() {
   updateStats();
   renderCharts();
 }
+</script>
 
+
+<script>
 // ================== NEXT WEEK ==================
 function renderNextWeekScheduleDisplay() {
   var div = $('next-week-schedule-display');
@@ -1364,7 +2234,7 @@ function renderNextWeekScheduleDisplay() {
   var ns = currentUserData.nextWeekSchedule || {};
   var has = Object.keys(ns).some(function(k) { return ns[k] && ns[k].length > 0; });
   if (!has) {
-    div.innerHTML = '<div style="background:rgba(33,150,243,.15);border:2px dashed var(--info-color);border-radius:15px;padding:30px;text-align:center;"><p style="color:var(--highlight-color);margin-bottom:15px;">📭 هنوز برنامه‌ای تنظیم نکردی</p><button class="btn btn-info" onclick="openNextWeekPlanning()">📝 تنظیم کن</button></div>';
+    div.innerHTML = '<div style="background:rgba(33,150,243,.15);border:2px dashed var(--info-color);border-radius:15px;padding:30px;text-align:center;"><p style="color:var(--highlight-color);margin-bottom:15px;">📭 هنوز برنامه‌ای تنظیم نکردی</p>' + (isLimitedMode ? '' : '<button class="btn btn-info" onclick="openNextWeekPlanning()">📝 تنظیم کن</button>') + '</div>';
     return;
   }
   daysOfWeek.forEach(function(day) {
@@ -1375,13 +2245,16 @@ function renderNextWeekScheduleDisplay() {
     var html = '<div style="color:var(--info-color);font-weight:bold;margin-bottom:10px;">📅 ' + day + '</div>';
     items.forEach(function(item) {
       var ts = item.noTime ? 'بدون زمان' : formatTime(item.time);
-      html += '<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><div><span style="color:var(--text-color);font-weight:bold;">📖 ' + item.subject + '</span><span style="color:var(--highlight-color);font-size:.85em;margin-right:10px;">⏱ ' + ts + '</span></div><button onclick="removeFromNextWeek(\'' + day + '\',\'' + item.id + '\')" style="background:var(--danger-color);color:#fff;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.8em;">🗑</button></div>';
+      html += '<div style="background:rgba(255,255,255,.1);border-radius:10px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><div><span style="color:var(--text-color);font-weight:bold;">📖 ' + item.subject + '</span><span style="color:var(--highlight-color);font-size:.85em;margin-right:10px;">⏱ ' + ts + '</span></div>' +
+        (isLimitedMode ? '' : '<button onclick="removeFromNextWeek(\'' + day + '\',\'' + item.id + '\')" style="background:var(--danger-color);color:#fff;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:.8em;">🗑</button>') +
+        '</div>';
     });
     d.innerHTML = html;
     div.appendChild(d);
   });
 }
 function removeFromNextWeek(day, id) {
+  if (!canUserModify()) return;
   if (!confirm('حذف شود؟')) return;
   if (currentUserData.nextWeekSchedule[day]) {
     currentUserData.nextWeekSchedule[day] = currentUserData.nextWeekSchedule[day].filter(function(i) { return i.id !== id; });
@@ -1424,7 +2297,21 @@ function renderStatsPage() {
   $('total-all-time').textContent = formatTime(total);
   $('avg-daily').textContent = formatTime(weeks > 0 ? Math.round(total/(weeks*7)) : 0);
   $('weeks-count').textContent = weeks;
-  renderStatsCharts();
+  
+  var limitedBanner = $('limited-banner-stats');
+  if (limitedBanner) {
+    if (isLimitedMode) limitedBanner.classList.remove('hidden');
+    else limitedBanner.classList.add('hidden');
+  }
+  
+  if (isLimitedMode) {
+    var pc = $('statsProgressChart');
+    var tc = $('statsTimeChart');
+    if (pc && statsProgressChart) { statsProgressChart.destroy(); statsProgressChart = null; }
+    if (tc && statsTimeChart) { statsTimeChart.destroy(); statsTimeChart = null; }
+  } else {
+    renderStatsCharts();
+  }
   renderWeeklyArchive();
 }
 function renderWeeklyArchive() {
@@ -1469,6 +2356,7 @@ function renderLessonsPage() {
 
 // ================== SETTINGS ==================
 function openChangePassword() {
+  if (!canUserModify()) return;
   var cur = prompt('رمز فعلی:');
   if (!cur) return;
   if (cur !== currentUser.password) { alert('رمز فعلی نادرست'); return; }
@@ -1489,7 +2377,7 @@ function openChangePassword() {
   }).catch(function(e) { alert('خطا: ' + e.message); });
 }
 function downloadBackup() {
-  var data = {version:'4.0', user:currentUser, userData:currentUserData, exportedAt:new Date().toISOString()};
+  var data = {version:'5.0', user:currentUser, userData:currentUserData, exportedAt:new Date().toISOString()};
   var blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
@@ -1499,6 +2387,7 @@ function downloadBackup() {
   URL.revokeObjectURL(url);
 }
 function restoreBackup(event) {
+  if (!canUserModify()) { event.target.value = ''; return; }
   var file = event.target.files[0];
   if (!file) return;
   var reader = new FileReader();
@@ -1506,7 +2395,10 @@ function restoreBackup(event) {
     try {
       var backup = JSON.parse(e.target.result);
       if (!confirm('همه داده‌های فعلی جایگزین میشن. مطمئنی؟')) return;
-      currentUserData = backup.userData;
+      currentUserData.schedule = backup.userData.schedule || {};
+      currentUserData.nextWeekSchedule = backup.userData.nextWeekSchedule || {};
+      currentUserData.weeklyTimes = backup.userData.weeklyTimes || {};
+      currentUserData.weeklyHistory = backup.userData.weeklyHistory || {};
       saveUserDataLocal();
       alert('✅ بازیابی شد');
       goToPage('home');
@@ -1531,7 +2423,7 @@ function installPWA() {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(function() { deferredPrompt = null; });
   } else {
-    alert('📱 در اندروید: منو → Add to Home Screen\nدر iOS: Share → Add to Home Screen');
+    alert('📱 در اندروید: منو → Add to Home Screen\nدر iOS: Share → Share → Add to Home Screen');
   }
 }
 function deleteAccount() {
@@ -1539,16 +2431,15 @@ function deleteAccount() {
   if (!confirm('مطمئنی؟')) return;
   jsonbinGet().then(function(data) {
     var users = data.users || [];
-    var archived = data.archived || [];
-    var idx = -1;
-    for (var i = 0; i < users.length; i++) if (users[i].id === currentUser.id) { idx = i; break; }
-    if (idx === -1) throw new Error('کاربر پیدا نشد');
-    var user = users.splice(idx, 1)[0];
-    user.archivedAt = new Date().toISOString();
-    user.deletedBySelf = true;
-    archived.push(user);
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].id === currentUser.id) {
+        users[i].archived = true;
+        users[i].archivedAt = new Date().toISOString();
+        users[i].deletedBySelf = true;
+        break;
+      }
+    }
     data.users = users;
-    data.archived = archived;
     return jsonbinUpdate(data);
   }).then(function() {
     localStorage.removeItem('userData_' + currentUser.id);
@@ -1562,8 +2453,99 @@ function renderSettingsPage() {
   el.innerHTML = '<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--highlight-color);">👤:</strong> ' + currentUser.username + '</div><div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--highlight-color);">📱:</strong> ' + currentUser.phone + '</div><div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.1);"><strong style="color:var(--highlight-color);">📚:</strong> ' + gn + '</div><div style="padding:10px 0;"><strong style="color:var(--highlight-color);">📅:</strong> ' + getPersianDate(new Date(currentUser.createdAt)) + '</div>';
   var th = currentUserData.theme || 'light';
   document.querySelectorAll('input[name="theme"]').forEach(function(r) { r.checked = r.value === th; });
+  
+  // اطلاعات اشتراک
+  var subEl = $('subscription-info');
+  if (subEl && currentUserData.subscription) {
+    var sub = currentUserData.subscription;
+    var remaining = getRemainingDays(sub.expiresAt);
+    var color = remaining <= 0 ? '#f44336' : (remaining <= 3 ? '#f44336' : (remaining <= 7 ? '#FFC107' : '#4CAF50'));
+    var statusText = remaining <= 0 ? '⛔ منقضی شده' : '✅ فعال';
+    
+    subEl.innerHTML = '<div class="sub-info-grid">' +
+      '<div class="sub-info-item"><div class="label">وضعیت</div><div class="value" style="color:' + color + ';">' + statusText + '</div></div>' +
+      '<div class="sub-info-item"><div class="label">روزهای باقی‌مانده</div><div class="value" style="color:' + color + ';">' + Math.max(0, remaining) + '</div></div>' +
+      '<div class="sub-info-item"><div class="label">تاریخ شروع</div><div class="value" style="font-size:.85em;">' + getPersianDate(new Date(sub.startDate)) + '</div></div>' +
+      '<div class="sub-info-item"><div class="label">تاریخ انقضا</div><div class="value" style="font-size:.85em;">' + getPersianDate(new Date(sub.expiresAt)) + '</div></div>' +
+      '<div class="sub-info-item"><div class="label">آخرین آنلاین</div><div class="value" style="font-size:.85em;">' + getPersianDate(new Date(sub.lastOnlineCheck || sub.startDate)) + '</div></div>' +
+      '</div>';
+  } else if (subEl) {
+    subEl.innerHTML = '<p style="color:var(--accent-color);text-align:center;">اطلاعات اشتراک موجود نیست</p>';
+  }
+  
+  // بخش معرفی به دوستان
+  renderReferralSection();
 }
-  </script>
+
+function renderReferralSection() {
+  var el = $('referral-info');
+  var card = $('referral-card');
+  if (!el || !card) return;
+  
+  // اگه هدیه‌ای نداره، کارت رو مخفی کن
+  var hasBonus = (currentUser.referralBonus && currentUser.referralBonus > 0) || 
+                 (currentUser.referralBonusTotal && currentUser.referralBonusTotal > 0);
+  
+  // همیشه کد معرف رو نشون بده (چون ممکنه کاربر بخواد به دوستاش بده)
+  // ولی بخش "هدیه گرفته" رو فقط اگه داره نشون بده
+  
+  var myCode = currentUser.myReferralCode || '—';
+  
+  var html = '<div class="referral-box">';
+  html += '<p style="color:#fff;font-size:1em;margin-bottom:10px;">🎁 کد معرف خودت رو به دوستات بده</p>';
+  html += '<p style="color:#ddd;font-size:.9em;margin-bottom:15px;">با هر معرفی، <strong style="color:#FFD700;">' + CONFIG.REFERRAL_BONUS_DAYS + ' روز</strong> به اشتراکت اضافه میشه</p>';
+  html += '<div class="referral-code">' + myCode + '</div>';
+  html += '<div style="margin-top:15px;">';
+  html += '<button class="btn btn-info btn-full" onclick="copyReferralCode(\'' + myCode + '\')">📋 کپی کد معرف</button>';
+  html += '</div>';
+  
+  // نمایش هدیه گرفته شده
+  if (hasBonus) {
+    var totalBonus = currentUser.referralBonusTotal || currentUser.referralBonus || 0;
+    var referralCount = (currentUser.referredUsers && currentUser.referredUsers.length) || 0;
+    
+    html += '<div class="referral-stats">';
+    html += '<div class="referral-stat">🎁 هدیه گرفته‌اید: <strong>' + totalBonus + ' روز</strong></div>';
+    if (referralCount > 0) {
+      html += '<div class="referral-stat">👥 تعداد معرفی‌شده: <strong>' + referralCount + ' نفر</strong></div>';
+    }
+    html += '</div>';
+  }
+  
+  // اگه از کد کسی استفاده کرده
+  if (currentUser.referredBy) {
+    html += '<div style="margin-top:15px;padding:10px;background:rgba(76,175,80,.15);border-radius:8px;">';
+    html += '<p style="color:#4CAF50;font-size:.9em;">✅ شما با کد <strong>' + currentUser.referredBy + '</strong> ثبت‌نام کردید</p>';
+    html += '</div>';
+  }
+  
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function copyReferralCode(code) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(function() {
+      alert('✅ کد معرف کپی شد: ' + code + '\n\nاین کد رو به دوستات بده تا وقتی ثبت‌نام کردن، هر دو ' + CONFIG.REFERRAL_BONUS_DAYS + ' روز هدیه بگیرید.');
+    }).catch(function() {
+      fallbackCopyReferral(code);
+    });
+  } else {
+    fallbackCopyReferral(code);
+  }
+}
+function fallbackCopyReferral(code) {
+  var input = document.createElement('input');
+  input.value = code;
+  document.body.appendChild(input);
+  input.select();
+  try { document.execCommand('copy'); alert('✅ کد معرف کپی شد: ' + code); }
+  catch(e) { prompt('کد رو دستی کپی کن:', code); }
+  document.body.removeChild(input);
+}
+</script>
+
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 // ================== CHARTS ==================
@@ -1598,6 +2580,14 @@ function getTimeData() {
   return { labels: labels, data: data };
 }
 function renderCharts() {
+  if (isLimitedMode) {
+    var pc = $('progressChart');
+    var tc = $('timeChart');
+    if (pc && progressChart) { progressChart.destroy(); progressChart = null; }
+    if (tc && timeChart) { timeChart.destroy(); timeChart = null; }
+    return;
+  }
+  
   var pc = $('progressChart');
   if (pc && typeof Chart !== 'undefined') {
     if (progressChart) progressChart.destroy();
@@ -1656,6 +2646,8 @@ function renderCharts() {
   }
 }
 function renderStatsCharts() {
+  if (isLimitedMode) return;
+  
   var pc = $('statsProgressChart');
   if (pc && typeof Chart !== 'undefined') {
     if (statsProgressChart) statsProgressChart.destroy();
@@ -1716,7 +2708,7 @@ function checkMotivationalMessage() {
   items.forEach(function(i) { t += i.time; if (i.isDone) d += i.time; });
   var p = t > 0 ? (d/t) : 0;
   var el = $('motivational-message');
-  if (el) el.classList.toggle('hidden', p < 0.67);
+  if (el) el.classList.toggle('hidden', p < 0.67 || isLimitedMode);
 }
 
 // ================== PWA ==================
@@ -1732,22 +2724,67 @@ window.addEventListener('beforeinstallprompt', function(e) {
 function updateOnlineStatus() {
   var b = $('offline-banner');
   if (b) b.classList.toggle('show', !navigator.onLine);
+  
+  if (currentUser && currentUserData && !isAdmin) {
+    var access = validateUserAccess(currentUser, currentUserData);
+    if (!access.ok) {
+      if (access.reason === 'offline_closed') {
+        showLockedScreen('offline_closed', access);
+      } else if (access.reason === 'expired') {
+        showLockedScreen('expired');
+      } else if (access.reason === 'manually_closed') {
+        showLockedScreen('manually_closed');
+      }
+    } else {
+      if (access.limited) applyLimitedMode(true);
+      else {
+        applyLimitedMode(false);
+        if (navigator.onLine) updateLastOnlineCheck();
+      }
+      updateSubscriptionBadge();
+    }
+  }
 }
-window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('online', function() {
+  updateOnlineStatus();
+  if (currentUser && currentUserData && !isAdmin) {
+    applyLimitedMode(false);
+    updateLastOnlineCheck();
+    updateSubscriptionBadge();
+  }
+});
 window.addEventListener('offline', updateOnlineStatus);
 
 // ================== INIT ==================
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('✅ v4.0 - jsonbin.io');
+  console.log('✅ v5.0 - با سیستم اشتراک و کد معرف');
   updateOnlineStatus();
   showSection('login');
   applyTheme('light');
+  
   var savedUser = localStorage.getItem('myUsername');
   var savedPass = localStorage.getItem('myPassword');
   if (savedUser && savedPass) {
     var uEl = $('login-username'); if (uEl) uEl.value = savedUser;
     var pEl = $('login-password'); if (pEl) pEl.value = savedPass;
   }
+  
+  // چک خودکار آپدیت
+  setTimeout(checkForUpdates, 2000);
+  
+  // چک دوره‌ای اشتراک (هر ۱ ساعت)
+  setInterval(function() {
+    if (currentUser && currentUserData && !isAdmin) {
+      var access = validateUserAccess(currentUser, currentUserData);
+      if (!access.ok) {
+        if (access.reason === 'offline_closed') showLockedScreen('offline_closed', access);
+        else if (access.reason === 'expired') showLockedScreen('expired');
+        else if (access.reason === 'manually_closed') showLockedScreen('manually_closed');
+      } else {
+        updateSubscriptionBadge();
+      }
+    }
+  }, 60 * 60 * 1000);
 });
 window.addEventListener('beforeunload', function() {
   stopAllTimers();
@@ -1800,9 +2837,16 @@ window.switchAdminTab = switchAdminTab;
 window.refreshUsers = refreshUsers;
 window.searchUsers = searchUsers;
 window.copyCode = copyCode;
-window.generateNewCode = generateNewCode;
+window.generateNewCodeForUser = generateNewCodeForUser;
+window.approveUserQuick = approveUserQuick;
+window.openRenewDialog = openRenewDialog;
+window.renewSubscription = renewSubscription;
+window.closeUserProgram = closeUserProgram;
+window.openUserProgram = openUserProgram;
 window.archiveUser = archiveUser;
 window.restoreUser = restoreUser;
+window.deleteUserForever = deleteUserForever;
+window.rejectUser = rejectUser;
 window.renderCharts = renderCharts;
 window.renderStatsCharts = renderStatsCharts;
 window.renderStatsPage = renderStatsPage;
@@ -1813,6 +2857,18 @@ window.checkMotivationalMessage = checkMotivationalMessage;
 window.applyTheme = applyTheme;
 window.findScheduleItem = findScheduleItem;
 window.updateOnlineStatus = updateOnlineStatus;
+window.updateSubscriptionBadge = updateSubscriptionBadge;
+window.checkSubscriptionStatus = checkSubscriptionStatus;
+window.validateUserAccess = validateUserAccess;
+window.canUserModify = canUserModify;
+window.applyLimitedMode = applyLimitedMode;
+window.showLockedScreen = showLockedScreen;
+window.updateLastOnlineCheck = updateLastOnlineCheck;
+window.checkForUpdates = checkForUpdates;
+window.applyReferralReward = applyReferralReward;
+window.generateReferralCode = generateReferralCode;
+window.copyReferralCode = copyReferralCode;
+window.renderReferralSection = renderReferralSection;
 </script>
 </body>
 </html>
