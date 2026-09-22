@@ -516,23 +516,65 @@ function openSidebar() { $('sidebar').classList.add('open'); $('sidebar-overlay'
 function closeSidebar() { $('sidebar').classList.remove('open'); $('sidebar-overlay').classList.remove('open'); }
 
 // ================== JSONBIN API (via Vercel) ==================
-function jsonbinGet() {
-  return fetch('https://study-planner-api-mocha.vercel.app/api/data', {
-    method: 'GET'
-  }).then(function(r) {
-    if (!r.ok) throw new Error('خطا در خواندن داده');
-    return r.json();
+// ================== JSONBIN API (with Fallback) ==================
+var API_URLS = [
+  'https://study-planner-api-mocha.vercel.app/api/data',        // اصلی: Vercel
+  'https://study-planner-api.khanmsamiee83-5f3.workers.dev'     // پشتیبان: Cloudflare
+];
+
+function tryFetch(url, options) {
+  return new Promise(function(resolve, reject) {
+    var timeout = setTimeout(function() {
+      reject(new Error('Timeout'));
+    }, 8000);
+    
+    fetch(url, options).then(function(r) {
+      clearTimeout(timeout);
+      if (!r.ok) {
+        reject(new Error('HTTP ' + r.status));
+      } else {
+        resolve(r);
+      }
+    }).catch(function(e) {
+      clearTimeout(timeout);
+      reject(e);
+    });
   });
 }
+
+function jsonbinGet() {
+  var options = { method: 'GET' };
+  
+  return tryFetch(API_URLS[0], options)
+    .then(function(r) { return r.json(); })
+    .catch(function(e) {
+      console.warn('❌ Vercel failed, trying Cloudflare...', e.message);
+      return tryFetch(API_URLS[1], options)
+        .then(function(r) { return r.json(); })
+        .catch(function(e2) {
+          console.error('❌ Both APIs failed');
+          throw new Error('اتصال به سرور برقرار نیست');
+        });
+    });
+                 }
 function jsonbinUpdate(data) {
-  return fetch('https://study-planner-api-mocha.vercel.app/api/data', {
+  var options = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
-  }).then(function(r) {
-    if (!r.ok) throw new Error('خطا در ذخیره داده');
-    return r.json();
-  });
+  };
+  
+  return tryFetch(API_URLS[0], options)
+    .then(function(r) { return r.json(); })
+    .catch(function(e) {
+      console.warn('❌ Vercel failed, trying Cloudflare...', e.message);
+      return tryFetch(API_URLS[1], options)
+        .then(function(r) { return r.json(); })
+        .catch(function(e2) {
+          console.error('❌ Both APIs failed');
+          throw new Error('اتصال به سرور برقرار نیست');
+        });
+    });
 }
 
 // ================== EMAILJS ==================
