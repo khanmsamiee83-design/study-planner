@@ -515,66 +515,27 @@ function showMessage(id, msg, ok) {
 function openSidebar() { $('sidebar').classList.add('open'); $('sidebar-overlay').classList.add('open'); }
 function closeSidebar() { $('sidebar').classList.remove('open'); $('sidebar-overlay').classList.remove('open'); }
 
-// ================== JSONBIN API (via Vercel) ==================
-// ================== JSONBIN API (with Fallback) ==================
-var API_URLS = [
-  'https://study-planner-api-mocha.vercel.app/api/data',        // اصلی: Vercel
-  'https://study-planner-api.khanmsamiee83-5f3.workers.dev'     // پشتیبان: Cloudflare
-];
-
-function tryFetch(url, options) {
-  return new Promise(function(resolve, reject) {
-    var timeout = setTimeout(function() {
-      reject(new Error('Timeout'));
-    }, 8000);
-    
-    fetch(url, options).then(function(r) {
-      clearTimeout(timeout);
-      if (!r.ok) {
-        reject(new Error('HTTP ' + r.status));
-      } else {
-        resolve(r);
-      }
-    }).catch(function(e) {
-      clearTimeout(timeout);
-      reject(e);
-    });
-  });
-}
+// ================== JSONBIN API (via Vercel) ===================
+var API_URL = 'https://study-planner-api-mocha.vercel.app/api/data';
 
 function jsonbinGet() {
-  var options = { method: 'GET' };
-  
-  return tryFetch(API_URLS[0], options)
-    .then(function(r) { return r.json(); })
-    .catch(function(e) {
-      console.warn('❌ Vercel failed, trying Cloudflare...', e.message);
-      return tryFetch(API_URLS[1], options)
-        .then(function(r) { return r.json(); })
-        .catch(function(e2) {
-          console.error('❌ Both APIs failed');
-          throw new Error('اتصال به سرور برقرار نیست');
-        });
-    });
-                 }
+  return fetch(API_URL + '?t=' + Date.now(), {
+    method: 'GET',
+    cache: 'no-store'
+  }).then(function(r) {
+    if (!r.ok) throw new Error('اتصال به سرور برقرار نیست');
+    return r.json();
+  });
+  }
 function jsonbinUpdate(data) {
-  var options = {
+  return fetch(API_URL, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
-  };
-  
-  return tryFetch(API_URLS[0], options)
-    .then(function(r) { return r.json(); })
-    .catch(function(e) {
-      console.warn('❌ Vercel failed, trying Cloudflare...', e.message);
-      return tryFetch(API_URLS[1], options)
-        .then(function(r) { return r.json(); })
-        .catch(function(e2) {
-          console.error('❌ Both APIs failed');
-          throw new Error('اتصال به سرور برقرار نیست');
-        });
-    });
+  }).then(function(r) {
+    if (!r.ok) throw new Error('اتصال به سرور برقرار نیست');
+    return r.json();
+  });
 }
 
 // ================== EMAILJS ==================
@@ -730,25 +691,11 @@ function applyLimitedMode(limited) {
 function updateLastOnlineCheck() {
   if (!currentUser || !currentUserData) return;
   if (!navigator.onLine) return;
-  
   if (!currentUserData.subscription) return;
+  
   currentUserData.subscription.lastOnlineCheck = new Date().toISOString();
   saveUserDataLocal();
-  
-  jsonbinGet().then(function(data) {
-    var users = data.users || [];
-    for (var i = 0; i < users.length; i++) {
-      if (users[i].id === currentUser.id) {
-        if (!users[i].subscription) users[i].subscription = {};
-        users[i].subscription.lastOnlineCheck = new Date().toISOString();
-        break;
-      }
-    }
-    data.users = users;
-    return jsonbinUpdate(data);
-  }).catch(function(e) { console.warn('Last online check update failed:', e); });
 }
-
 function validateUserAccess(user, userData) {
   if (user.subscription && user.subscription.manuallyClosed) {
     return { ok: false, reason: 'manually_closed' };
