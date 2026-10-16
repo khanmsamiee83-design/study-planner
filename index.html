@@ -137,7 +137,7 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 
 <div class="container">
 <div class="app-header">
-<h1>📚 برنامه‌ریزی تحصیلی</h1>
+<h1 onclick="onLogoTap()" style="cursor:pointer;user-select:none;">📚 برنامه‌ریزی تحصیلی</h1>
 <div class="header-right">
 <div id="subscription-badge" class="subscription-badge hidden"></div>
 <div id="header-user-info" class="user-info hidden"></div>
@@ -154,7 +154,6 @@ input:focus,select:focus{border-color:var(--primary-color);box-shadow:0 0 15px r
 <div style="margin-top:20px;text-align:center;">
 <p style="color:var(--accent-color);margin-bottom:10px;">حساب ندارید؟</p>
 <button class="btn btn-secondary btn-full" onclick="showSection('signup')">📝 ثبت‌نام</button>
-<button class="btn btn-info btn-full" style="margin-top:10px;" onclick="showSection('adminLogin')">👨‍💼 ورود مدیر</button>
 </div>
 </div>
 
@@ -513,6 +512,32 @@ function showMessage(id, msg, ok) {
   setTimeout(function() { el.classList.add('hidden'); }, 6000);
 }
 function openSidebar() { $('sidebar').classList.add('open'); $('sidebar-overlay').classList.add('open'); }
+  
+// ================== HIDDEN ADMIN ACCESS ==================
+var logoTapCount = 0;
+var lastLogoTap = 0;
+
+function onLogoTap() {
+  var now = Date.now();
+  if (now - lastLogoTap > 1500) {
+    logoTapCount = 0;
+  }
+  logoTapCount++;
+  lastLogoTap = now;
+  
+  if (logoTapCount >= 5) {
+    logoTapCount = 0;
+    var emailEl = $('admin-email');
+    var otpEl = $('admin-otp');
+    var errEl = $('admin-error');
+    if (emailEl) emailEl.value = '';
+    if (otpEl) otpEl.value = '';
+    if (errEl) errEl.classList.add('hidden');
+    var otpSection = $('otp-section');
+    if (otpSection) otpSection.classList.add('hidden');
+    showSection('adminLogin');
+  }
+}
 function closeSidebar() { $('sidebar').classList.remove('open'); $('sidebar-overlay').classList.remove('open'); }
 
 // ================== JSONBIN API (via Vercel) ===================
@@ -2792,6 +2817,7 @@ window.logout = logout;
 window.showSection = showSection;
 window.goToPage = goToPage;
 window.openSidebar = openSidebar;
+window.onLogoTap = onLogoTap;
 window.closeSidebar = closeSidebar;
 window.loadWelcomeScreen = loadWelcomeScreen;
 window.startSubjectSelection = startSubjectSelection;
