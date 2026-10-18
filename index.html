@@ -405,6 +405,7 @@ canvas{width:100%!important;height:auto!important;max-height:300px}
 
 <script type="module">
 // ================== FIREBASE ==================
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -419,6 +420,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+// ================== SUPABASE ==================
+const supabaseUrl = 'https://wsklxjxfatcimpewbebk.supabase.co';
+const supabaseKey = 'sb_publishable_yiKcUSnHebNmNKwgcaTFXw_ywMzX_p9';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // ================== STATE ==================
 let currentUser = null;
