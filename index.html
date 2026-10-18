@@ -1,1 +1,1388 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#FFD700">
+<title>برنامه‌ریزی هوشمند</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--primary:#FFD700;--secondary:#333;--accent:#A9A9A9;--bg-start:#FFEC8B;--bg-end:#DAA520;--text:#FFF;--success:#4CAF50;--danger:#f44336;--info:#2196F3;--card-bg:rgba(255,255,255,.08);--highlight:#FFEC8B}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:'Vazirmatn',sans-serif}
+body{background:linear-gradient(135deg,var(--bg-start),var(--bg-end));min-height:100vh;color:var(--text);display:flex;justify-content:center;align-items:flex-start;padding:15px;overflow-x:hidden;transition:background .3s}
+body.dark-mode{--secondary:#1a1a1a;--bg-start:#2a2a2a;--bg-end:#1a1a1a;--text:#E0E0E0;--card-bg:rgba(255,255,255,.05)}
+body.lang-en{direction:ltr}
+.container{background:rgba(51,51,51,.95);border-radius:20px;box-shadow:0 15px 50px rgba(0,0,0,.4);width:100%;max-width:800px;padding:20px;position:relative}
+body.dark-mode .container{background:rgba(26,26,26,.98)}
+.section{display:none;animation:fadeIn .3s}
+.section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid var(--primary)}
+.app-header h1{font-size:1.4em;color:var(--primary);cursor:pointer;user-select:none}
+.header-right{display:flex;gap:10px;align-items:center}
+.card{background:var(--card-bg);border-radius:15px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,.1)}
+.form-group{margin-bottom:15px}
+label{display:block;margin-bottom:8px;color:var(--highlight);font-size:.9em}
+input[type="text"],input[type="password"],input[type="number"],select{width:100%;padding:12px;border:2px solid var(--accent);border-radius:10px;background:rgba(255,255,255,.95);color:var(--secondary);font-size:16px;font-family:inherit;margin-bottom:10px}
+input:focus,select:focus{border-color:var(--primary);outline:none}
+.btn{background:linear-gradient(45deg,var(--primary),#e6c000);color:var(--secondary);border:none;padding:12px 20px;border-radius:10px;font-size:1em;font-weight:bold;cursor:pointer;margin:4px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s}
+.btn:active{transform:scale(.96)}
+.btn-full{width:100%}
+.btn-danger{background:linear-gradient(45deg,var(--danger),#d32f2f);color:#fff}
+.btn-success{background:linear-gradient(45deg,var(--success),#388e3c);color:#fff}
+.btn-info{background:linear-gradient(45deg,var(--info),#1976D2);color:#fff}
+.btn-secondary{background:linear-gradient(45deg,var(--accent),#808080);color:#fff}
+.btn-small{font-size:.8em;padding:6px 12px;border-radius:8px}
+.hidden{display:none!important}
+.sidebar-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:9998;opacity:0;visibility:hidden;transition:all .3s}
+.sidebar-overlay.open{opacity:1;visibility:visible}
+.sidebar{position:fixed;top:0;right:-320px;width:280px;height:100%;background:rgba(40,40,40,.98);z-index:9999;transition:right .3s;overflow-y:auto;padding:20px 0}
+body.lang-en .sidebar{right:auto;left:-320px}
+.sidebar.open{right:0}
+body.lang-en .sidebar.open{left:0;right:auto}
+.sidebar-header{padding:0 20px 15px;border-bottom:2px solid var(--primary);margin-bottom:15px;display:flex;justify-content:space-between;align-items:center}
+.menu-item{padding:15px 20px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:12px;border-right:4px solid transparent}
+.menu-item:hover{background:rgba(255,215,0,.15);border-right-color:var(--primary)}
+body.lang-en .menu-item{border-right:none;border-left:4px solid transparent}
+body.lang-en .menu-item:hover{border-left-color:var(--primary)}
+#focus-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#111;z-index:99999;display:none;flex-direction:column;justify-content:center;align-items:center;padding:20px}
+.timer-display{font-family:monospace;font-size:3.5em;font-weight:bold;color:var(--primary);background:rgba(0,0,0,.6);padding:20px;border-radius:15px;text-align:center;border:2px solid var(--primary);box-shadow:0 0 30px rgba(255,215,0,.2)}
+.avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:15px}
+.avatar-option{padding:15px;border:3px solid transparent;border-radius:15px;cursor:pointer;display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,.1);font-size:2.5em;transition:.2s}
+.avatar-option.selected{border-color:var(--primary);background:rgba(255,215,0,.2);transform:scale(1.1)}
+.postcard{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);background:linear-gradient(135deg,#fff,#f0f0f0);color:#333;padding:30px;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.5);z-index:100000;text-align:center;width:90%;max-width:350px;opacity:0;pointer-events:none;transition:.3s}
+.postcard.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
+.postcard.gold{border:4px solid var(--primary);background:linear-gradient(135deg,#FFF8DC,#FFD700)}
+.postcard.blue{border:4px solid var(--info);background:linear-gradient(135deg,#E3F2FD,#90CAF9)}
+.postcard.orange{border:4px solid orange;background:linear-gradient(135deg,#FFF3E0,#FFB74D)}
+.postcard.green{border:4px solid var(--success);background:linear-gradient(135deg,#E8F5E9,#81C784)}
+.postcard h3{font-size:1.5em;margin-bottom:10px}
+canvas{width:100%!important;height:auto!important;max-height:250px}
+</style>
+</head>
+<body>
 
+<div style="display:none;">
+<svg id="av1" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FF6B6B"/><circle cx="35" cy="40" r="8" fill="#FFF"/><circle cx="65" cy="40" r="8" fill="#FFF"/><path d="M 30 65 Q 50 85 70 65" stroke="#FFF" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
+<svg id="av2" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#4ECDC4"/><rect x="30" y="35" width="10" height="10" fill="#FFF"/><rect x="60" y="35" width="10" height="10" fill="#FFF"/><path d="M 35 70 Q 50 60 65 70" stroke="#FFF" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
+<svg id="av3" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FFE66D"/><circle cx="35" cy="40" r="10" fill="#333"/><circle cx="65" cy="40" r="10" fill="#333"/><path d="M 30 70 Q 50 90 70 70" stroke="#333" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
+<svg id="av4" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#1A535C"/><circle cx="35" cy="40" r="6" fill="#FFF"/><circle cx="65" cy="40" r="6" fill="#FFF"/><circle cx="50" cy="60" r="10" fill="#FFF"/></svg>
+<svg id="av5" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FF9F1C"/><path d="M 30 35 L 40 45 L 30 55" stroke="#FFF" stroke-width="5" fill="none"/><path d="M 70 35 L 60 45 L 70 55" stroke="#FFF" stroke-width="5" fill="none"/><rect x="40" y="65" width="20" height="5" fill="#FFF"/></svg>
+<svg id="av6" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#2EC4B6"/><circle cx="50" cy="50" r="20" fill="#FFF"/><circle cx="50" cy="50" r="10" fill="#2EC4B6"/></svg>
+<svg id="av7" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#E71D36"/><polygon points="50,20 60,45 85,45 65,60 75,85 50,70 25,85 35,60 15,45 40,45" fill="#FFF"/></svg>
+<svg id="av8" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#011627"/><path d="M 25 50 Q 50 20 75 50 Q 50 80 25 50" fill="#FFF"/><circle cx="50" cy="50" r="10" fill="#011627"/></svg>
+<svg id="av9" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FDFFFC"/><path d="M 30 50 L 45 65 L 70 35" stroke="#2EC4B6" stroke-width="8" fill="none" stroke-linecap="round"/></svg>
+<svg id="av10" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FFB703"/><rect x="35" y="30" width="30" height="40" rx="5" fill="#FFF"/><line x1="40" y1="40" x2="60" y2="40" stroke="#FFB703" stroke-width="3"/><line x1="40" y1="50" x2="60" y2="50" stroke="#FFB703" stroke-width="3"/><line x1="40" y1="60" x2="50" y2="60" stroke="#FFB703" stroke-width="3"/></svg>
+<svg id="av11" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#8338EC"/><path d="M 30 60 A 20 20 0 0 1 70 60" fill="none" stroke="#FFF" stroke-width="5"/><line x1="50" y1="60" x2="50" y2="35" stroke="#FFF" stroke-width="4" stroke-linecap="round"/><line x1="50" y1="60" x2="65" y2="50" stroke="#FFF" stroke-width="4" stroke-linecap="round"/></svg>
+<svg id="av12" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#3A86FF"/><path d="M 30 70 L 50 30 L 70 70" fill="none" stroke="#FFF" stroke-width="6" stroke-linejoin="round"/><line x1="35" y1="55" x2="65" y2="55" stroke="#FFF" stroke-width="6"/></svg>
+</div>
+
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div id="sidebar" class="sidebar">
+<div class="sidebar-header"><h2 style="color:var(--primary)">📚 Menu</h2><button style="background:none;border:none;color:var(--danger);font-size:1.5em" onclick="toggleSidebar()">✕</button></div>
+<div class="menu-item" onclick="goToPage('home')"><span>🏠</span><span data-fa="خانه" data-en="Home">خانه</span></div>
+<div class="menu-item" onclick="goToPage('schedule')"><span>📅</span><span data-fa="برنامه هفتگی" data-en="Schedule">برنامه هفتگی</span></div>
+<div class="menu-item" onclick="goToPage('plan')"><span>📝</span><span data-fa="برنامه‌ریزی جدید" data-en="New Plan">برنامه‌ریزی جدید</span></div>
+<div class="menu-item" onclick="goToPage('tests')"><span>📊</span><span data-fa="تست‌زنی" data-en="Tests">تست‌زنی</span></div>
+<div class="menu-item" onclick="goToPage('goals')"><span>🎯</span><span data-fa="اهداف هفته" data-en="Goals">اهداف هفته</span></div>
+<div class="menu-item" onclick="goToPage('focus')"><span>⏱️</span><span data-fa="تمرکز عمیق" data-en="Deep Focus">تمرکز عمیق</span></div>
+<div class="menu-item" onclick="goToPage('motivation')"><span>💬</span><span data-fa="فال انگیزشی" data-en="Motivation">فال انگیزشی</span></div>
+<div class="menu-item" onclick="goToPage('rewards')"><span>🏆</span><span data-fa="امتیازات" data-en="Rewards">امتیازات</span></div>
+<div class="menu-item" onclick="goToPage('friends')"><span>👥</span><span data-fa="دوستام" data-en="Friends">دوستام</span></div>
+<div class="menu-item" onclick="goToPage('lessons')"><span>📚</span><span data-fa="درس‌های من" data-en="My Lessons">درس‌های من</span></div>
+<div class="menu-item" onclick="goToPage('settings')"><span>⚙️</span><span data-fa="تنظیمات" data-en="Settings">تنظیمات</span></div>
+<div style="border-top:1px solid rgba(255,255,255,.1);margin:10px 20px"></div>
+<div class="menu-item" onclick="logout()" style="color:var(--danger)"><span>🚪</span><span data-fa="خروج" data-en="Logout">خروج</span></div>
+</div>
+
+<div class="container">
+<div class="app-header">
+<h1 onclick="handleLogoTap()">📚 <span data-fa="برنامه‌ریزی هوشمند" data-en="Smart Planner">برنامه‌ریزی هوشمند</span></h1>
+<div class="header-right">
+<div id="header-user-info" class="hidden" style="color:var(--primary);font-size:.9em"></div>
+<button id="hamburger-btn" class="hidden" onclick="toggleSidebar()" style="background:var(--primary);color:var(--secondary);border:none;width:40px;height:40px;border-radius:10px;font-size:1.2em;cursor:pointer">☰</button>
+</div>
+</div>
+
+<div id="login" class="section active">
+<h2 style="color:var(--primary);text-align:center;margin-bottom:25px" data-fa="ورود" data-en="Login">ورود</h2>
+<div class="form-group"><input type="text" id="login-username" placeholder="نام کاربری / Username"></div>
+<div class="form-group"><input type="password" id="login-password" placeholder="رمز عبور / Password"></div>
+<button class="btn btn-full" onclick="loginUser()">🔐 <span data-fa="ورود" data-en="Login">ورود</span></button>
+<div id="login-error" style="color:var(--danger);text-align:center;margin-top:10px"></div>
+<div style="margin-top:20px;text-align:center">
+<p style="color:var(--accent)" data-fa="حساب ندارید؟" data-en="No account?">حساب ندارید؟</p>
+<button class="btn btn-secondary btn-full" onclick="showSection('signup')"><span data-fa="ثبت‌نام" data-en="Sign Up">ثبت‌نام</span></button>
+</div>
+</div>
+
+<div id="signup" class="section">
+<h2 style="color:var(--primary);text-align:center;margin-bottom:25px" data-fa="ثبت‌نام" data-en="Sign Up">ثبت‌نام</h2>
+<div class="form-group">
+<label data-fa="شما کی هستید؟" data-en="Who are you?">شما کی هستید؟</label>
+<div style="display:flex;gap:20px">
+<label><input type="radio" name="user-type" value="student" checked onchange="toggleSignupFields()"> 🎒 <span data-fa="دانش‌آموز" data-en="Student">دانش‌آموز</span></label>
+<label><input type="radio" name="user-type" value="adult" onchange="toggleSignupFields()"> 💼 <span data-fa="بزرگسال" data-en="Adult">بزرگسال</span></label>
+</div>
+</div>
+<div class="form-group"><label data-fa="نام و نام خانوادگی" data-en="Full Name">نام کامل</label><input type="text" id="signup-name"></div>
+<div class="form-group"><label data-fa="نام کاربری" data-en="Username">نام کاربری</label><input type="text" id="signup-username"></div>
+<div class="form-group"><label data-fa="رمز عبور" data-en="Password">رمز عبور</label><input type="password" id="signup-password"></div>
+<div id="student-fields">
+<div class="form-group">
+<label data-fa="پایه تحصیلی" data-en="Grade">پایه تحصیلی</label>
+<select id="signup-grade">
+<option value="">-- انتخاب کنید --</option>
+<option value="7">هفتم</option><option value="8">هشتم</option><option value="9">نهم</option>
+<option value="10-riazi">دهم ریاضی</option><option value="10-tajrobi">دهم تجربی</option><option value="10-ensani">دهم انسانی</option>
+<option value="10-fanni">دهم فنی حرفه‌ای</option><option value="10-kardanesh">دهم کاردانش</option>
+<option value="11-riazi">یازدهم ریاضی</option><option value="11-tajrobi">یازدهم تجربی</option><option value="11-ensani">یازدهم انسانی</option>
+<option value="11-fanni">یازدهم فنی حرفه‌ای</option><option value="11-kardanesh">یازدهم کاردانش</option>
+<option value="12-riazi">دوازدهم ریاضی</option><option value="12-tajrobi">دوازدهم تجربی</option><option value="12-ensani">دوازدهم انسانی</option>
+<option value="12-fanni">دوازدهم فنی حرفه‌ای</option><option value="12-kardanesh">دوازدهم کاردانش</option>
+</select>
+</div>
+</div>
+<div id="adult-fields" class="hidden">
+<div class="form-group"><label data-fa="شغل اصلی" data-en="Main Job">شغل اصلی (مثلاً برنامه‌نویس)</label><input type="text" id="signup-job"></div>
+</div>
+<div class="form-group"><label data-fa="کد معرف (اختیاری)" data-en="Referral Code (Optional)">کد معرف</label><input type="text" id="signup-referral" style="text-transform:uppercase"></div>
+<div class="form-group">
+<label data-fa="انتخاب آواتار" data-en="Select Avatar">انتخاب آواتار</label>
+<div class="avatar-grid" id="avatar-grid">
+<div class="avatar-option" data-avatar="1"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av1"/></svg></div>
+<div class="avatar-option" data-avatar="2"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av2"/></svg></div>
+<div class="avatar-option" data-avatar="3"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av3"/></svg></div>
+<div class="avatar-option" data-avatar="4"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av4"/></svg></div>
+<div class="avatar-option" data-avatar="5"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av5"/></svg></div>
+<div class="avatar-option" data-avatar="6"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av6"/></svg></div>
+<div class="avatar-option" data-avatar="7"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av7"/></svg></div>
+<div class="avatar-option" data-avatar="8"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av8"/></svg></div>
+<div class="avatar-option" data-avatar="9"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av9"/></svg></div>
+<div class="avatar-option" data-avatar="10"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av10"/></svg></div>
+<div class="avatar-option" data-avatar="11"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av11"/></svg></div>
+<div class="avatar-option" data-avatar="12"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av12"/></svg></div>
+</div>
+</div>
+<button class="btn btn-full" onclick="signupUser()">✍️ <span data-fa="ثبت‌نام" data-en="Sign Up">ثبت‌نام</span></button>
+<div id="signup-error" style="color:var(--danger);text-align:center;margin-top:10px"></div>
+<button class="btn btn-secondary btn-full" style="margin-top:10px" onclick="showSection('login')">← <span data-fa="بازگشت" data-en="Back">بازگشت</span></button>
+</div>
+
+<div id="home" class="section">
+<div id="welcome-msg" style="color:var(--primary);font-size:1.3em;margin-bottom:15px;font-weight:bold"></div>
+<div id="daily-motivation" class="card" style="background:linear-gradient(45deg,var(--primary),#e6c000);color:#333;font-weight:bold;text-align:center"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:20px 0">
+<div class="card" style="text-align:center;margin:0"><h4 style="color:var(--accent);font-size:.8em" data-fa="زمان امروز" data-en="Today Time">امروز</h4><div id="stat-today" style="font-size:1.5em;color:var(--primary);font-weight:bold">00:00</div></div>
+<div class="card" style="text-align:center;margin:0"><h4 style="color:var(--accent);font-size:.8em" data-fa="امتیاز کل" data-en="Total Points">امتیاز</h4><div id="stat-points" style="font-size:1.5em;color:var(--primary);font-weight:bold">0</div></div>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px" data-fa="📈 پیشرفت هفته" data-en="📈 Weekly Progress">📈 پیشرفت هفته</h4>
+<canvas id="weeklyChart"></canvas>
+</div>
+</div>
+
+<div id="schedule" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px" data-fa="📅 برنامه هفتگی" data-en="📅 Weekly Schedule">📅 برنامه هفتگی</h2>
+<div id="schedule-list"></div>
+</div>
+
+<div id="plan" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px" data-fa="📝 برنامه‌ریزی جدید" data-en="📝 New Plan">📝 برنامه‌ریزی جدید</h2>
+<div id="plan-subjects-list"></div>
+<button class="btn btn-success btn-full" onclick="submitPlan()" style="margin-top:15px" data-fa="✅ ثبت نهایی" data-en="✅ Submit Final">✅ ثبت نهایی</button>
+</div>
+
+<div id="tests" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px" data-fa="📊 تست‌زنی" data-en="📊 Tests">📊 تست‌زنی</h2>
+<div class="card">
+<div class="form-group"><label data-fa="انتخاب درس" data-en="Select Lesson">انتخاب درس</label><select id="test-lesson"></select></div>
+<div class="form-group"><label data-fa="تعداد تست" data-en="Number of Tests">تعداد تست</label><input type="number" id="test-count"></div>
+<button class="btn btn-info btn-full" onclick="startTestSession()">▶️ <span data-fa="شروع تست" data-en="Start Test">شروع تست</span></button>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px" data-fa="📈 نمودار پیشرفت تست" data-en="📈 Test Progress">📈 نمودار پیشرفت تست</h4>
+<canvas id="testChart"></canvas>
+</div>
+</div>
+
+<div id="goals" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px" data-fa="🎯 اهداف هفتگی" data-en="🎯 Weekly Goals">🎯 اهداف هفتگی</h2>
+<div id="goals-list"></div>
+</div>
+
+<div id="focus" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px" data-fa="⏱️ تمرکز عمیق" data-en="⏱️ Deep Focus">⏱️ تمرکز عمیق</h2>
+<div class="card" style="text-align:center">
+<div class="form-group"><label data-fa="مدت زمان (دقیقه)" data-en="Duration (Min)">مدت زمان</label><input type="number" id="focus-minutes" placeholder="25" style="text-align:center;font-size:1.2em"></div>
+<button class="btn btn-success btn-full" onclick="startFocusSession()">▶️ <span data-fa="شروع تمرکز" data-en="Start Focus">شروع تمرکز</span></button>
+</div>
+<div id="focus-history" class="card"></div>
+</div>
+
+<div id="motivation" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px" data-fa="💬 فال انگیزشی" data-en="💬 Motivation">💬 فال انگیزشی</h2>
+<button class="btn btn-full" onclick="getRandomMotivation()" style="font-size:1.2em;padding:20px" data-fa="🎲 یک جمله برای من بگو" data-en="🎲 Tell me a quote">🎲 یک جمله برای من بگو</button>
+<div id="motivation-card" class="card hidden" style="font-size:1.2em;text-align:center;line-height:1.8;padding:30px"></div>
+</div>
+
+<div id="rewards" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px" data-fa="🏆 امتیازات" data-en="🏆 Rewards">🏆 امتیازات</h2>
+<div class="card" style="text-align:center">
+<h3 style="color:var(--primary);font-size:2.5em" id="total-points-display">0</h3>
+<p style="color:var(--accent)" data-fa="امتیاز کل" data-en="Total Points">امتیاز کل</p>
+<div id="current-badge" style="margin:20px 0;font-size:4em"></div>
+<p id="badge-name" style="color:var(--primary);font-weight:bold;font-size:1.2em"></p>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px" data-fa="🎁 جوایز" data-en="🎁 Gifts">🎁 جوایز</h4>
+<div id="rewards-list"></div>
+</div>
+</div>
+
+<div id="friends" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px" data-fa="👥 دوستام" data-en="👥 Friends">👥 دوستام</h2>
+<div class="card">
+<div class="form-group"><label data-fa="کد معرف دوستت" data-en="Friend's Referral Code">کد معرف دوستت</label><input type="text" id="friend-code"></div>
+<button class="btn btn-info btn-full" onclick="addFriend()" data-fa="➕ افزودن دوست" data-en="➕ Add Friend">➕ افزودن دوست</button>
+</div>
+<div id="friends-list"></div>
+</div>
+
+<div id="lessons" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px" data-fa="📚 درس‌های من" data-en="📚 My Lessons">📚 درس‌های من</h2>
+<div class="card">
+<div class="form-group"><label data-fa="اسم درس جدید" data-en="New Lesson Name">اسم درس جدید</label><input type="text" id="new-lesson-name"></div>
+<div class="form-group"><label data-fa="نوع درس" data-en="Lesson Type">نوع درس</label>
+<select id="new-lesson-type">
+<option value="normal">عادی / Normal</option>
+<option value="special">تخصصی / Special</option>
+<option value="memorize">حفظی / Memorize</option>
+</select>
+</div>
+<button class="btn btn-info btn-full" onclick="addNewLesson()" data-fa="➕ افزودن درس" data-en="➕ Add Lesson">➕ افزودن درس</button>
+</div>
+<div id="my-lessons-list"></div>
+</div>
+
+<div id="settings" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px" data-fa="⚙️ تنظیمات" data-en="⚙️ Settings">⚙️ تنظیمات</h2>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px" data-fa="👤 پروفایل" data-en="👤 Profile">👤 پروفایل</h4>
+<div id="profile-info"></div>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px" data-fa="🌐 زبان" data-en="🌐 Language">🌐 زبان</h4>
+<div style="display:flex;gap:10px">
+<button class="btn btn-secondary" onclick="setLanguage('fa')" style="flex:1">فارسی</button>
+<button class="btn btn-secondary" onclick="setLanguage('en')" style="flex:1">English</button>
+</div>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px" data-fa="🎨 ظاهر" data-en="🎨 Theme">🎨 ظاهر</h4>
+<div style="display:flex;gap:10px">
+<button class="btn btn-secondary" onclick="setTheme('light')" style="flex:1">☀️</button>
+<button class="btn btn-secondary" onclick="setTheme('dark')" style="flex:1">🌙</button>
+<button class="btn btn-secondary" onclick="setTheme('auto')" style="flex:1">🔄</button>
+</div>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px" data-fa="📅 اشتراک" data-en="📅 Subscription">📅 اشتراک</h4>
+<div id="subscription-info"></div>
+</div>
+<div class="card">
+<button class="btn btn-danger btn-full" onclick="logout()" data-fa="🚪 خروج" data-en="🚪 Logout">🚪 خروج</button>
+</div>
+</div>
+
+<div id="admin" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px">👨‍💼 پنل مدیریت</h2>
+<button class="btn btn-secondary btn-full" onclick="logout()" style="margin-bottom:20px">🚪 خروج</button>
+<div id="admin-users-list"></div>
+</div>
+
+</div>
+
+<div id="focus-overlay">
+<h2 id="focus-subject" style="color:var(--primary);margin-bottom:30px;font-size:1.5em;text-align:center"></h2>
+<div class="timer-display" id="focus-timer">00:00:00</div>
+<p id="focus-quote" style="color:#fff;margin-top:40px;text-align:center;max-width:400px;line-height:1.8;font-size:1.1em"></p>
+<button class="btn btn-danger" style="margin-top:50px;padding:15px 50px;font-size:1.2em" onclick="stopFocusOverlay()">⏹ <span data-fa="توقف" data-en="Stop">توقف</span></button>
+</div>
+
+<div id="postcard-container"></div>
+
+<script type="module">
+// ================== FIREBASE ==================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCJAZDHWwQN_SC2Eh8ELCTJvdEEVOwx0E",
+  authDomain: "study-planner-bc211.firebaseapp.com",
+  projectId: "study-planner-bc211",
+  storageBucket: "study-planner-bc211.firebasestorage.app",
+  messagingSenderId: "424514438257",
+  appId: "1:424514438257:web:669d292a77b5555bc447d0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ================== STATE & CACHE ==================
+let currentUser = null;
+let currentUserData = null;
+let selectedAvatar = 1;
+let logoTapCount = 0;
+let lastLogoTap = 0;
+let charts = {};
+let focusInterval = null;
+let focusSeconds = 0;
+let focusType = '';
+let currentFocusItem = null;
+let wakeLock = null;
+let testInterval = null;
+let testSeconds = 0;
+let testCount = 0;
+let testLesson = '';
+
+// **کش کردن داده‌ها (بهینه‌سازی)**
+function saveToCache(key, data) {
+  localStorage.setItem('cache_' + key, JSON.stringify({ data, time: Date.now() }));
+}
+function getFromCache(key, maxAgeMs = 3600000) { // پیش‌فرض ۱ ساعت
+  const cached = localStorage.getItem('cache_' + key);
+  if (!cached) return null;
+  const { data, time } = JSON.parse(cached);
+  if (Date.now() - time > maxAgeMs) {
+    localStorage.removeItem('cache_' + key);
+    return null;
+  }
+  return data;
+}
+
+// ================== INIT ==================
+document.addEventListener('DOMContentLoaded', () => {
+  showSection('login');
+  document.querySelectorAll('.avatar-option').forEach(el => {
+    el.onclick = () => {
+      document.querySelectorAll('.avatar-option').forEach(a => a.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedAvatar = parseInt(el.getAttribute('data-avatar'));
+    };
+  });
+});
+
+// ================== NAV ==================
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  const isLogged = ['home','schedule','plan','tests','goals','focus','motivation','rewards','friends','lessons','settings','admin'].includes(id);
+  document.getElementById('header-user-info').classList.toggle('hidden', !isLogged);
+  document.getElementById('hamburger-btn').classList.toggle('hidden', !isLogged);
+  if (isLogged && currentUser) {
+    document.getElementById('header-user-info').textContent = '👤 ' + currentUser.name;
+  }
+}
+
+function goToPage(page) {
+  toggleSidebar();
+  showSection(page);
+  if (page === 'home') loadHome();
+  if (page === 'schedule') loadSchedule();
+  if (page === 'plan') loadPlanNew();
+  if (page === 'tests') loadTestsPage();
+  if (page === 'goals') loadGoals();
+  if (page === 'focus') loadFocusHistory();
+  if (page === 'rewards') loadRewards();
+  if (page === 'friends') loadFriends();
+  if (page === 'lessons') loadMyLessons();
+  if (page === 'settings') loadSettings();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+
+// ================== LOGO TAP ==================
+function handleLogoTap() {
+  const now = Date.now();
+  if (now - lastLogoTap > 1500) logoTapCount = 0;
+  logoTapCount++;
+  lastLogoTap = now;
+  if (logoTapCount >= 5) {
+    logoTapCount = 0;
+    showSection('admin');
+    loadAdminPanel();
+  }
+}
+
+// ================== AUTH ==================
+function toggleSignupFields() {
+  const type = document.querySelector('input[name="user-type"]:checked').value;
+  document.getElementById('student-fields').classList.toggle('hidden', type !== 'student');
+  document.getElementById('adult-fields').classList.toggle('hidden', type !== 'adult');
+}
+
+async function signupUser() {
+  const name = document.getElementById('signup-name').value.trim();
+  const username = document.getElementById('signup-username').value.trim();
+  const password = document.getElementById('signup-password').value.trim();
+  const type = document.querySelector('input[name="user-type"]:checked').value;
+  const referral = document.getElementById('signup-referral').value.trim().toUpperCase();
+  const errEl = document.getElementById('signup-error');
+  errEl.textContent = '';
+
+  if (!name || !username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
+
+  let grade = '', job = '';
+  if (type === 'student') {
+    grade = document.getElementById('signup-grade').value;
+    if (!grade) return errEl.textContent = 'پایه را انتخاب کنید';
+  } else {
+    job = document.getElementById('signup-job').value.trim() || 'فعالیت شخصی';
+  }
+
+  try {
+    const userRef = doc(db, 'users', username);
+    const snap = await getDoc(userRef);
+    if (snap.exists()) return errEl.textContent = 'این نام کاربری وجود دارد';
+
+    const myCode = username.toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    
+    const newUser = {
+      name, username, password, type, grade, job, avatar: selectedAvatar,
+      referralCode: myCode, referredBy: referral || null,
+      pointsTotal: 0, pointsSpendable: 0,
+      subscription: { expiresAt: new Date(Date.now() + 7 * 864e5).toISOString() },
+      lessons: [], schedule: {}, tests: {}, goals: {}, focusHistory: [], studyLogs: [],
+      friends: [], createdAt: new Date().toISOString(), lastLoginDate: null
+    };
+
+    await setDoc(userRef, newUser);
+
+    if (referral) {
+      const q = query(collection(db, 'users'), where('referralCode', '==', referral));
+      const refSnap = await getDocs(q);
+      if (!refSnap.empty) {
+        const refId = refSnap.docs[0].id;
+        await updateDoc(doc(db, 'users', refId), { 
+          pointsTotal: increment(5),
+          pointsSpendable: increment(5)
+        });
+      }
+    }
+
+    alert('ثبت‌نام موفق! وارد شوید.');
+    showSection('login');
+  } catch (e) {
+    errEl.textContent = 'خطا: ' + e.message;
+  }
+}
+
+async function loginUser() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  if (!username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
+
+  try {
+    const userRef = doc(db, 'users', username);
+    const snap = await getDoc(userRef);
+    if (!snap.exists() || snap.data().password !== password) {
+      return errEl.textContent = 'نام کاربری یا رمز اشتباه است';
+    }
+
+    const userData = snap.data();
+    if (new Date(userData.subscription.expiresAt) < new Date()) {
+      return errEl.textContent = 'اشتراک منقضی شده است';
+    }
+
+    currentUser = { id: snap.id, ...userData };
+    currentUserData = userData;
+
+    // **کش کردن پروفایل کاربر (بهینه‌سازی)**
+    saveToCache('user_' + username, currentUser);
+
+    const today = new Date().toISOString().split('T')[0];
+    if (currentUser.lastLoginDate !== today) {
+      await updateDoc(userRef, {
+        pointsTotal: increment(5),
+        pointsSpendable: increment(5),
+        lastLoginDate: today
+      });
+      currentUser.pointsTotal += 5;
+      currentUser.pointsSpendable += 5;
+      currentUser.lastLoginDate = today;
+    }
+
+    goToPage('home');
+  } catch (e) {
+    errEl.textContent = 'خطا: ' + e.message;
+  }
+}
+
+function logout() {
+  currentUser = null;
+  currentUserData = null;
+  toggleSidebar();
+  showSection('login');
+}
+
+// ================== UTILS ==================
+function formatTime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function setTheme(theme) {
+  if (theme === 'dark') document.body.classList.add('dark-mode');
+  else if (theme === 'light') document.body.classList.remove('dark-mode');
+  else {
+    const h = new Date().getHours();
+    document.body.classList.toggle('dark-mode', h >= 19 || h < 6);
+  }
+}
+
+function setLanguage(lang) {
+  document.body.classList.toggle('lang-en', lang === 'en');
+  document.body.dir = lang === 'en' ? 'ltr' : 'rtl';
+  document.querySelectorAll('[data-fa]').forEach(el => {
+    el.textContent = el.getAttribute(lang === 'en' ? 'data-en' : 'data-fa');
+  });
+}
+
+function getSaturdayOfWeek() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = day === 6 ? 0 : -(day + 1);
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split('T')[0];
+}
+
+// ================== HOME ==================
+async function loadHome() {
+  document.getElementById('welcome-msg').textContent = '👋 ' + currentUser.name;
+  document.getElementById('stat-points').textContent = currentUser.pointsTotal || 0;
+  document.getElementById('daily-motivation').textContent = getMotivationText();
+  
+  const today = new Date().toISOString().split('T')[0];
+  const todayMinutes = (currentUser.studyLogs || []).filter(l => l.date === today).reduce((s, l) => s + l.minutes, 0);
+  document.getElementById('stat-today').textContent = formatTime(todayMinutes * 60);
+
+  const ctx = document.getElementById('weeklyChart');
+  if (ctx) {
+    if (charts.weekly) charts.weekly.destroy();
+    const last7 = [];
+    const labels = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const mins = (currentUser.studyLogs || []).filter(l => l.date === dateStr).reduce((s, l) => s + l.minutes, 0);
+      labels.push(dateStr.slice(5));
+      last7.push(mins);
+    }
+    charts.weekly = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [{ label: 'دقیقه', data: last7, borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.2)', fill: true, tension: 0.3 }] },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { ticks: { color: '#fff' } } } }
+    });
+  }
+}
+
+// ================== SCHEDULE & TIMER ==================
+function loadSchedule() {
+  const div = document.getElementById('schedule-list');
+  const days = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+  let html = '';
+  days.forEach(day => {
+    const items = (currentUser.schedule && currentUser.schedule[day]) || [];
+    html += `<div class="card"><h4 style="color:var(--primary);">${day}</h4>`;
+    if (items.length === 0) html += '<p style="color:var(--accent);font-size:.9em;">برنامه‌ای نیست</p>';
+    else {
+      items.forEach(item => {
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.1);padding:10px;border-radius:8px;margin-top:8px;">
+          <div><strong>${item.lesson}</strong><br><small>${item.minutes} دقیقه ${item.isDone ? '✅' : ''}</small></div>
+          <div>
+            ${!item.isDone ? `<button class="btn btn-success btn-small" onclick="startTimer('${day}','${item.id}')">▶️</button>` : ''}
+            <button class="btn btn-danger btn-small" onclick="deleteScheduleItem('${day}','${item.id}')">🗑</button>
+          </div>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+  });
+  div.innerHTML = html;
+}
+
+async function deleteScheduleItem(day, itemId) {
+  if (!confirm('حذف شود؟')) return;
+  const schedule = currentUser.schedule;
+  schedule[day] = schedule[day].filter(i => i.id !== itemId);
+  await updateDoc(doc(db, 'users', currentUser.id), { schedule });
+  currentUser.schedule = schedule;
+  loadSchedule();
+}
+
+async function startTimer(day, itemId) {
+  const item = currentUser.schedule[day].find(i => i.id === itemId);
+  if (!item) return;
+  
+  focusType = 'study';
+  currentFocusItem = { day, itemId, item };
+  focusSeconds = item.secondsStudied || 0;
+  
+  document.getElementById('focus-subject').textContent = item.lesson;
+  document.getElementById('focus-timer').textContent = formatTime(focusSeconds);
+  document.getElementById('focus-quote').textContent = getMotivationText();
+  document.getElementById('focus-overlay').style.display = 'flex';
+  
+  try {
+    if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+  } catch (e) {}
+
+  if (focusInterval) clearInterval(focusInterval);
+  focusInterval = setInterval(() => {
+    focusSeconds++;
+    document.getElementById('focus-timer').textContent = formatTime(focusSeconds);
+  }, 1000);
+}
+
+// ================== STOP TIMER (CORE LOGIC & OPTIMIZATION) ==================
+async function stopFocusOverlay() {
+  if (focusInterval) clearInterval(focusInterval);
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+  document.getElementById('focus-overlay').style.display = 'none';
+  
+  if (focusType === 'study' && currentFocusItem) {
+    const { day, itemId, item } = currentFocusItem;
+    const schedule = currentUser.schedule;
+    const sItem = schedule[day].find(i => i.id === itemId);
+    if (sItem) {
+      sItem.secondsStudied = focusSeconds;
+      if (focusSeconds >= sItem.minutes * 60 * 0.9) {
+        sItem.isDone = true;
+        currentUser.pointsTotal += 10;
+        currentUser.pointsSpendable += 10;
+      }
+    }
+    
+    const minutesStudied = Math.floor(focusSeconds / 60);
+    if (minutesStudied > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      const logs = currentUser.studyLogs || [];
+      
+      // اگر امروز قبلاً لاگ داشته، به همون اضافه کن (بهینه‌سازی: جلوگیری از دیتای اضافه)
+      const existingLog = logs.find(l => l.date === today);
+      if (existingLog) {
+        existingLog.minutes += minutesStudied;
+      } else {
+        logs.push({ date: today, minutes: minutesStudied });
+      }
+      
+      currentUser.studyLogs = logs;
+      currentUser.pointsTotal += minutesStudied;
+      currentUser.pointsSpendable += minutesStudied;
+    }
+    
+    // **حذف دیتای قدیمی (بیشتر از ۳۰ روز) برای بهینه‌سازی**
+    currentUser.studyLogs = currentUser.studyLogs.filter(l => {
+      const diff = (new Date() - new Date(l.date)) / (1000 * 60 * 60 * 24);
+      return diff <= 30;
+    });
+    
+    await updateDoc(doc(db, 'users', currentUser.id), {
+      schedule: schedule,
+      studyLogs: currentUser.studyLogs,
+      pointsTotal: currentUser.pointsTotal,
+      pointsSpendable: currentUser.pointsSpendable
+    });
+    
+    loadSchedule();
+    alert('زمان مطالعه ذخیره شد: ' + formatTime(focusSeconds));
+    
+  } else if (focusType === 'test') {
+    if (testInterval) clearInterval(testInterval);
+    const avg = testSeconds / (testCount || 1);
+    const lessonType = getLessonType(testLesson);
+    let isValid = true;
+    if (lessonType === 'special' && avg < 35) isValid = false;
+    if (lessonType === 'memorize' && avg < 10) isValid = false;
+    if (lessonType === 'normal' && avg < 15) isValid = false;
+    
+    if (isValid && testCount >= 10) {
+      currentUser.pointsTotal += 5;
+      currentUser.pointsSpendable += 5;
+      const tests = currentUser.tests || {};
+      const today = new Date().toISOString().split('T')[0];
+      if (!tests[testLesson]) tests[testLesson] = [];
+      tests[testLesson].push({ date: today, count: testCount, avgSeconds: avg });
+      currentUser.tests = tests;
+      await updateDoc(doc(db, 'users', currentUser.id), {
+        tests: tests,
+        pointsTotal: currentUser.pointsTotal,
+        pointsSpendable: currentUser.pointsSpendable
+      });
+      alert(`آفرین! ${testCount} تست با میانگین ${Math.round(avg)} ثانیه ثبت شد.`);
+      loadTestsPage();
+    } else if (!isValid) {
+      alert(`میانگین زمان تست‌ها (${Math.round(avg)} ثانیه) کمتر از حد مجاز برای دروس ${getLessonTypeName(lessonType)} است. ثبت نشد.`);
+    } else {
+      alert('حداقل ۱۰ تست برای ثبت امتیاز نیاز است.');
+    }
+    
+  } else if (focusType === 'deep') {
+    const minutes = Math.floor(focusSeconds / 60);
+    if (minutes > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      const focusHistory = currentUser.focusHistory || [];
+      focusHistory.push({ date: today, minutes });
+      currentUser.focusHistory = focusHistory;
+      currentUser.pointsTotal += minutes;
+      currentUser.pointsSpendable += minutes;
+      
+      // **حذف دیتای قدیمی تمرکز (بیشتر از ۳۰ روز)**
+      currentUser.focusHistory = currentUser.focusHistory.filter(l => {
+        const diff = (new Date() - new Date(l.date)) / (1000 * 60 * 60 * 24);
+        return diff <= 30;
+      });
+
+      await updateDoc(doc(db, 'users', currentUser.id), {
+        focusHistory: currentUser.focusHistory,
+        pointsTotal: currentUser.pointsTotal,
+        pointsSpendable: currentUser.pointsSpendable
+      });
+    }
+    alert('جلسه تمرکز ذخیره شد: ' + formatTime(focusSeconds));
+    loadFocusHistory();
+  }
+  
+  focusType = '';
+  focusSeconds = 0;
+  currentFocusItem = null;
+}
+
+// ================== PLAN NEW ==================
+function loadPlanNew() {
+  const div = document.getElementById('plan-subjects-list');
+  const lessons = currentUser.lessons || [];
+  if (lessons.length === 0) {
+    div.innerHTML = '<div class="card"><p>ابتدا درس اضافه کنید.</p><button class="btn btn-info" onclick="goToPage(\'lessons\')">رفتن به درس‌های من</button></div>';
+    return;
+  }
+  let html = '<div class="card"><h4 style="color:var(--primary);">انتخاب درس و زمان</h4>';
+  lessons.forEach(l => {
+    html += `<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+      <input type="checkbox" value="${l.name}" class="plan-checkbox" style="width:auto;">
+      <span style="flex:1;">${l.name}</span>
+      <input type="number" class="plan-minutes" data-lesson="${l.name}" placeholder="دقیقه" style="width:80px;margin:0;">
+    </div>`;
+  });
+  html += '</div>';
+  html += '<div class="card"><h4 style="color:var(--primary);">روزهای هفته</h4>';
+  ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'].forEach(day => {
+    html += `<label><input type="checkbox" value="${day}" class="plan-day"> ${day}</label><br>`;
+  });
+  html += '</div>';
+  div.innerHTML = html;
+}
+
+async function submitPlan() {
+  const selected = [];
+  document.querySelectorAll('.plan-checkbox:checked').forEach(cb => {
+    const lesson = cb.value;
+    const minutesInput = document.querySelector(`.plan-minutes[data-lesson="${lesson}"]`);
+    const mins = parseInt(minutesInput.value) || 30;
+    selected.push({ lesson, minutes: mins });
+  });
+  const days = [];
+  document.querySelectorAll('.plan-day:checked').forEach(cb => days.push(cb.value));
+  
+  if (selected.length === 0 || days.length === 0) return alert('حداقل یک درس و یک روز انتخاب کنید');
+  
+  const schedule = currentUser.schedule || {};
+  days.forEach(day => {
+    if (!schedule[day]) schedule[day] = [];
+    selected.forEach(s => {
+      schedule[day].push({
+        id: Date.now().toString() + Math.random(),
+        lesson: s.lesson,
+        minutes: s.minutes,
+        isDone: false,
+        secondsStudied: 0
+      });
+    });
+  });
+  
+  await updateDoc(doc(db, 'users', currentUser.id), { schedule });
+  currentUser.schedule = schedule;
+  alert('برنامه ثبت شد!');
+  goToPage('schedule');
+}
+
+// ================== TESTS ==================
+function loadTestsPage() {
+  const select = document.getElementById('test-lesson');
+  if (!select) return;
+  select.innerHTML = '';
+  (currentUser.lessons || []).forEach(l => {
+    select.innerHTML += `<option value="${l.name}">${l.name}</option>`;
+  });
+  
+  const ctx = document.getElementById('testChart');
+  if (ctx) {
+    if (charts.tests) charts.tests.destroy();
+    const tests = currentUser.tests || {};
+    const labels = Object.keys(tests);
+    const data = labels.map(l => {
+      const arr = tests[l];
+      if (!arr || arr.length === 0) return 0;
+      return arr[arr.length - 1].avgSeconds;
+    });
+    charts.tests = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'میانگین ثانیه', data, backgroundColor: '#FFD700' }] },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { ticks: { color: '#fff' } } } }
+    });
+  }
+}
+
+function startTestSession() {
+  testLesson = document.getElementById('test-lesson').value;
+  const count = parseInt(document.getElementById('test-count').value) || 0;
+  if (!testLesson || count <= 0) return alert('درس و تعداد تست را وارد کنید');
+  
+  testCount = count;
+  testSeconds = 0;
+  focusType = 'test';
+  
+  document.getElementById('focus-subject').textContent = 'تست‌زنی: ' + testLesson;
+  document.getElementById('focus-timer').textContent = '00:00:00';
+  document.getElementById('focus-quote').textContent = getMotivationText();
+  document.getElementById('focus-overlay').style.display = 'flex';
+  
+  if (testInterval) clearInterval(testInterval);
+  testInterval = setInterval(() => {
+    testSeconds++;
+    document.getElementById('focus-timer').textContent = formatTime(testSeconds);
+  }, 1000);
+}
+
+function getLessonType(lessonName) {
+  const lesson = (currentUser.lessons || []).find(l => l.name === lessonName);
+  return lesson ? lesson.type : 'normal';
+}
+
+function getLessonTypeName(type) {
+  if (type === 'special') return 'تخصصی (حداقل ۳۵ ثانیه)';
+  if (type === 'memorize') return 'حفظی (حداقل ۱۰ ثانیه)';
+  return 'عادی (حداقل ۱۵ ثانیه)';
+  }
+
+  // ================== FOCUS HISTORY & DEEP FOCUS ==================
+function loadFocusHistory() {
+  const history = currentUser.focusHistory || [];
+  let html = '<h4 style="color:var(--primary);margin-bottom:10px;">تاریخچه تمرکز</h4>';
+  if (history.length === 0) html += '<p style="color:var(--accent);">هنوز جلسه‌ای ثبت نشده است.</p>';
+  else {
+    history.slice(-10).reverse().forEach(h => {
+      html += `<div style="padding:8px;background:rgba(255,255,255,.1);border-radius:8px;margin-bottom:5px;">
+        ${h.date} - ${h.minutes} دقیقه تمرکز
+      </div>`;
+    });
+  }
+  const el = document.getElementById('focus-history');
+  if (el) el.innerHTML = html;
+}
+
+async function startFocusSession() {
+  const mins = parseInt(document.getElementById('focus-minutes').value);
+  if (!mins || mins < 1 || mins > 120) return alert('زمان باید بین ۱ تا ۱۲۰ دقیقه باشد');
+  
+  focusType = 'deep';
+  focusSeconds = 0;
+  
+  document.getElementById('focus-subject').textContent = 'تمرکز عمیق - ' + mins + ' دقیقه';
+  document.getElementById('focus-timer').textContent = '00:00:00';
+  document.getElementById('focus-quote').textContent = getMotivationText();
+  document.getElementById('focus-overlay').style.display = 'flex';
+  
+  try {
+    if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+  } catch (e) {}
+
+  if (focusInterval) clearInterval(focusInterval);
+  focusInterval = setInterval(() => {
+    focusSeconds++;
+    document.getElementById('focus-timer').textContent = formatTime(focusSeconds);
+  }, 1000);
+}
+
+// ================== GOALS ==================
+function loadGoals() {
+  const div = document.getElementById('goals-list');
+  const goals = currentUser.goals || {};
+  const weekStart = getSaturdayOfWeek();
+  
+  let html = '';
+  const goalTypes = [
+    { key: 'study', label: 'مطالعه (ساعت)', min: 10 },
+    { key: 'tests', label: 'تست‌زنی (تعداد)', min: 50 },
+    { key: 'focus', label: 'تمرکز عمیق (جلسه)', min: 3 }
+  ];
+  
+  goalTypes.forEach(g => {
+    const current = goals[g.key];
+    html += `<div class="card">
+      <h4 style="color:var(--primary);">${g.label}</h4>
+      ${current && current.week === weekStart 
+        ? `<p>هدف: ${current.target} | پیشرفت: ${current.progress || 0}</p>
+           <div style="background:rgba(0,0,0,.3);height:20px;border-radius:10px;overflow:hidden;">
+             <div style="width:${Math.min(100, (current.progress / current.target) * 100)}%;height:100%;background:var(--success);"></div>
+           </div>`
+        : `<input type="number" id="goal-${g.key}" placeholder="حداقل ${g.min}">
+           <button class="btn btn-info btn-full" onclick="setGoal('${g.key}', ${g.min})">تنظیم هدف</button>`
+      }
+    </div>`;
+  });
+  div.innerHTML = html;
+}
+
+async function setGoal(key, min) {
+  const val = parseInt(document.getElementById('goal-' + key).value);
+  if (!val || val < min) return alert('حداقل مقدار مجاز ' + min + ' است');
+  
+  const goals = currentUser.goals || {};
+  goals[key] = { week: getSaturdayOfWeek(), target: val, progress: 0 };
+  
+  await updateDoc(doc(db, 'users', currentUser.id), { goals });
+  currentUser.goals = goals;
+  loadGoals();
+}
+
+// ================== REWARDS & BADGES ==================
+function loadRewards() {
+  const pts = currentUser.pointsTotal || 0;
+  const spend = currentUser.pointsSpendable || 0;
+  document.getElementById('total-points-display').textContent = pts;
+  
+  let badge = '🌱', name = 'تازه‌کار';
+  if (pts >= 50000) { badge = '👑'; name = 'افسانه'; }
+  else if (pts >= 20000) { badge = '🏆'; name = 'استاد'; }
+  else if (pts >= 10000) { badge = '🏅'; name = 'حرفه‌ای'; }
+  else if (pts >= 5000) { badge = '⭐'; name = 'منظم'; }
+  else if (pts >= 2000) { badge = '🔥'; name = 'پیگیر'; }
+  
+  document.getElementById('current-badge').textContent = badge;
+  document.getElementById('badge-name').textContent = name;
+  
+  const rewards = [
+    { pts: 2000, desc: '۱ روز اشتراک رایگان' },
+    { pts: 5000, desc: '۳ روز اشتراک رایگان' },
+    { pts: 10000, desc: '۷ روز اشتراک رایگان' },
+    { pts: 20000, desc: '۱۵ روز اشتراک رایگان' },
+    { pts: 50000, desc: '۳۰ روز اشتراک رایگان' }
+  ];
+  
+  let html = '';
+  rewards.forEach(r => {
+    const can = spend >= r.pts;
+    html += `<div style="padding:10px;background:rgba(255,255,255,.1);border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+      <span><strong>${r.pts} امتیاز:</strong> ${r.desc}</span>
+      ${can ? `<button class="btn btn-success btn-small" onclick="claimReward(${r.pts}, '${r.desc}')">دریافت</button>` : '🔒'}
+    </div>`;
+  });
+  document.getElementById('rewards-list').innerHTML = html;
+}
+
+async function claimReward(pts, desc) {
+  if (currentUser.pointsSpendable < pts) return alert('امتیاز کافی ندارید');
+  if (!confirm(`دریافت ${desc}؟ (${pts} امتیاز کسر می‌شود)`)) return;
+  
+  const days = Math.floor(pts / 1000);
+  const currentExpiry = new Date(currentUser.subscription.expiresAt);
+  const base = currentExpiry > new Date() ? currentExpiry : new Date();
+  const newExpiry = new Date(base.getTime() + days * 864e5);
+  
+  await updateDoc(doc(db, 'users', currentUser.id), {
+    pointsSpendable: increment(-pts),
+    'subscription.expiresAt': newExpiry.toISOString()
+  });
+  
+  currentUser.pointsSpendable -= pts;
+  currentUser.subscription.expiresAt = newExpiry.toISOString();
+  
+  alert(`جایزه شما فعال شد: ${desc}`);
+  loadRewards();
+}
+
+// ================== FRIENDS ==================
+function loadFriends() {
+  const div = document.getElementById('friends-list');
+  const friends = currentUser.friends || [];
+  let html = '';
+  if (friends.length === 0) html = '<div class="card">هنوز دوستی اضافه نکردی.</div>';
+  else {
+    friends.forEach(f => {
+      html += `<div class="card" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>👤 ${f.name || f.username}</span>
+        <button class="btn btn-danger btn-small" onclick="removeFriend('${f.id}')">حذف از لیست</button>
+      </div>`;
+    });
+  }
+  div.innerHTML = html;
+}
+
+async function addFriend() {
+  const code = document.getElementById('friend-code').value.trim().toUpperCase();
+  if (!code) return;
+  if (code === currentUser.referralCode) return alert('نمی‌تونی خودت رو اضافه کنی');
+  
+  const q = query(collection(db, 'users'), where('referralCode', '==', code));
+  const snap = await getDocs(q);
+  if (snap.empty) return alert('کد معرف نامعتبر است');
+  
+  const friend = snap.docs[0];
+  const friends = currentUser.friends || [];
+  if (friends.find(f => f.id === friend.id)) return alert('قبلاً اضافه شده');
+  
+  friends.push({ id: friend.id, name: friend.data().name, username: friend.data().username });
+  await updateDoc(doc(db, 'users', currentUser.id), { friends });
+  currentUser.friends = friends;
+  loadFriends();
+}
+
+async function removeFriend(id) {
+  const friends = (currentUser.friends || []).filter(f => f.id !== id);
+  await updateDoc(doc(db, 'users', currentUser.id), { friends });
+  currentUser.friends = friends;
+  loadFriends();
+}
+
+// ================== LESSONS ==================
+function loadMyLessons() {
+  const lessons = currentUser.lessons || [];
+  let html = '';
+  if (lessons.length === 0) html = '<div class="card">درسی اضافه نکردی.</div>';
+  else {
+    lessons.forEach(l => {
+      let typeName = 'عادی';
+      if(l.type === 'special') typeName = 'تخصصی';
+      if(l.type === 'memorize') typeName = 'حفظی';
+      
+      html += `<div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,255,255,.1);border-radius:8px;margin-bottom:8px;">
+        <span>📖 ${l.name} <small style="color:var(--accent);">(${typeName})</small></span>
+        <button class="btn btn-danger btn-small" onclick="deleteLesson('${l.name}')">🗑</button>
+      </div>`;
+    });
+  }
+  document.getElementById('my-lessons-list').innerHTML = html;
+}
+
+async function addNewLesson() {
+  const name = document.getElementById('new-lesson-name').value.trim();
+  const type = document.getElementById('new-lesson-type').value;
+  if (!name) return alert('اسم درس را وارد کنید');
+  
+  const lessons = currentUser.lessons || [];
+  if (lessons.find(l => l.name === name)) return alert('این درس قبلاً اضافه شده');
+  
+  lessons.push({ name, type });
+  await updateDoc(doc(db, 'users', currentUser.id), { lessons });
+  currentUser.lessons = lessons;
+  document.getElementById('new-lesson-name').value = '';
+  loadMyLessons();
+}
+
+async function deleteLesson(name) {
+  if (!confirm('حذف شود؟')) return;
+  const lessons = (currentUser.lessons || []).filter(l => l.name !== name);
+  await updateDoc(doc(db, 'users', currentUser.id), { lessons });
+  currentUser.lessons = lessons;
+  loadMyLessons();
+}
+
+// ================== SETTINGS ==================
+function loadSettings() {
+  document.getElementById('profile-info').innerHTML = `
+    <div style="padding:10px;background:rgba(255,255,255,.1);border-radius:8px;">
+      <strong>نام:</strong> ${currentUser.name}<br>
+      <strong>نام کاربری:</strong> ${currentUser.username}<br>
+      <strong>کد معرف:</strong> ${currentUser.referralCode}<br>
+      <strong>نوع:</strong> ${currentUser.type === 'student' ? 'دانش‌آموز' : 'بزرگسال'}
+    </div>`;
+  
+  document.getElementById('subscription-info').innerHTML = `
+    <div style="padding:10px;background:rgba(255,255,255,.1);border-radius:8px;">
+      <strong>تاریخ انقضا:</strong> ${new Date(currentUser.subscription.expiresAt).toLocaleDateString('fa-IR')}<br>
+      <strong>وضعیت:</strong> ${new Date(currentUser.subscription.expiresAt) > new Date() ? '✅ فعال' : '❌ منقضی شده'}
+    </div>`;
+  }
+
+// ================== ADMIN PANEL ==================
+async function loadAdminPanel() {
+  const div = document.getElementById('admin-users-list');
+  div.innerHTML = '<p>در حال بارگذاری...</p>';
+  try {
+    const snap = await getDocs(collection(db, 'users'));
+    let html = '';
+    snap.forEach(d => {
+      const u = d.data();
+      html += `<div class="card">
+        <strong>${u.name}</strong> (${u.username})<br>
+        <small>امتیاز: ${u.pointsTotal || 0} | انقضا: ${new Date(u.subscription.expiresAt).toLocaleDateString('fa-IR')}</small>
+      </div>`;
+    });
+    div.innerHTML = html || '<p>کاربری نیست.</p>';
+  } catch (e) {
+    div.innerHTML = '<p>خطا: ' + e.message + '</p>';
+  }
+}
+
+// ================== POSTCARD SYSTEM ==================
+function showPostcard(type) {
+  let container = document.getElementById('postcard-container');
+  let content = '';
+  let cardClass = '';
+  
+  if (type === 'first') {
+    cardClass = 'blue';
+    content = `<h3>🚀 شروع خوب!</h3><p>اولین قدم رو برداشتی! فردا رکورد می‌زنی.</p>`;
+  } else if (type === 'record') {
+    cardClass = 'gold';
+    const models = [
+      `<h3>🥇 رکورد جدید!</h3><p>داری می‌درخشی! به خودت افتخار کن.</p>`,
+      `<h3>🔥 داری می‌سوزونی!</h3><p>این سرعت پیشرفت فوق‌العاده‌ست!</p>`,
+      `<h3>✨ درخشان عمل کردی!</h3><p>ستاره‌ها هم بهت حسادت می‌کنن.</p>`,
+      `<h3>🧠 مغزت داره قوی‌تر می‌شه!</h3><p>تمرین و تلاش، بهترین نتیجه رو داد.</p>`,
+      `<h3>🏅 تو یک قهرمانی!</h3><p>مسیر موفقیت رو داری طی می‌کنی.</p>`,
+      `<h3>🚀 داری اوج می‌گیری!</h3><p>آسمون محدودیتت نیست.</p>`
+    ];
+    content = models[Math.floor(Math.random() * models.length)];
+  } else if (type === 'effort') {
+    cardClass = 'orange';
+    content = `<h3>💪 تلاشت قابل تقدیره!</h3><p>مهم ادامه دادنه، نه رکورد زدن. عالیه!</p>`;
+  } else if (type === 'stable') {
+    cardClass = 'green';
+    content = `<h3>✨ ثابت قدم بودی!</h3><p>یکنواختی و نظم، کلید موفقیت نهایی است.</p>`;
+  }
+
+  container.innerHTML = `
+    <div class="postcard ${cardClass} show" onclick="this.classList.remove('show')">
+      ${content}
+      <p style="margin-top:15px;font-size:.8em;color:#666;">(برای بستن کلیک کنید)</p>
+    </div>
+  `;
+
+  setTimeout(() => {
+    const card = container.querySelector('.postcard');
+    if (card) card.classList.remove('show');
+  }, 6000);
+}
+
+// ================== MOTIVATIONS (کش شده در حافظه) ==================
+const studentMotivations = [
+  "نمره‌های عالی، نتیجه‌ی دقیقه‌های مطالعه‌ی امروزته.",
+  "مغز تو مثل یک ماشین مسابقه‌ست؛ هرچی بیشتر تمرینش بدی، سریع‌تر می‌دوه.",
+  "هر سوالی که اشتباه جواب بدی، یک پله به جواب درست نزدیک‌تر می‌شی.",
+  "شروع کردن سخت‌ترین بخش ماجراست؛ کتاب رو باز کن و شروع کن.",
+  "تو مجبور نیستی بی‌نقص باشی، فقط باید هر روز بهتر از دیروز باشی.",
+  "خستگی بعد از مطالعه، نشونه‌ی اینه که داری پیشرفت می‌کنی.",
+  "به جای اینکه بگی 'نمی‌تونم'، بگو 'هنوز یاد نگرفتم'.",
+  "برنامه‌ریزی درست، نصف مسیر موفقیت رو برات هموار می‌کنه.",
+  "تمرکز یعنی هنر نگاه نکردن به گوشی وقتی درس داری.",
+  "یه روزی به خاطر تلاش‌های امروزت، از خودت تشکر می‌کنی.",
+  "امتحان، پایان دنیا نیست؛ فقط یه تست از دانسته‌های توئه.",
+  "یادگیری یه ماراتنه، نه دوی سرعت؛ آهسته و پیوسته برو جلو.",
+  "از اشتباه کردن نترس، از تکرار کردنش بترس.",
+  "با یه ساعت مطالعه‌ی متمرکز، می‌تونی مسیر هفته‌ت رو عوض کنی.",
+  "آینده‌ت رو با بهانه‌های امروزت خراب نکن.",
+  "تو باهوش‌تر از اون چیزی هستی که فکر می‌کنی.",
+  "با خودت مسابقه بده، نه با بقیه کلاس.",
+  "ذهن تو در برابر یادگیری چیزهای جدید، مقاومتی از خودش نشون نمی‌ده.",
+  "یه استراحت کوتاه بعد از هر تمرکز عمیق، بهترین پاداشه.",
+  "کسی که سوال می‌پرسد، یک قدم از بقیه جلوتره.",
+  "روزهای سخت مطالعه، آینده‌ی روشن رو می‌سازن.",
+  "تمرکز یعنی اینکه وقتی درس می‌خونی، فقط به درس فکر کنی.",
+  "حتی اگه ۵ دقیقه هم شد، همون ۵ دقیقه رو با تمرکز کامل بخون.",
+  "تو توانایی این رو داری که هر درسی رو یاد بگیری.",
+  "به جای فکر کردن به سختی درس، به شیرینی نمره‌ش فکر کن.",
+  "هر روز یک صفحه جلو رفتن، بهتر از یک ماه برنامه نداشتنه.",
+  "تو تنها کسی هستی که می‌تونه سرنوشت تحصیلی خودش رو بنویسه.",
+  "شکست توی یک امتحان، تعریف کننده تو نیست.",
+  "تلاش امروزت، لبخند فردای توئه.",
+  "مغزت رو با حل مسائل چالشی، قوی‌تر کن.",
+  "اگه خسته شدی، یعنی داری از منطقه امنت خارج می‌شی.",
+  "حواست به زمان باشه، زمان بهت اهمیت نمی‌ده!",
+  "اول کارهای سخت رو انجام بده، بقیه روزت راحت‌تر می‌شه.",
+  "با تمرین و تکرار، هیچ درسی غیرقابل فهم نیست.",
+  "تو یک الماس هستی که با مطالعه، تراشیده می‌شی.",
+  "بی‌نظمی توی درس خوندن، دشمن پیشرفته.",
+  "یه بار برای همیشه، درس خوندن رو به یه عادت روزانه تبدیل کن.",
+  "برای هدفت بجنگ، حتی اگه شب‌ها خسته باشی.",
+  "کوچیک‌ترین پیشرفت‌ها هم ارزش جشن گرفتن دارن.",
+  "هر چیزی که یاد می‌گیری، مثل یه آجر برای ساختن قلعه‌ی آینده‌ته.",
+  "از اینکه در حال یادگیری هستی، به خودت افتخار کن.",
+  "نذار ترس از اشتباه، جلوی تلاشت رو بگیره.",
+  "وقتی خسته شدی، به کسی فکر کن که بهت افتخار می‌کنه.",
+  "تمرکز، سخت‌ترین کار دنیاست ولی بزرگ‌ترین پاداش رو داره.",
+  "با کنجکاوی یاد بگیر، نه با اجبار.",
+  "استرس رو کنار بذار، با یه نفس عمیق شروع کن.",
+  "تو داری برای بهترین نسخه‌ی خودت تلاش می‌کنی.",
+  "هر مفهومی که یاد می‌گیری، یه قدم به آزادی بیشتره.",
+  "یادت باشه چرا شروع کردی؛ هدفت رو روی دیوار اتاقت بچسبون.",
+  "به جای حسرت خوردن برای گذشته، روی درس امروزت تمرکز کن.",
+  "تو با تلاشت، به بقیه هم انرژی می‌دی.",
+  "صبور باش، رشد کردن زمان می‌بره.",
+  "اگه از یه درس خوشت نمیاد، حداقل یه بار عمیق بخونش، نظرت عوض می‌شه.",
+  "از درخواست کمک از معلم یا دوستت خجالت نکش.",
+  "شب امتحان، جای یادگیری چیزهای جدیده، جای مرور دانسته‌هاست.",
+  "با یک برنامه‌ی ساده و قابل اجرا شروع کن.",
+  "ذهنت یک عضله‌ست؛ هر روز چالشش بده.",
+  "رقابت واقعی تو، با نسخه‌ی دیروز خودت هست.",
+  "موفقیت یعنی اینکه پشتکار داشته باشی.",
+  "برای خودت احترام قائل شو، اون وقته که درس خوندن برات آسون‌تر می‌شه.",
+  "تنها چیزی که بین تو و هدفت هست، تمرین روزانه‌ست.",
+  "از هر اشتباهی که تو تمرین‌ها می‌کنی، یک درس جدید بگیر.",
+  "به جای این که فقط بخونی، سعی کن مطلب رو به کسی دیگه یاد بدی.",
+  "خسته نشو از شروع کردن؛ مهم استقامت است.",
+  "تو داری چیزی رو می‌سازی که سال‌ها باهات می‌مونه.",
+  "با یک هدف واضح، مسیر برات روشن‌تر می‌شه.",
+  "نذار یک نمره بد، تعریف کل ارزش تو باشه.",
+  "هر روزت رو طوری سپری کن که انگار داری هدیه‌ای برای آینده‌ت می‌فرستی."
+];
+
+const adultMotivations = [
+  "زمان باارزش‌ترین دارایی توست؛ با دقت خرجش کن.",
+  "خودت را با کسی مقایسه نکن؛ مسیر تو منحصر به فرد است.",
+  "موفقیت نتیجه‌ی عادت‌های کوچک روزانه است، نه یک شبه معجزه.",
+  "شکست فقط یک تجربه است، نه یک هویت.",
+  "بزرگ‌ترین سرمایه‌گذاری، سرمایه‌گذاری روی یادگیری خودت است.",
+  "هر روز یک فرصت دوباره برای شروع است.",
+  "تو مجبور نیستی همه را راضی نگه داری؛ اول از همه به خودت وفادار باش.",
+  "استراحت، تنبلی نیست؛ بخشی از بهره‌وری است.",
+  "تصمیم‌های امروز، ساختار فردای تو را شکل می‌دهند.",
+  "اگر مسیر اشتباه رفتی، همیشه راه برگشتی وجود دارد.",
+  "ذهنت را مثل باغچه نگه دار؛ از افکار منفی هرس‌اش کن.",
+  "آرامش ذهنی، مقدم بر ثروت است.",
+  "یادگیری، محدود به سن و سال نیست.",
+  "با کوچک‌ترین کارها شروع کن؛ حرکت، بهترین انگیزه‌بخش است.",
+  "تمرکز روی چیزهایی که می‌توانی کنترل کنی، نگرانی را کاهش می‌دهد.",
+  "خودت را ببخش که کامل نیستی؛ هیچ‌کس نیست.",
+  "به جای تمرکز روی کمبودها، روی داشته‌هایت تمرکز کن.",
+  "نظم و برنامه‌ریزی، آزادی به ارمغان می‌آورد.",
+  "هیچ‌کس قرار نیست تو را نجات دهد؛ تو قهرمان داستان خودت هستی.",
+  "به بدنت احترام بگذار؛ آن تنها خانه‌ی واقعی توست.",
+  "با اهداف کوچک و دست‌یافتنی شروع کن.",
+  "از تغییر نترس؛ در دل تغییر، فرصت‌های جدیدی نهفته است.",
+  "ذهنت را با چالش‌های جدید فعال نگه دار.",
+  "اگر می‌خواهی در کاری بهترین باشی، باید زمان و انرژی بگذاری.",
+  "یک 'نه' قاطع، بهتر از یک 'بله' همراه با اجبار است.",
+  "بین کار و زندگی‌ات تعادل ایجاد کن.",
+  "به موفقیت‌هایت افتخار کن، حتی اگر از نظر دیگران کوچک باشند.",
+  "زمان خودت را با کارهایی که دوستشان نداری، تلف نکن.",
+  "به جای فکر کردن به گذشته، روی لحظه‌ی حال تمرکز کن.",
+  "یاد بگیر که در لحظه زندگی کنی.",
+  "داشتن یک برنامه‌ی منظم، ذهنت را آرام می‌کند.",
+  "با انضباط شخصی، به آزادی واقعی می‌رسی.",
+  "به جای حرف زدن درباره‌ی ایده‌ها، آن‌ها را عملی کن.",
+  "اگر می‌خواهی سرعت پیشرفتت زیاد شود، از منطقه امن خودت خارج شو.",
+  "افراد موفق، به جای نگرانی از شکست، به موفقیت فکر می‌کنند.",
+  "خودت را جدی بگیر؛ آرزوهایت جدی هستند.",
+  "برای هر روزت یک هدف مشخص و کوچک تعیین کن.",
+  "تو لایق داشتن یک زندگی شاد و موفق هستی.",
+  "مراقب افکارت باش؛ آن‌ها تبدیل به کلمات، و سپس به واقعیت می‌شوند.",
+  "یادگیری یک فرآیند مادام‌العمر است.",
+  "هر مانع، یک درس جدید برای رشد توست.",
+  "با خودت صادق باش.",
+  "به جای شکایت از شرایط، برای تغییر آن قدم بردار.",
+  "در کارها، کیفیت را بر کمیت ترجیح بده.",
+  "با عادت‌های مثبت، آینده‌ی درخشانی برای خودت بساز.",
+  "موفقیت، حاصل پشتکار و تعهد است.",
+  "از اینکه هنوز در حال یادگیری هستی، خوشحال باش.",
+  "با تمرکز روی یک هدف، احتمال رسیدن به آن را چند برابر می‌کنی.",
+  "خودت را از شر روابط سمی رها کن.",
+  "به نیازهای خودت توجه کن.",
+  "به خودت اعتماد داشته باش؛ تو از پس هر چالشی بر می‌آیی.",
+  "مدیریت زمان، یعنی مدیریت خود.",
+  "با یک برنامه‌ریزی دقیق، به اهدافت می‌رسی.",
+  "اشتباهاتت را بپذیر و برای جبران آن‌ها قدم بردار.",
+  "از تجربه‌هایت در زندگی درس بگیر.",
+  "اهداف بزرگ، نیازمند تعهد و صبر هستند.",
+  "همیشه برای خودت وقت بگذار.",
+  "نگرانی، ذهن را فرسوده می‌کند؛ با اقدام به جای نگرانی، آرامش پیدا کن.",
+  "برای رسیدن به موفقیت، باید تلاش مستمر داشته باشی.",
+  "با برنامه‌ریزی، انرژی خود را برای کارهای مهم ذخیره کن.",
+  "هر روز یک فرصت برای یادگیری چیزهای جدید است.",
+  "برای خودت ارزش قائل شو.",
+  "تمرکز روی آنچه که هستی، بهتر از تمرکز بر آنچه که نیستی است.",
+  "خودت را برای روزهای سخت آماده کن.",
+  "با اعتماد به نفس، به سمت اهدافت حرکت کن.",
+  "خودت را از هر چیزی که مانع پیشرفتت می‌شود، دور نگه دار.",
+  "زندگی، یک هدیه است؛ آن را با ارزش زندگی کن.",
+  "از هر روزت برای بهتر شدن استفاده کن.",
+  "با تمرکز روی زمان حال، استرس را کاهش بده.",
+  "خودت را باور کن.",
+  "اهداف خود را واضح و مشخص بنویس.",
+  "به خودت سخت نگیر؛ از مسیر لذت ببر.",
+  "موفقیت، نتیجه‌ی تصمیم‌های درست و تلاش مستمر است."
+];
+
+function getMotivationText() {
+  const isStudent = currentUser && currentUser.type === 'student';
+  const list = isStudent ? studentMotivations : adultMotivations;
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function getRandomMotivation() {
+  const el = document.getElementById('motivation-card');
+  el.textContent = getMotivationText();
+  el.classList.remove('hidden');
+  }
+
+// ================== EXPOSE TO WINDOW ==================
+window.showSection = showSection;
+window.goToPage = goToPage;
+window.toggleSidebar = toggleSidebar;
+window.handleLogoTap = handleLogoTap;
+window.toggleSignupFields = toggleSignupFields;
+window.signupUser = signupUser;
+window.loginUser = loginUser;
+window.logout = logout;
+window.startTimer = startTimer;
+window.stopFocusOverlay = stopFocusOverlay;
+window.deleteScheduleItem = deleteScheduleItem;
+window.submitPlan = submitPlan;
+window.startTestSession = startTestSession;
+window.setGoal = setGoal;
+window.startFocusSession = startFocusSession;
+window.claimReward = claimReward;
+window.addFriend = addFriend;
+window.removeFriend = removeFriend;
+window.addNewLesson = addNewLesson;
+window.deleteLesson = deleteLesson;
+window.getRandomMotivation = getRandomMotivation;
+window.setTheme = setTheme;
+window.setLanguage = setLanguage;
+window.loadAdminPanel = loadAdminPanel;
+window.showPostcard = showPostcard;
+window.loadSchedule = loadSchedule;
+window.loadTestsPage = loadTestsPage;
+window.loadGoals = loadGoals;
+window.loadRewards = loadRewards;
+window.loadFriends = loadFriends;
+window.loadMyLessons = loadMyLessons;
+window.loadSettings = loadSettings;
+window.loadFocusHistory = loadFocusHistory;
+window.loadHome = loadHome;
+window.loadPlanNew = loadPlanNew;
+</script>
+</body>
+</html>
