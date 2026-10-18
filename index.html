@@ -597,29 +597,30 @@ async function signupUser() {
   }
 
   const avatarEmojis = ['','🧑‍🎓','👩‍🎓','🧑‍🔧','👨‍🚀','👮‍♂️','👮‍♀️','👨‍🔬','👩‍🔬','👨‍⚖️','👩‍⚖️','🧑‍🏫','👻'];
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 7 * 864e5).toISOString();
+  const myCode = username.toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
 
+  const newUser = {
+    name, username, password, type: userType, grade, job,
+    avatar: selectedAvatar, avatarEmoji: avatarEmojis[selectedAvatar],
+    referralCode: myCode, referredBy: referral || null,
+    pointsTotal: 0, pointsSpendable: 0,
+    subscription: { expiresAt, startDate: now.toISOString(), manuallyClosed: false },
+    lessons: [], schedule: {}, tests: {}, goals: {}, focusHistory: [], studyLogs: [],
+    financeLogs: [], friends: [], createdAt: now.toISOString(), lastLoginDate: null,
+    lastFinanceDate: null, activatedCodes: []
+  };
+
+  // ۱. تلاش برای ثبت‌نام در Firebase
   try {
     const userRef = doc(db, 'users', username);
     const snap = await getDoc(userRef);
     if (snap.exists()) return errEl.textContent = 'این نام کاربری وجود دارد';
-
-    const myCode = username.toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + 7 * 864e5).toISOString();
     
-    const newUser = {
-      name, username, password, type: userType, grade, job,
-      avatar: selectedAvatar, avatarEmoji: avatarEmojis[selectedAvatar],
-      referralCode: myCode, referredBy: referral || null,
-      pointsTotal: 0, pointsSpendable: 0,
-      subscription: { expiresAt, startDate: now.toISOString(), manuallyClosed: false },
-      lessons: [], schedule: {}, tests: {}, goals: {}, focusHistory: [], studyLogs: [],
-      financeLogs: [], friends: [], createdAt: now.toISOString(), lastLoginDate: null,
-      lastFinanceDate: null
-    };
-
     await setDoc(userRef, newUser);
-
+    
+    // اگه کد معرف داشت
     if (referral) {
       const q = query(collection(db, 'users'), where('referralCode', '==', referral));
       const refSnap = await getDocs(q);
@@ -635,15 +636,35 @@ async function signupUser() {
           'subscription.expiresAt': newRefExpiry,
           friends: refFriends
         });
-        const newFriends = [{ id: refDoc.id, name: refData.name, username: refData.username }];
-        await updateDoc(userRef, { friends: newFriends });
+        newUser.friends = [{ id: refDoc.id, name: refData.name, username: refData.username }];
+        await updateDoc(userRef, { friends: newUser.friends });
       }
     }
-
     alert('ثبت‌نام موفق! حالا وارد شوید.');
     showSection('login');
-  } catch (e) {
-    errEl.textContent = 'خطا: ' + e.message;
+    return;
+    
+  } catch (firebaseError) {
+    console.log('Firebase failed, trying Supabase...', firebaseError);
+  }
+
+  // ۲. اگه Firebase فیلتر بود، برو سراغ Supabase
+  try {
+    const { data, error } = await supabase.from('users').select('username').eq('username', username);
+    if (error) throw error;
+    if (data && data.length > 0) return errEl.textContent = 'این نام کاربری وجود دارد';
+
+    const { error: insertError } = await supabase.from('users').insert([{
+      id: Date.now(),
+      username: username,
+      data: newUser
+    }]);
+    if (insertError) throw insertError;
+
+    alert('ثبت‌نام موفق (از طریق سرور پشتیبان)! حالا وارد شوید.');
+    showSection('login');
+  } catch (sbError) {
+    errEl.textContent = 'خطا در ثبت‌نام: ' + (sbError.message || 'اتصال برقرار نیست');
   }
 }
 
@@ -654,41 +675,67 @@ async function loginUser() {
   errEl.textContent = '';
   if (!username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
 
+  let userData = null;
+
+  // ۱. تلاش برای ورود از Firebase
   try {
     const userRef = doc(db, 'users', username);
     const snap = await getDoc(userRef);
-    if (!snap.exists() || snap.data().password !== password) {
-      return errEl.textContent = 'نام کاربری یا رمز اشتباه است';
+    if (snap.exists() && snap.data().password === password) {
+      userData = snap.data();
     }
+  } catch (firebaseError) {
+    console.log('Firebase failed, trying Supabase...');
+  }
 
-    const userData = snap.data();
-    if (new Date(userData.subscription.expiresAt) < new Date()) {
-      return errEl.textContent = 'اشتراک شما منقضی شده. لطفاً از طریق دکمه «خرید اشتراک» تمدید کنید.';
+  // ۲. اگه Firebase فیلتر بود، از Supabase بخون
+  if (!userData) {
+    try {
+      const { data, error } = await supabase.from('users').select('data').eq('username', username);
+      if (!error && data && data.length > 0) {
+        if (data[0].data.password === password) {
+          userData = data[0].data;
+        }
+      }
+    } catch (sbError) {
+      console.log('Supabase also failed');
     }
+  }
 
-    currentUser = { id: snap.id, ...userData };
-    userType = userData.type;
-    saveToCache('user_' + username, currentUser);
+  if (!userData) {
+    return errEl.textContent = 'نام کاربری یا رمز اشتباه است (یا اتصال برقرار نیست)';
+  }
 
-    const today = new Date().toISOString().split('T')[0];
-    if (currentUser.lastLoginDate !== today) {
-      await updateDoc(userRef, {
+  if (new Date(userData.subscription.expiresAt) < new Date()) {
+    return errEl.textContent = 'اشتراک شما منقضی شده. لطفاً از طریق دکمه «خرید اشتراک» تمدید کنید.';
+  }
+
+  currentUser = { id: username, ...userData };
+  userType = userData.type;
+  saveToCache('user_' + username, currentUser);
+
+  const today = new Date().toISOString().split('T')[0];
+  if (currentUser.lastLoginDate !== today) {
+    currentUser.pointsTotal += 5;
+    currentUser.pointsSpendable += 5;
+    currentUser.lastLoginDate = today;
+    // آپدیت در Firebase یا Supabase
+    try {
+      await updateDoc(doc(db, 'users', username), {
         pointsTotal: increment(5),
         pointsSpendable: increment(5),
         lastLoginDate: today
       });
-      currentUser.pointsTotal += 5;
-      currentUser.pointsSpendable += 5;
-      currentUser.lastLoginDate = today;
+    } catch (e) {
+      try {
+        await supabase.from('users').update({ data: currentUser }).eq('username', username);
+      } catch (e2) {}
     }
-
-    buildMenu();
-    goToPage('home');
-  } catch (e) {
-    errEl.textContent = 'خطا: ' + e.message;
   }
-}
 
+  buildMenu();
+  goToPage('home');
+}
 function logout() {
   currentUser = null;
   userType = null;
