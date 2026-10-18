@@ -708,6 +708,63 @@ function updateBadgeDisplay() {
   if (el) el.textContent = badge;
 }
 
+// ================== UPDATE GOAL PROGRESS ==================
+async function updateGoalProgress() {
+  if (!currentUser.goals) return;
+  const weekStart = getSaturdayOfWeek();
+  const today = new Date().toISOString().split('T')[0];
+  const goals = currentUser.goals;
+  let changed = false;
+  
+  // محاسبه مجموع ساعت مطالعه (برای دانش‌آموز) یا کار (برای بزرگسال)
+  if (goals.study && goals.study.week === weekStart) {
+    const totalMinutes = (currentUser.studyLogs || []).reduce((s, l) => s + l.minutes, 0);
+    goals.study.progress = Math.floor(totalMinutes / 60);
+    changed = true;
+  }
+  if (goals.work && goals.work.week === weekStart) {
+    const totalMinutes = (currentUser.studyLogs || []).reduce((s, l) => s + l.minutes, 0);
+    goals.work.progress = Math.floor(totalMinutes / 60);
+    changed = true;
+  }
+  
+  // محاسبه تعداد تست (برای دانش‌آموز)
+  if (goals.tests && goals.tests.week === weekStart) {
+    let totalTests = 0;
+    Object.keys(currentUser.tests || {}).forEach(lesson => {
+      (currentUser.tests[lesson] || []).forEach(t => { totalTests += t.count; });
+    });
+    goals.tests.progress = totalTests;
+    changed = true;
+  }
+  
+  // محاسبه تعداد جلسات تمرکز (برای دانش‌آموز)
+  if (goals.focus && goals.focus.week === weekStart) {
+    goals.focus.progress = (currentUser.focusHistory || []).length;
+    changed = true;
+  }
+  
+  // محاسبه مجموع پس‌انداز (برای بزرگسال)
+  if (goals.savings && goals.savings.week === weekStart) {
+    const totalSavings = (currentUser.financeLogs || []).reduce((s, f) => s + f.savings, 0);
+    goals.savings.progress = totalSavings;
+    changed = true;
+  }
+  
+  if (changed) {
+    await updateDoc(doc(db, 'users', currentUser.id), { goals });
+    currentUser.goals = goals;
+    // چک کردن رسیدن به هدف (برای کارت پستال)
+Object.keys(goals).forEach(key => {
+  const g = goals[key];
+  if (g.week === weekStart && g.progress >= g.target && !g.celebrated) {
+    g.celebrated = true;
+    showPostcard('record');
+  }
+});
+  }
+      }
+
 // ================== HOME ==================
 async function loadHome() {
   const isStudent = userType === 'student';
@@ -873,6 +930,7 @@ async function stopFocusOverlay() {
     
     loadSchedule();
     alert('زمان مطالعه ذخیره شد: ' + formatTime(focusSeconds));
+    await updateGoalProgress();
     updateBadgeDisplay();
     
   } else if (focusType === 'test') {
@@ -898,6 +956,16 @@ async function stopFocusOverlay() {
         pointsSpendable: currentUser.pointsSpendable
       });
       alert(`آفرین! ${testCount} تست با میانگین ${Math.round(avg)} ثانیه ثبت شد.`);
+      await updateGoalProgress();
+      
+// بررسی رکوردشکنی
+const prevRecords = currentUser.tests[testLesson] || [];
+const isRecord = prevRecords.length <= 1 || (prevRecords.length > 1 && avg < prevRecords[prevRecords.length - 2].avgSeconds);
+if (isRecord) {
+  showPostcard(prevRecords.length <= 1 ? 'first' : 'record');
+} else {
+  showPostcard('effort');
+}
       loadTestsPage();
       updateBadgeDisplay();
     } else if (!isValid) {
@@ -928,6 +996,7 @@ async function stopFocusOverlay() {
       });
     }
     alert('جلسه تمرکز ذخیره شد: ' + formatTime(focusSeconds));
+    await updateGoalProgress();
     loadFocusHistory();
     updateBadgeDisplay();
   }
@@ -1358,6 +1427,7 @@ async function saveFinanceRecord() {
   });
   
   alert(pointsEarned > 0 ? '✅ ذخیره شد + ۵ امتیاز' : '✅ ذخیره شد (امتیاز امروز قبلاً گرفته شده)');
+  await updateGoalProgress();
   loadFinance();
   updateBadgeDisplay();
   }
@@ -1879,6 +1949,7 @@ window.loadAdminPanel = loadAdminPanel;
 window.renewUser = renewUser;
 window.showPostcard = showPostcard;
 window.updateBadgeDisplay = updateBadgeDisplay;
+window.updateGoalProgress = updateGoalProgress;
 </script>
 </body>
 </html>
