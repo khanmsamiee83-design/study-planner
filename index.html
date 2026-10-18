@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root{--primary:#FFD700;--secondary:#333;--accent:#A9A9A9;--bg-start:#FFEC8B;--bg-end:#DAA520;--text:#FFF;--success:#4CAF50;--danger:#f44336;--info:#2196F3;--card-bg:rgba(255,255,255,.08);--highlight:#FFEC8B}
+:root{--primary:#FFD700;--secondary:#333;--accent:#A9A9A9;--bg-start:#FFEC8B;--bg-end:#DAA520;--text:#FFF;--success:#4CAF50;--danger:#f44336;--info:#2196F3;--card-bg:rgba(255,255,255,.08);--highlight:#FFEC8B;--purple:#9C27B0}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:'Vazirmatn',sans-serif}
 body{background:linear-gradient(135deg,var(--bg-start),var(--bg-end));min-height:100vh;color:var(--text);display:flex;justify-content:center;align-items:flex-start;padding:15px;overflow-x:hidden;transition:background .3s}
 body.dark-mode{--secondary:#1a1a1a;--bg-start:#2a2a2a;--bg-end:#1a1a1a;--text:#E0E0E0;--card-bg:rgba(255,255,255,.05)}
@@ -21,10 +21,11 @@ body.dark-mode .container{background:rgba(26,26,26,.98)}
 .app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid var(--primary)}
 .app-header h1{font-size:1.4em;color:var(--primary);cursor:pointer;user-select:none}
 .header-right{display:flex;gap:10px;align-items:center}
+.badge-display{padding:4px 10px;background:rgba(255,215,0,.2);border-radius:15px;font-size:1.2em}
 .card{background:var(--card-bg);border-radius:15px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,.1)}
 .form-group{margin-bottom:15px}
 label{display:block;margin-bottom:8px;color:var(--highlight);font-size:.9em}
-input[type="text"],input[type="password"],input[type="number"],select{width:100%;padding:12px;border:2px solid var(--accent);border-radius:10px;background:rgba(255,255,255,.95);color:var(--secondary);font-size:16px;font-family:inherit;margin-bottom:10px}
+input[type="text"],input[type="password"],input[type="number"],input[type="date"],select{width:100%;padding:12px;border:2px solid var(--accent);border-radius:10px;background:rgba(255,255,255,.95);color:var(--secondary);font-size:16px;font-family:inherit;margin-bottom:10px}
 input:focus,select:focus{border-color:var(--primary);outline:none}
 .btn{background:linear-gradient(45deg,var(--primary),#e6c000);color:var(--secondary);border:none;padding:12px 20px;border-radius:10px;font-size:1em;font-weight:bold;cursor:pointer;margin:4px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s}
 .btn:active{transform:scale(.96)}
@@ -49,8 +50,20 @@ body.lang-en .menu-item:hover{border-left-color:var(--primary)}
 #focus-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#111;z-index:99999;display:none;flex-direction:column;justify-content:center;align-items:center;padding:20px}
 .timer-display{font-family:monospace;font-size:3.5em;font-weight:bold;color:var(--primary);background:rgba(0,0,0,.6);padding:20px;border-radius:15px;text-align:center;border:2px solid var(--primary);box-shadow:0 0 30px rgba(255,215,0,.2)}
 .avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:15px}
-.avatar-option{padding:15px;border:3px solid transparent;border-radius:15px;cursor:pointer;display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,.1);font-size:2.5em;transition:.2s}
+.avatar-option{padding:10px;border:3px solid transparent;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,.1);font-size:2.5em;transition:.2s;aspect-ratio:1}
 .avatar-option.selected{border-color:var(--primary);background:rgba(255,215,0,.2);transform:scale(1.1)}
+.avatar-option[data-avatar="1"]{background-color:rgba(255,107,107,.3)}
+.avatar-option[data-avatar="2"]{background-color:rgba(78,205,196,.3)}
+.avatar-option[data-avatar="3"]{background-color:rgba(255,230,109,.3)}
+.avatar-option[data-avatar="4"]{background-color:rgba(26,83,92,.3)}
+.avatar-option[data-avatar="5"]{background-color:rgba(255,159,28,.3)}
+.avatar-option[data-avatar="6"]{background-color:rgba(231,29,54,.3)}
+.avatar-option[data-avatar="7"]{background-color:rgba(131,56,236,.3)}
+.avatar-option[data-avatar="8"]{background-color:rgba(46,196,182,.3)}
+.avatar-option[data-avatar="9"]{background-color:rgba(255,183,3,.3)}
+.avatar-option[data-avatar="10"]{background-color:rgba(108,117,125,.3)}
+.avatar-option[data-avatar="11"]{background-color:rgba(139,69,19,.3)}
+.avatar-option[data-avatar="12"]{background-color:rgba(192,192,192,.3)}
 .postcard{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);background:linear-gradient(135deg,#fff,#f0f0f0);color:#333;padding:30px;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,.5);z-index:100000;text-align:center;width:90%;max-width:350px;opacity:0;pointer-events:none;transition:.3s}
 .postcard.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
 .postcard.gold{border:4px solid var(--primary);background:linear-gradient(135deg,#FFF8DC,#FFD700)}
@@ -58,80 +71,75 @@ body.lang-en .menu-item:hover{border-left-color:var(--primary)}
 .postcard.orange{border:4px solid orange;background:linear-gradient(135deg,#FFF3E0,#FFB74D)}
 .postcard.green{border:4px solid var(--success);background:linear-gradient(135deg,#E8F5E9,#81C784)}
 .postcard h3{font-size:1.5em;margin-bottom:10px}
-canvas{width:100%!important;height:auto!important;max-height:250px}
+canvas{width:100%!important;height:auto!important;max-height:300px}
+.user-type-select{display:flex;gap:20px;justify-content:center;margin:20px 0}
+.user-type-card{flex:1;padding:30px 20px;border:3px solid var(--accent);border-radius:20px;cursor:pointer;text-align:center;background:rgba(255,255,255,.05);transition:.2s}
+.user-type-card:hover{border-color:var(--primary);background:rgba(255,215,0,.1)}
+.user-type-card.selected{border-color:var(--primary);background:rgba(255,215,0,.2)}
+.user-type-card .icon{font-size:3em;margin-bottom:10px}
+.welcome-card{background:linear-gradient(135deg,var(--primary),#e6c000);color:#333;padding:20px;border-radius:15px;text-align:center;font-weight:bold;margin-bottom:15px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:20px 0}
+.stat-card{background:var(--card-bg);border-radius:12px;padding:15px;text-align:center;border:1px solid rgba(255,255,255,.1)}
+.stat-card h4{color:var(--accent);font-size:.8em;margin-bottom:8px}
+.stat-card .value{font-size:1.5em;color:var(--primary);font-weight:bold}
 </style>
 </head>
 <body>
 
-<div style="display:none;">
-<svg id="av1" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FF6B6B"/><circle cx="35" cy="40" r="8" fill="#FFF"/><circle cx="65" cy="40" r="8" fill="#FFF"/><path d="M 30 65 Q 50 85 70 65" stroke="#FFF" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
-<svg id="av2" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#4ECDC4"/><rect x="30" y="35" width="10" height="10" fill="#FFF"/><rect x="60" y="35" width="10" height="10" fill="#FFF"/><path d="M 35 70 Q 50 60 65 70" stroke="#FFF" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
-<svg id="av3" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FFE66D"/><circle cx="35" cy="40" r="10" fill="#333"/><circle cx="65" cy="40" r="10" fill="#333"/><path d="M 30 70 Q 50 90 70 70" stroke="#333" stroke-width="5" fill="none" stroke-linecap="round"/></svg>
-<svg id="av4" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#1A535C"/><circle cx="35" cy="40" r="6" fill="#FFF"/><circle cx="65" cy="40" r="6" fill="#FFF"/><circle cx="50" cy="60" r="10" fill="#FFF"/></svg>
-<svg id="av5" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FF9F1C"/><path d="M 30 35 L 40 45 L 30 55" stroke="#FFF" stroke-width="5" fill="none"/><path d="M 70 35 L 60 45 L 70 55" stroke="#FFF" stroke-width="5" fill="none"/><rect x="40" y="65" width="20" height="5" fill="#FFF"/></svg>
-<svg id="av6" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#2EC4B6"/><circle cx="50" cy="50" r="20" fill="#FFF"/><circle cx="50" cy="50" r="10" fill="#2EC4B6"/></svg>
-<svg id="av7" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#E71D36"/><polygon points="50,20 60,45 85,45 65,60 75,85 50,70 25,85 35,60 15,45 40,45" fill="#FFF"/></svg>
-<svg id="av8" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#011627"/><path d="M 25 50 Q 50 20 75 50 Q 50 80 25 50" fill="#FFF"/><circle cx="50" cy="50" r="10" fill="#011627"/></svg>
-<svg id="av9" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FDFFFC"/><path d="M 30 50 L 45 65 L 70 35" stroke="#2EC4B6" stroke-width="8" fill="none" stroke-linecap="round"/></svg>
-<svg id="av10" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#FFB703"/><rect x="35" y="30" width="30" height="40" rx="5" fill="#FFF"/><line x1="40" y1="40" x2="60" y2="40" stroke="#FFB703" stroke-width="3"/><line x1="40" y1="50" x2="60" y2="50" stroke="#FFB703" stroke-width="3"/><line x1="40" y1="60" x2="50" y2="60" stroke="#FFB703" stroke-width="3"/></svg>
-<svg id="av11" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#8338EC"/><path d="M 30 60 A 20 20 0 0 1 70 60" fill="none" stroke="#FFF" stroke-width="5"/><line x1="50" y1="60" x2="50" y2="35" stroke="#FFF" stroke-width="4" stroke-linecap="round"/><line x1="50" y1="60" x2="65" y2="50" stroke="#FFF" stroke-width="4" stroke-linecap="round"/></svg>
-<svg id="av12" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#3A86FF"/><path d="M 30 70 L 50 30 L 70 70" fill="none" stroke="#FFF" stroke-width="6" stroke-linejoin="round"/><line x1="35" y1="55" x2="65" y2="55" stroke="#FFF" stroke-width="6"/></svg>
-</div>
-
 <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div id="sidebar" class="sidebar">
-<div class="sidebar-header"><h2 style="color:var(--primary)">📚 Menu</h2><button style="background:none;border:none;color:var(--danger);font-size:1.5em" onclick="toggleSidebar()">✕</button></div>
-<div class="menu-item" onclick="goToPage('home')"><span>🏠</span><span data-fa="خانه" data-en="Home">خانه</span></div>
-<div class="menu-item" onclick="goToPage('schedule')"><span>📅</span><span data-fa="برنامه هفتگی" data-en="Schedule">برنامه هفتگی</span></div>
-<div class="menu-item" onclick="goToPage('plan')"><span>📝</span><span data-fa="برنامه‌ریزی جدید" data-en="New Plan">برنامه‌ریزی جدید</span></div>
-<div class="menu-item" onclick="goToPage('tests')"><span>📊</span><span data-fa="تست‌زنی" data-en="Tests">تست‌زنی</span></div>
-<div class="menu-item" onclick="goToPage('goals')"><span>🎯</span><span data-fa="اهداف هفته" data-en="Goals">اهداف هفته</span></div>
-<div class="menu-item" onclick="goToPage('focus')"><span>⏱️</span><span data-fa="تمرکز عمیق" data-en="Deep Focus">تمرکز عمیق</span></div>
-<div class="menu-item" onclick="goToPage('motivation')"><span>💬</span><span data-fa="فال انگیزشی" data-en="Motivation">فال انگیزشی</span></div>
-<div class="menu-item" onclick="goToPage('rewards')"><span>🏆</span><span data-fa="امتیازات" data-en="Rewards">امتیازات</span></div>
-<div class="menu-item" onclick="goToPage('friends')"><span>👥</span><span data-fa="دوستام" data-en="Friends">دوستام</span></div>
-<div class="menu-item" onclick="goToPage('lessons')"><span>📚</span><span data-fa="درس‌های من" data-en="My Lessons">درس‌های من</span></div>
-<div class="menu-item" onclick="goToPage('settings')"><span>⚙️</span><span data-fa="تنظیمات" data-en="Settings">تنظیمات</span></div>
-<div style="border-top:1px solid rgba(255,255,255,.1);margin:10px 20px"></div>
-<div class="menu-item" onclick="logout()" style="color:var(--danger)"><span>🚪</span><span data-fa="خروج" data-en="Logout">خروج</span></div>
+<div class="sidebar-header"><h2 style="color:var(--primary)">📚 منو</h2><button style="background:none;border:none;color:var(--danger);font-size:1.5em" onclick="toggleSidebar()">✕</button></div>
+<div id="menu-container"></div>
 </div>
 
 <div class="container">
 <div class="app-header">
 <h1 onclick="handleLogoTap()">📚 <span data-fa="برنامه‌ریزی هوشمند" data-en="Smart Planner">برنامه‌ریزی هوشمند</span></h1>
 <div class="header-right">
+<div id="user-badge-display" class="badge-display hidden"></div>
 <div id="header-user-info" class="hidden" style="color:var(--primary);font-size:.9em"></div>
 <button id="hamburger-btn" class="hidden" onclick="toggleSidebar()" style="background:var(--primary);color:var(--secondary);border:none;width:40px;height:40px;border-radius:10px;font-size:1.2em;cursor:pointer">☰</button>
 </div>
 </div>
 
-<div id="login" class="section active">
-<h2 style="color:var(--primary);text-align:center;margin-bottom:25px" data-fa="ورود" data-en="Login">ورود</h2>
-<div class="form-group"><input type="text" id="login-username" placeholder="نام کاربری / Username"></div>
-<div class="form-group"><input type="password" id="login-password" placeholder="رمز عبور / Password"></div>
-<button class="btn btn-full" onclick="loginUser()">🔐 <span data-fa="ورود" data-en="Login">ورود</span></button>
-<div id="login-error" style="color:var(--danger);text-align:center;margin-top:10px"></div>
-<div style="margin-top:20px;text-align:center">
-<p style="color:var(--accent)" data-fa="حساب ندارید؟" data-en="No account?">حساب ندارید؟</p>
-<button class="btn btn-secondary btn-full" onclick="showSection('signup')"><span data-fa="ثبت‌نام" data-en="Sign Up">ثبت‌نام</span></button>
+<!-- ============ WELCOME / USER TYPE ============ -->
+<div id="welcome" class="section active">
+<h2 style="color:var(--primary);text-align:center;margin-bottom:30px;" data-fa="به برنامه‌ریزی هوشمند خوش آمدید" data-en="Welcome to Smart Planner">به برنامه‌ریزی هوشمند خوش آمدید</h2>
+<div style="text-align:center;margin-bottom:30px;">
+<h3 style="color:#fff;margin-bottom:20px;" data-fa="شما کی هستید؟" data-en="Who are you?">شما کی هستید؟</h3>
+<div class="user-type-select">
+<div class="user-type-card" onclick="selectUserType('student')" id="type-student">
+<div class="icon">🧑‍🎓</div>
+<h4 data-fa="دانش‌آموز" data-en="Student">دانش‌آموز</h4>
 </div>
+<div class="user-type-card" onclick="selectUserType('adult')" id="type-adult">
+<div class="icon">💼</div>
+<h4 data-fa="بزرگسال" data-en="Adult">بزرگسال</h4>
+</div>
+</div>
+</div>
+<button class="btn btn-secondary btn-full" onclick="showSection('login')" data-fa="قبلاً ثبت‌نام کردم (ورود)" data-en="Already registered (Login)">قبلاً ثبت‌نام کردم (ورود)</button>
 </div>
 
+<!-- ============ LOGIN ============ -->
+<div id="login" class="section">
+<h2 style="color:var(--primary);text-align:center;margin-bottom:25px" data-fa="ورود" data-en="Login">ورود</h2>
+<div class="form-group"><input type="text" id="login-username" placeholder="نام کاربری"></div>
+<div class="form-group"><input type="password" id="login-password" placeholder="رمز عبور"></div>
+<button class="btn btn-full" onclick="loginUser()">🔐 ورود</button>
+<div id="login-error" style="color:var(--danger);text-align:center;margin-top:10px"></div>
+<button class="btn btn-secondary btn-full" style="margin-top:15px;" onclick="showSection('welcome')">← بازگشت</button>
+</div>
+
+<!-- ============ SIGNUP ============ -->
 <div id="signup" class="section">
 <h2 style="color:var(--primary);text-align:center;margin-bottom:25px" data-fa="ثبت‌نام" data-en="Sign Up">ثبت‌نام</h2>
-<div class="form-group">
-<label data-fa="شما کی هستید؟" data-en="Who are you?">شما کی هستید؟</label>
-<div style="display:flex;gap:20px">
-<label><input type="radio" name="user-type" value="student" checked onchange="toggleSignupFields()"> 🎒 <span data-fa="دانش‌آموز" data-en="Student">دانش‌آموز</span></label>
-<label><input type="radio" name="user-type" value="adult" onchange="toggleSignupFields()"> 💼 <span data-fa="بزرگسال" data-en="Adult">بزرگسال</span></label>
-</div>
-</div>
-<div class="form-group"><label data-fa="نام و نام خانوادگی" data-en="Full Name">نام کامل</label><input type="text" id="signup-name"></div>
-<div class="form-group"><label data-fa="نام کاربری" data-en="Username">نام کاربری</label><input type="text" id="signup-username"></div>
-<div class="form-group"><label data-fa="رمز عبور" data-en="Password">رمز عبور</label><input type="password" id="signup-password"></div>
+<div class="form-group"><label>نام و نام خانوادگی</label><input type="text" id="signup-name"></div>
+<div class="form-group"><label>نام کاربری (انگلیسی، بدون فاصله)</label><input type="text" id="signup-username" style="direction:ltr;text-align:left"></div>
+<div class="form-group"><label>رمز عبور</label><input type="password" id="signup-password"></div>
 <div id="student-fields">
 <div class="form-group">
-<label data-fa="پایه تحصیلی" data-en="Grade">پایه تحصیلی</label>
+<label>پایه تحصیلی</label>
 <select id="signup-grade">
 <option value="">-- انتخاب کنید --</option>
 <option value="7">هفتم</option><option value="8">هشتم</option><option value="9">نهم</option>
@@ -145,142 +153,197 @@ canvas{width:100%!important;height:auto!important;max-height:250px}
 </div>
 </div>
 <div id="adult-fields" class="hidden">
-<div class="form-group"><label data-fa="شغل اصلی" data-en="Main Job">شغل اصلی (مثلاً برنامه‌نویس)</label><input type="text" id="signup-job"></div>
+<div class="form-group"><label>شغل اصلی</label><input type="text" id="signup-job" placeholder="مثلاً برنامه‌نویس، فروشنده، ..."></div>
 </div>
-<div class="form-group"><label data-fa="کد معرف (اختیاری)" data-en="Referral Code (Optional)">کد معرف</label><input type="text" id="signup-referral" style="text-transform:uppercase"></div>
+<div class="form-group"><label>کد معرف (اختیاری - ۵ روز اشتراک هدیه می‌گیرید)</label><input type="text" id="signup-referral" style="text-transform:uppercase;direction:ltr;text-align:left"></div>
 <div class="form-group">
-<label data-fa="انتخاب آواتار" data-en="Select Avatar">انتخاب آواتار</label>
+<label>انتخاب آواتار</label>
 <div class="avatar-grid" id="avatar-grid">
-<div class="avatar-option" data-avatar="1"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av1"/></svg></div>
-<div class="avatar-option" data-avatar="2"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av2"/></svg></div>
-<div class="avatar-option" data-avatar="3"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av3"/></svg></div>
-<div class="avatar-option" data-avatar="4"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av4"/></svg></div>
-<div class="avatar-option" data-avatar="5"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av5"/></svg></div>
-<div class="avatar-option" data-avatar="6"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av6"/></svg></div>
-<div class="avatar-option" data-avatar="7"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av7"/></svg></div>
-<div class="avatar-option" data-avatar="8"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av8"/></svg></div>
-<div class="avatar-option" data-avatar="9"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av9"/></svg></div>
-<div class="avatar-option" data-avatar="10"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av10"/></svg></div>
-<div class="avatar-option" data-avatar="11"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av11"/></svg></div>
-<div class="avatar-option" data-avatar="12"><svg viewBox="0 0 100 100" width="40" height="40"><use href="#av12"/></svg></div>
+<div class="avatar-option" data-avatar="1" onclick="selectAvatar(1)">🧑‍🎓</div>
+<div class="avatar-option" data-avatar="2" onclick="selectAvatar(2)">👩‍🎓</div>
+<div class="avatar-option" data-avatar="3" onclick="selectAvatar(3)">🧑‍🔧</div>
+<div class="avatar-option" data-avatar="4" onclick="selectAvatar(4)">👨‍🚀</div>
+<div class="avatar-option" data-avatar="5" onclick="selectAvatar(5)">👮‍♂️</div>
+<div class="avatar-option" data-avatar="6" onclick="selectAvatar(6)">👮‍♀️</div>
+<div class="avatar-option" data-avatar="7" onclick="selectAvatar(7)">👨‍🔬</div>
+<div class="avatar-option" data-avatar="8" onclick="selectAvatar(8)">👩‍🔬</div>
+<div class="avatar-option" data-avatar="9" onclick="selectAvatar(9)">👨‍⚖️</div>
+<div class="avatar-option" data-avatar="10" onclick="selectAvatar(10)">👩‍⚖️</div>
+<div class="avatar-option" data-avatar="11" onclick="selectAvatar(11)">🧑‍🏫</div>
+<div class="avatar-option" data-avatar="12" onclick="selectAvatar(12)">👻</div>
 </div>
 </div>
-<button class="btn btn-full" onclick="signupUser()">✍️ <span data-fa="ثبت‌نام" data-en="Sign Up">ثبت‌نام</span></button>
+<button class="btn btn-full" onclick="signupUser()">✍️ ثبت‌نام</button>
 <div id="signup-error" style="color:var(--danger);text-align:center;margin-top:10px"></div>
-<button class="btn btn-secondary btn-full" style="margin-top:10px" onclick="showSection('login')">← <span data-fa="بازگشت" data-en="Back">بازگشت</span></button>
+<button class="btn btn-secondary btn-full" style="margin-top:10px;" onclick="showSection('welcome')">← بازگشت</button>
 </div>
 
+<!-- ============ HOME ============ -->
 <div id="home" class="section">
 <div id="welcome-msg" style="color:var(--primary);font-size:1.3em;margin-bottom:15px;font-weight:bold"></div>
-<div id="daily-motivation" class="card" style="background:linear-gradient(45deg,var(--primary),#e6c000);color:#333;font-weight:bold;text-align:center"></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:20px 0">
-<div class="card" style="text-align:center;margin:0"><h4 style="color:var(--accent);font-size:.8em" data-fa="زمان امروز" data-en="Today Time">امروز</h4><div id="stat-today" style="font-size:1.5em;color:var(--primary);font-weight:bold">00:00</div></div>
-<div class="card" style="text-align:center;margin:0"><h4 style="color:var(--accent);font-size:.8em" data-fa="امتیاز کل" data-en="Total Points">امتیاز</h4><div id="stat-points" style="font-size:1.5em;color:var(--primary);font-weight:bold">0</div></div>
+<div id="daily-motivation" class="welcome-card"></div>
+<div class="stats-grid">
+<div class="stat-card"><h4 id="stat-1-label">امروز</h4><div class="value" id="stat-today">00:00</div></div>
+<div class="stat-card"><h4>امتیاز کل</h4><div class="value" id="stat-points">0</div></div>
 </div>
-<div class="card">
-<h4 style="color:var(--primary);margin-bottom:10px" data-fa="📈 پیشرفت هفته" data-en="📈 Weekly Progress">📈 پیشرفت هفته</h4>
+<div class="card" id="home-chart-container">
+<h4 style="color:var(--primary);margin-bottom:10px;" id="chart-title">📈 پیشرفت هفته</h4>
 <canvas id="weeklyChart"></canvas>
 </div>
 </div>
 
-<div id="schedule" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px" data-fa="📅 برنامه هفتگی" data-en="📅 Weekly Schedule">📅 برنامه هفتگی</h2>
-<div id="schedule-list"></div>
-</div>
-
-<div id="plan" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px" data-fa="📝 برنامه‌ریزی جدید" data-en="📝 New Plan">📝 برنامه‌ریزی جدید</h2>
-<div id="plan-subjects-list"></div>
-<button class="btn btn-success btn-full" onclick="submitPlan()" style="margin-top:15px" data-fa="✅ ثبت نهایی" data-en="✅ Submit Final">✅ ثبت نهایی</button>
-</div>
-
-<div id="tests" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px" data-fa="📊 تست‌زنی" data-en="📊 Tests">📊 تست‌زنی</h2>
-<div class="card">
-<div class="form-group"><label data-fa="انتخاب درس" data-en="Select Lesson">انتخاب درس</label><select id="test-lesson"></select></div>
-<div class="form-group"><label data-fa="تعداد تست" data-en="Number of Tests">تعداد تست</label><input type="number" id="test-count"></div>
-<button class="btn btn-info btn-full" onclick="startTestSession()">▶️ <span data-fa="شروع تست" data-en="Start Test">شروع تست</span></button>
-</div>
-<div class="card">
-<h4 style="color:var(--primary);margin-bottom:10px" data-fa="📈 نمودار پیشرفت تست" data-en="📈 Test Progress">📈 نمودار پیشرفت تست</h4>
-<canvas id="testChart"></canvas>
-</div>
-</div>
-
-<div id="goals" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px" data-fa="🎯 اهداف هفتگی" data-en="🎯 Weekly Goals">🎯 اهداف هفتگی</h2>
-<div id="goals-list"></div>
-</div>
-
-<div id="focus" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px" data-fa="⏱️ تمرکز عمیق" data-en="⏱️ Deep Focus">⏱️ تمرکز عمیق</h2>
-<div class="card" style="text-align:center">
-<div class="form-group"><label data-fa="مدت زمان (دقیقه)" data-en="Duration (Min)">مدت زمان</label><input type="number" id="focus-minutes" placeholder="25" style="text-align:center;font-size:1.2em"></div>
-<button class="btn btn-success btn-full" onclick="startFocusSession()">▶️ <span data-fa="شروع تمرکز" data-en="Start Focus">شروع تمرکز</span></button>
-</div>
-<div id="focus-history" class="card"></div>
-</div>
-
-<div id="motivation" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px" data-fa="💬 فال انگیزشی" data-en="💬 Motivation">💬 فال انگیزشی</h2>
-<button class="btn btn-full" onclick="getRandomMotivation()" style="font-size:1.2em;padding:20px" data-fa="🎲 یک جمله برای من بگو" data-en="🎲 Tell me a quote">🎲 یک جمله برای من بگو</button>
-<div id="motivation-card" class="card hidden" style="font-size:1.2em;text-align:center;line-height:1.8;padding:30px"></div>
-</div>
-
-<div id="rewards" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px" data-fa="🏆 امتیازات" data-en="🏆 Rewards">🏆 امتیازات</h2>
-<div class="card" style="text-align:center">
-<h3 style="color:var(--primary);font-size:2.5em" id="total-points-display">0</h3>
-<p style="color:var(--accent)" data-fa="امتیاز کل" data-en="Total Points">امتیاز کل</p>
-<div id="current-badge" style="margin:20px 0;font-size:4em"></div>
-<p id="badge-name" style="color:var(--primary);font-weight:bold;font-size:1.2em"></p>
-</div>
-<div class="card">
-<h4 style="color:var(--primary);margin-bottom:10px" data-fa="🎁 جوایز" data-en="🎁 Gifts">🎁 جوایز</h4>
-<div id="rewards-list"></div>
-</div>
-</div>
-
-<div id="friends" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px" data-fa="👥 دوستام" data-en="👥 Friends">👥 دوستام</h2>
-<div class="card">
-<div class="form-group"><label data-fa="کد معرف دوستت" data-en="Friend's Referral Code">کد معرف دوستت</label><input type="text" id="friend-code"></div>
-<button class="btn btn-info btn-full" onclick="addFriend()" data-fa="➕ افزودن دوست" data-en="➕ Add Friend">➕ افزودن دوست</button>
-</div>
-<div id="friends-list"></div>
-</div>
-
+<!-- ============ MY LESSONS / WORKS ============ -->
 <div id="lessons" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px" data-fa="📚 درس‌های من" data-en="📚 My Lessons">📚 درس‌های من</h2>
+<h2 style="color:var(--primary);margin-bottom:15px;" id="lessons-title">📚 درس‌های من</h2>
+<div class="card" id="lessons-guide">
+<p style="color:var(--accent);font-size:.9em;" id="lessons-guide-text">راهنما: درس‌هایی که می‌خواهید روی آن‌ها برنامه‌ریزی کنید را اینجا اضافه کنید.</p>
+</div>
 <div class="card">
-<div class="form-group"><label data-fa="اسم درس جدید" data-en="New Lesson Name">اسم درس جدید</label><input type="text" id="new-lesson-name"></div>
-<div class="form-group"><label data-fa="نوع درس" data-en="Lesson Type">نوع درس</label>
+<div class="form-group"><label id="new-lesson-label">اسم درس جدید</label><input type="text" id="new-lesson-name"></div>
+<div class="form-group" id="lesson-type-group"><label>نوع درس (برای تست‌زنی)</label>
 <select id="new-lesson-type">
-<option value="normal">عادی / Normal</option>
-<option value="special">تخصصی / Special</option>
-<option value="memorize">حفظی / Memorize</option>
+<option value="normal">عادی</option>
+<option value="special">تخصصی</option>
+<option value="memorize">حفظی</option>
 </select>
 </div>
-<button class="btn btn-info btn-full" onclick="addNewLesson()" data-fa="➕ افزودن درس" data-en="➕ Add Lesson">➕ افزودن درس</button>
+<button class="btn btn-info btn-full" onclick="addNewLesson()" id="add-lesson-btn">➕ افزودن</button>
 </div>
 <div id="my-lessons-list"></div>
 </div>
 
-<div id="settings" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px" data-fa="⚙️ تنظیمات" data-en="⚙️ Settings">⚙️ تنظیمات</h2>
+<!-- ============ PLAN NEW ============ -->
+<div id="plan" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;" id="plan-title">📝 برنامه‌ریزی جدید</h2>
+<div id="plan-subjects-list"></div>
+<button class="btn btn-success btn-full" onclick="submitPlan()" style="margin-top:15px;" id="submit-plan-btn">✅ ثبت نهایی</button>
+</div>
+
+<!-- ============ SCHEDULE ============ -->
+<div id="schedule" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;" id="schedule-title">📅 برنامه هفتگی</h2>
+<div id="schedule-list"></div>
+</div>
+
+<!-- ============ GOALS ============ -->
+<div id="goals" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;">🎯 اهداف هفتگی</h2>
+<div id="goals-list"></div>
+</div>
+
+<!-- ============ TESTS (Student Only) ============ -->
+<div id="tests" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;">📊 تست‌زنی</h2>
 <div class="card">
-<h4 style="color:var(--primary);margin-bottom:10px" data-fa="👤 پروفایل" data-en="👤 Profile">👤 پروفایل</h4>
+<div class="form-group"><label>انتخاب درس</label><select id="test-lesson"></select></div>
+<div class="form-group"><label>تعداد تست</label><input type="number" id="test-count" min="1"></div>
+<button class="btn btn-info btn-full" onclick="startTestSession()">▶️ شروع تست</button>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px;">📈 نمودار پیشرفت تست (میانگین زمان بر اساس تعداد تست)</h4>
+<canvas id="testChart"></canvas>
+</div>
+</div>
+
+<!-- ============ FOCUS (Student Only) ============ -->
+<div id="focus" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;">⏱️ تمرکز عمیق</h2>
+<div class="card" style="text-align:center">
+<div class="form-group"><label>مدت زمان (دقیقه)</label><input type="number" id="focus-minutes" placeholder="25" style="text-align:center;font-size:1.2em"></div>
+<button class="btn btn-success btn-full" onclick="startFocusSession()">▶️ شروع تمرکز</button>
+</div>
+<div id="focus-history" class="card"></div>
+</div>
+
+<!-- ============ FINANCE (Adult Only) ============ -->
+<div id="finance" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;">💰 مالی</h2>
+<div class="card">
+<div class="form-group"><label>تاریخ</label><input type="date" id="finance-date"></div>
+<div class="form-group"><label>درآمد امروز (تومان)</label><input type="number" id="finance-income" placeholder="0"></div>
+<div class="form-group"><label>هزینه امروز (تومان)</label><input type="number" id="finance-expense" placeholder="0"></div>
+<div class="form-group"><label>پس‌انداز خودکار (درآمد - هزینه)</label><div id="finance-savings-display" style="font-size:1.5em;color:var(--primary);font-weight:bold;text-align:center;">0 تومان</div></div>
+<button class="btn btn-success btn-full" onclick="saveFinanceRecord()">💾 ذخیره (۵ امتیاز)</button>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px;">📈 نمودار پس‌انداز (۷ روز اخیر)</h4>
+<canvas id="financeChart"></canvas>
+</div>
+<div id="finance-history" class="card"></div>
+</div>
+
+<!-- ============ REWARDS ============ -->
+<div id="rewards" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;">🏆 امتیازات و نشان‌ها</h2>
+<div class="card" style="text-align:center">
+<h3 style="color:var(--primary);font-size:2.5em;" id="total-points-display">0</h3>
+<p style="color:var(--accent);">امتیاز کل</p>
+<div id="current-badge" style="margin:20px 0;font-size:4em;"></div>
+<p id="badge-name" style="color:var(--primary);font-weight:bold;font-size:1.2em;"></p>
+<p style="color:var(--accent);font-size:.9em;margin-top:10px;">امتیاز قابل مصرف: <span id="spendable-points-display">0</span></p>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px;">🎁 جوایز</h4>
+<div id="rewards-list"></div>
+</div>
+</div>
+
+<!-- ============ FRIENDS ============ -->
+<div id="friends" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;">👥 دوستام</h2>
+<div class="card">
+<div class="form-group"><label>کد معرف دوستت</label><input type="text" id="friend-code" style="text-transform:uppercase;direction:ltr;text-align:left"></div>
+<button class="btn btn-info btn-full" onclick="addFriend()">➕ افزودن دوست</button>
+</div>
+<div id="friends-list"></div>
+</div>
+
+<!-- ============ MOTIVATION ============ -->
+<div id="motivation" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;">💬 فال انگیزشی</h2>
+<button class="btn btn-full" onclick="getRandomMotivation()" style="font-size:1.2em;padding:20px;">🎲 یک جمله برای من بگو</button>
+<div id="motivation-card" class="card hidden" style="font-size:1.2em;text-align:center;line-height:1.8;padding:30px;"></div>
+</div>
+
+<!-- ============ GUIDE ============ -->
+<div id="guide" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;">📖 راهنما</h2>
+<div id="guide-content" class="card" style="line-height:2;color:#fff;font-size:1em;"></div>
+</div>
+
+<!-- ============ SETTINGS ============ -->
+<div id="settings" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;">⚙️ تنظیمات</h2>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px;">👤 پروفایل</h4>
 <div id="profile-info"></div>
 </div>
 <div class="card">
-<h4 style="color:var(--primary);margin-bottom:10px" data-fa="🌐 زبان" data-en="🌐 Language">🌐 زبان</h4>
+<h4 style="color:var(--primary);margin-bottom:10px;">📅 اشتراک</h4>
+<div id="subscription-info"></div>
+<div id="activation-section" class="hidden" style="margin-top:15px;">
+<label>کد فعال‌سازی (۵ امتیاز جایزه)</label>
+<input type="text" id="activation-code" style="direction:ltr;text-align:left">
+<button class="btn btn-success btn-full" onclick="activateCode()">✅ فعال‌سازی</button>
+</div>
+<button class="btn btn-info btn-full" style="margin-top:10px;" onclick="showPurchaseButton()">💳 خرید / تمدید اشتراک</button>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px;">🎁 کد معرف من</h4>
+<div style="display:flex;gap:10px;align-items:center;">
+<div id="my-referral-code" style="font-family:monospace;font-size:1.3em;font-weight:bold;color:var(--primary);padding:10px;background:rgba(0,0,0,.3);border-radius:10px;flex:1;text-align:center;"></div>
+<button class="btn btn-info" onclick="copyReferralCode()">📋 کپی</button>
+</div>
+</div>
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px;">🌐 زبان</h4>
 <div style="display:flex;gap:10px">
 <button class="btn btn-secondary" onclick="setLanguage('fa')" style="flex:1">فارسی</button>
 <button class="btn btn-secondary" onclick="setLanguage('en')" style="flex:1">English</button>
 </div>
 </div>
 <div class="card">
-<h4 style="color:var(--primary);margin-bottom:10px" data-fa="🎨 ظاهر" data-en="🎨 Theme">🎨 ظاهر</h4>
+<h4 style="color:var(--primary);margin-bottom:10px;">🎨 ظاهر</h4>
 <div style="display:flex;gap:10px">
 <button class="btn btn-secondary" onclick="setTheme('light')" style="flex:1">☀️</button>
 <button class="btn btn-secondary" onclick="setTheme('dark')" style="flex:1">🌙</button>
@@ -288,27 +351,25 @@ canvas{width:100%!important;height:auto!important;max-height:250px}
 </div>
 </div>
 <div class="card">
-<h4 style="color:var(--primary);margin-bottom:10px" data-fa="📅 اشتراک" data-en="📅 Subscription">📅 اشتراک</h4>
-<div id="subscription-info"></div>
-</div>
-<div class="card">
-<button class="btn btn-danger btn-full" onclick="logout()" data-fa="🚪 خروج" data-en="🚪 Logout">🚪 خروج</button>
+<button class="btn btn-danger btn-full" onclick="logout()">🚪 خروج</button>
 </div>
 </div>
 
+<!-- ============ ADMIN ============ -->
 <div id="admin" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px">👨‍💼 پنل مدیریت</h2>
-<button class="btn btn-secondary btn-full" onclick="logout()" style="margin-bottom:20px">🚪 خروج</button>
+<h2 style="color:var(--primary);margin-bottom:15px;">👨‍💼 پنل مدیریت</h2>
+<button class="btn btn-secondary btn-full" onclick="logout()" style="margin-bottom:20px;">🚪 خروج</button>
 <div id="admin-users-list"></div>
 </div>
 
 </div>
 
+<!-- Focus Overlay -->
 <div id="focus-overlay">
 <h2 id="focus-subject" style="color:var(--primary);margin-bottom:30px;font-size:1.5em;text-align:center"></h2>
 <div class="timer-display" id="focus-timer">00:00:00</div>
-<p id="focus-quote" style="color:#fff;margin-top:40px;text-align:center;max-width:400px;line-height:1.8;font-size:1.1em"></p>
-<button class="btn btn-danger" style="margin-top:50px;padding:15px 50px;font-size:1.2em" onclick="stopFocusOverlay()">⏹ <span data-fa="توقف" data-en="Stop">توقف</span></button>
+<p id="focus-quote" style="color:#fff;margin-top:40px;text-align:center;max-width:400px;line-height:1.8;font-size:1.1em;"></p>
+<button class="btn btn-danger" style="margin-top:50px;padding:15px 50px;font-size:1.2em;" onclick="stopFocusOverlay()">⏹ توقف</button>
 </div>
 
 <div id="postcard-container"></div>
@@ -330,9 +391,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ================== STATE & CACHE ==================
+// ================== STATE ==================
 let currentUser = null;
-let currentUserData = null;
+let userType = null;
 let selectedAvatar = 1;
 let logoTapCount = 0;
 let lastLogoTap = 0;
@@ -347,31 +408,27 @@ let testSeconds = 0;
 let testCount = 0;
 let testLesson = '';
 
-// **کش کردن داده‌ها (بهینه‌سازی)**
+// ================== CACHE ==================
 function saveToCache(key, data) {
-  localStorage.setItem('cache_' + key, JSON.stringify({ data, time: Date.now() }));
+  try { localStorage.setItem('cache_' + key, JSON.stringify({ data, time: Date.now() })); } catch(e) {}
 }
-function getFromCache(key, maxAgeMs = 3600000) { // پیش‌فرض ۱ ساعت
-  const cached = localStorage.getItem('cache_' + key);
-  if (!cached) return null;
-  const { data, time } = JSON.parse(cached);
-  if (Date.now() - time > maxAgeMs) {
-    localStorage.removeItem('cache_' + key);
-    return null;
-  }
-  return data;
+function getFromCache(key, maxAgeMs = 3600000) {
+  try {
+    const cached = localStorage.getItem('cache_' + key);
+    if (!cached) return null;
+    const { data, time } = JSON.parse(cached);
+    if (Date.now() - time > maxAgeMs) { localStorage.removeItem('cache_' + key); return null; }
+    return data;
+  } catch(e) { return null; }
 }
 
 // ================== INIT ==================
 document.addEventListener('DOMContentLoaded', () => {
-  showSection('login');
-  document.querySelectorAll('.avatar-option').forEach(el => {
-    el.onclick = () => {
-      document.querySelectorAll('.avatar-option').forEach(a => a.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedAvatar = parseInt(el.getAttribute('data-avatar'));
-    };
-  });
+  showSection('welcome');
+  const savedLang = localStorage.getItem('app_lang') || 'fa';
+  if (savedLang === 'en') setLanguage('en');
+  const savedTheme = localStorage.getItem('app_theme') || 'light';
+  setTheme(savedTheme);
 });
 
 // ================== NAV ==================
@@ -379,11 +436,13 @@ function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
   if (el) el.classList.add('active');
-  const isLogged = ['home','schedule','plan','tests','goals','focus','motivation','rewards','friends','lessons','settings','admin'].includes(id);
-  document.getElementById('header-user-info').classList.toggle('hidden', !isLogged);
-  document.getElementById('hamburger-btn').classList.toggle('hidden', !isLogged);
+  const isLogged = ['home','schedule','plan','tests','goals','focus','finance','rewards','friends','lessons','settings','admin','motivation','guide'].includes(id);
+  document.getElementById('header-user-info').classList.toggle('hidden', !isLogged || !currentUser);
+  document.getElementById('hamburger-btn').classList.toggle('hidden', !isLogged || !currentUser);
+  document.getElementById('user-badge-display').classList.toggle('hidden', !isLogged || !currentUser);
   if (isLogged && currentUser) {
-    document.getElementById('header-user-info').textContent = '👤 ' + currentUser.name;
+    document.getElementById('header-user-info').textContent = (currentUser.avatarEmoji || '👤') + ' ' + currentUser.name;
+    updateBadgeDisplay();
   }
 }
 
@@ -393,13 +452,15 @@ function goToPage(page) {
   if (page === 'home') loadHome();
   if (page === 'schedule') loadSchedule();
   if (page === 'plan') loadPlanNew();
-  if (page === 'tests') loadTestsPage();
+  if (page === 'tests' && userType === 'student') loadTestsPage();
   if (page === 'goals') loadGoals();
-  if (page === 'focus') loadFocusHistory();
+  if (page === 'focus' && userType === 'student') loadFocusHistory();
+  if (page === 'finance' && userType === 'adult') loadFinance();
   if (page === 'rewards') loadRewards();
   if (page === 'friends') loadFriends();
   if (page === 'lessons') loadMyLessons();
   if (page === 'settings') loadSettings();
+  if (page === 'guide') loadGuide();
 }
 
 function toggleSidebar() {
@@ -407,7 +468,42 @@ function toggleSidebar() {
   document.getElementById('sidebar-overlay').classList.toggle('open');
 }
 
-// ================== LOGO TAP ==================
+// ================== MENU BUILD ==================
+function buildMenu() {
+  const container = document.getElementById('menu-container');
+  if (!currentUser) return;
+  const isStudent = userType === 'student';
+  let items = [];
+  
+  items.push({ icon: '🏠', label: isStudent ? 'خانه' : 'خانه', page: 'home' });
+  items.push({ icon: '📚', label: isStudent ? 'درس‌های من' : 'کارهای من', page: 'lessons' });
+  items.push({ icon: '📝', label: 'برنامه‌ریزی جدید', page: 'plan' });
+  items.push({ icon: '📅', label: 'برنامه هفتگی', page: 'schedule' });
+  items.push({ icon: '🎯', label: 'اهداف هفته', page: 'goals' });
+  
+  if (isStudent) {
+    items.push({ icon: '📊', label: 'تست‌زنی', page: 'tests' });
+    items.push({ icon: '⏱️', label: 'تمرکز عمیق', page: 'focus' });
+  } else {
+    items.push({ icon: '💰', label: 'مالی', page: 'finance' });
+  }
+  
+  items.push({ icon: '🏆', label: 'امتیازات', page: 'rewards' });
+  items.push({ icon: '👥', label: 'دوستام', page: 'friends' });
+  items.push({ icon: '💬', label: 'فال انگیزشی', page: 'motivation' });
+  items.push({ icon: '📖', label: 'راهنما', page: 'guide' });
+  items.push({ icon: '⚙️', label: 'تنظیمات', page: 'settings' });
+  
+  let html = '';
+  items.forEach(it => {
+    html += `<div class="menu-item" onclick="goToPage('${it.page}')"><span>${it.icon}</span><span>${it.label}</span></div>`;
+  });
+  html += `<div style="border-top:1px solid rgba(255,255,255,.1);margin:10px 20px"></div>`;
+  html += `<div class="menu-item" onclick="logout()" style="color:var(--danger)"><span>🚪</span><span>خروج</span></div>`;
+  container.innerHTML = html;
+}
+
+// ================== LOGO TAP (ADMIN) ==================
 function handleLogoTap() {
   const now = Date.now();
   if (now - lastLogoTap > 1500) logoTapCount = 0;
@@ -420,31 +516,51 @@ function handleLogoTap() {
   }
 }
 
-// ================== AUTH ==================
-function toggleSignupFields() {
-  const type = document.querySelector('input[name="user-type"]:checked').value;
+// ================== USER TYPE ==================
+function selectUserType(type) {
+  userType = type;
+  document.getElementById('type-student').classList.toggle('selected', type === 'student');
+  document.getElementById('type-adult').classList.toggle('selected', type === 'adult');
+  setTimeout(() => {
+    setupSignupForm(type);
+    showSection('signup');
+  }, 300);
+}
+
+function setupSignupForm(type) {
   document.getElementById('student-fields').classList.toggle('hidden', type !== 'student');
   document.getElementById('adult-fields').classList.toggle('hidden', type !== 'adult');
 }
 
+function selectAvatar(n) {
+  selectedAvatar = n;
+  document.querySelectorAll('.avatar-option').forEach(a => {
+    a.classList.toggle('selected', parseInt(a.getAttribute('data-avatar')) === n);
+  });
+}
+
+// ================== AUTH ==================
 async function signupUser() {
   const name = document.getElementById('signup-name').value.trim();
-  const username = document.getElementById('signup-username').value.trim();
+  const username = document.getElementById('signup-username').value.trim().toLowerCase();
   const password = document.getElementById('signup-password').value.trim();
-  const type = document.querySelector('input[name="user-type"]:checked').value;
   const referral = document.getElementById('signup-referral').value.trim().toUpperCase();
   const errEl = document.getElementById('signup-error');
   errEl.textContent = '';
 
   if (!name || !username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
+  if (!/^[a-z0-9_]+$/.test(username)) return errEl.textContent = 'نام کاربری فقط حروف انگلیسی، عدد و _';
 
   let grade = '', job = '';
-  if (type === 'student') {
+  if (userType === 'student') {
     grade = document.getElementById('signup-grade').value;
     if (!grade) return errEl.textContent = 'پایه را انتخاب کنید';
   } else {
     job = document.getElementById('signup-job').value.trim() || 'فعالیت شخصی';
+    if (!job) return errEl.textContent = 'شغل را وارد کنید';
   }
+
+  const avatarEmojis = ['','🧑‍🎓','👩‍🎓','🧑‍🔧','👨‍🚀','👮‍♂️','👮‍♀️','👨‍🔬','👩‍🔬','👨‍⚖️','👩‍⚖️','🧑‍🏫','👻'];
 
   try {
     const userRef = doc(db, 'users', username);
@@ -452,14 +568,18 @@ async function signupUser() {
     if (snap.exists()) return errEl.textContent = 'این نام کاربری وجود دارد';
 
     const myCode = username.toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 7 * 864e5).toISOString();
     
     const newUser = {
-      name, username, password, type, grade, job, avatar: selectedAvatar,
+      name, username, password, type: userType, grade, job,
+      avatar: selectedAvatar, avatarEmoji: avatarEmojis[selectedAvatar],
       referralCode: myCode, referredBy: referral || null,
       pointsTotal: 0, pointsSpendable: 0,
-      subscription: { expiresAt: new Date(Date.now() + 7 * 864e5).toISOString() },
+      subscription: { expiresAt, startDate: now.toISOString(), manuallyClosed: false },
       lessons: [], schedule: {}, tests: {}, goals: {}, focusHistory: [], studyLogs: [],
-      friends: [], createdAt: new Date().toISOString(), lastLoginDate: null
+      financeLogs: [], friends: [], createdAt: now.toISOString(), lastLoginDate: null,
+      lastFinanceDate: null
     };
 
     await setDoc(userRef, newUser);
@@ -468,15 +588,23 @@ async function signupUser() {
       const q = query(collection(db, 'users'), where('referralCode', '==', referral));
       const refSnap = await getDocs(q);
       if (!refSnap.empty) {
-        const refId = refSnap.docs[0].id;
-        await updateDoc(doc(db, 'users', refId), { 
-          pointsTotal: increment(5),
-          pointsSpendable: increment(5)
+        const refDoc = refSnap.docs[0];
+        const refData = refDoc.data();
+        const refExpiry = new Date(refData.subscription.expiresAt);
+        const base = refExpiry > now ? refExpiry : now;
+        const newRefExpiry = new Date(base.getTime() + 5 * 864e5).toISOString();
+        const refFriends = refData.friends || [];
+        refFriends.push({ id: username, name: name, username: username });
+        await updateDoc(doc(db, 'users', refDoc.id), {
+          'subscription.expiresAt': newRefExpiry,
+          friends: refFriends
         });
+        const newFriends = [{ id: refDoc.id, name: refData.name, username: refData.username }];
+        await updateDoc(userRef, { friends: newFriends });
       }
     }
 
-    alert('ثبت‌نام موفق! وارد شوید.');
+    alert('ثبت‌نام موفق! حالا وارد شوید.');
     showSection('login');
   } catch (e) {
     errEl.textContent = 'خطا: ' + e.message;
@@ -484,7 +612,7 @@ async function signupUser() {
 }
 
 async function loginUser() {
-  const username = document.getElementById('login-username').value.trim();
+  const username = document.getElementById('login-username').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value.trim();
   const errEl = document.getElementById('login-error');
   errEl.textContent = '';
@@ -499,13 +627,11 @@ async function loginUser() {
 
     const userData = snap.data();
     if (new Date(userData.subscription.expiresAt) < new Date()) {
-      return errEl.textContent = 'اشتراک منقضی شده است';
+      return errEl.textContent = 'اشتراک شما منقضی شده. لطفاً از طریق دکمه «خرید اشتراک» تمدید کنید.';
     }
 
     currentUser = { id: snap.id, ...userData };
-    currentUserData = userData;
-
-    // **کش کردن پروفایل کاربر (بهینه‌سازی)**
+    userType = userData.type;
     saveToCache('user_' + username, currentUser);
 
     const today = new Date().toISOString().split('T')[0];
@@ -520,6 +646,7 @@ async function loginUser() {
       currentUser.lastLoginDate = today;
     }
 
+    buildMenu();
     goToPage('home');
   } catch (e) {
     errEl.textContent = 'خطا: ' + e.message;
@@ -528,9 +655,9 @@ async function loginUser() {
 
 function logout() {
   currentUser = null;
-  currentUserData = null;
+  userType = null;
   toggleSidebar();
-  showSection('login');
+  showSection('welcome');
 }
 
 // ================== UTILS ==================
@@ -542,6 +669,7 @@ function formatTime(seconds) {
 }
 
 function setTheme(theme) {
+  localStorage.setItem('app_theme', theme);
   if (theme === 'dark') document.body.classList.add('dark-mode');
   else if (theme === 'light') document.body.classList.remove('dark-mode');
   else {
@@ -551,6 +679,7 @@ function setTheme(theme) {
 }
 
 function setLanguage(lang) {
+  localStorage.setItem('app_lang', lang);
   document.body.classList.toggle('lang-en', lang === 'en');
   document.body.dir = lang === 'en' ? 'ltr' : 'rtl';
   document.querySelectorAll('[data-fa]').forEach(el => {
@@ -566,14 +695,38 @@ function getSaturdayOfWeek() {
   return d.toISOString().split('T')[0];
 }
 
+function updateBadgeDisplay() {
+  if (!currentUser) return;
+  const pts = currentUser.pointsTotal || 0;
+  let badge = '🌱';
+  if (pts >= 50000) badge = '👑';
+  else if (pts >= 20000) badge = '🏆';
+  else if (pts >= 10000) badge = '🏅';
+  else if (pts >= 5000) badge = '⭐';
+  else if (pts >= 2000) badge = '🔥';
+  const el = document.getElementById('user-badge-display');
+  if (el) el.textContent = badge;
+}
+
 // ================== HOME ==================
 async function loadHome() {
+  const isStudent = userType === 'student';
   document.getElementById('welcome-msg').textContent = '👋 ' + currentUser.name;
   document.getElementById('stat-points').textContent = currentUser.pointsTotal || 0;
   document.getElementById('daily-motivation').textContent = getMotivationText();
   
   const today = new Date().toISOString().split('T')[0];
-  const todayMinutes = (currentUser.studyLogs || []).filter(l => l.date === today).reduce((s, l) => s + l.minutes, 0);
+  let todayMinutes;
+  let statLabel;
+  if (isStudent) {
+    todayMinutes = (currentUser.studyLogs || []).filter(l => l.date === today).reduce((s, l) => s + l.minutes, 0);
+    statLabel = 'زمان امروز';
+  } else {
+    const workLogs = currentUser.studyLogs || [];
+    todayMinutes = workLogs.filter(l => l.date === today).reduce((s, l) => s + l.minutes, 0);
+    statLabel = 'کار امروز';
+  }
+  document.getElementById('stat-1-label').textContent = statLabel;
   document.getElementById('stat-today').textContent = formatTime(todayMinutes * 60);
 
   const ctx = document.getElementById('weeklyChart');
@@ -591,13 +744,31 @@ async function loadHome() {
     }
     charts.weekly = new Chart(ctx, {
       type: 'line',
-      data: { labels, datasets: [{ label: 'دقیقه', data: last7, borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.2)', fill: true, tension: 0.3 }] },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { ticks: { color: '#fff' } } } }
+      data: { 
+        labels, 
+        datasets: [{ 
+          label: isStudent ? 'دقیقه مطالعه' : 'دقیقه کار', 
+          data: last7, 
+          borderColor: '#FFD700', 
+          backgroundColor: 'rgba(255,215,0,0.2)', 
+          fill: true, 
+          tension: 0.3 
+        }] 
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { 
+          y: { beginAtZero: true, ticks: { color: '#fff' } }, 
+          x: { ticks: { color: '#fff' } } 
+        },
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
     });
   }
 }
 
-// ================== SCHEDULE & TIMER ==================
+// ================== SCHEDULE ==================
 function loadSchedule() {
   const div = document.getElementById('schedule-list');
   const days = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
@@ -655,7 +826,6 @@ async function startTimer(day, itemId) {
   }, 1000);
 }
 
-// ================== STOP TIMER (CORE LOGIC & OPTIMIZATION) ==================
 async function stopFocusOverlay() {
   if (focusInterval) clearInterval(focusInterval);
   if (wakeLock) { wakeLock.release(); wakeLock = null; }
@@ -678,21 +848,17 @@ async function stopFocusOverlay() {
     if (minutesStudied > 0) {
       const today = new Date().toISOString().split('T')[0];
       const logs = currentUser.studyLogs || [];
-      
-      // اگر امروز قبلاً لاگ داشته، به همون اضافه کن (بهینه‌سازی: جلوگیری از دیتای اضافه)
       const existingLog = logs.find(l => l.date === today);
       if (existingLog) {
         existingLog.minutes += minutesStudied;
       } else {
         logs.push({ date: today, minutes: minutesStudied });
       }
-      
       currentUser.studyLogs = logs;
       currentUser.pointsTotal += minutesStudied;
       currentUser.pointsSpendable += minutesStudied;
     }
     
-    // **حذف دیتای قدیمی (بیشتر از ۳۰ روز) برای بهینه‌سازی**
     currentUser.studyLogs = currentUser.studyLogs.filter(l => {
       const diff = (new Date() - new Date(l.date)) / (1000 * 60 * 60 * 24);
       return diff <= 30;
@@ -707,6 +873,7 @@ async function stopFocusOverlay() {
     
     loadSchedule();
     alert('زمان مطالعه ذخیره شد: ' + formatTime(focusSeconds));
+    updateBadgeDisplay();
     
   } else if (focusType === 'test') {
     if (testInterval) clearInterval(testInterval);
@@ -732,6 +899,7 @@ async function stopFocusOverlay() {
       });
       alert(`آفرین! ${testCount} تست با میانگین ${Math.round(avg)} ثانیه ثبت شد.`);
       loadTestsPage();
+      updateBadgeDisplay();
     } else if (!isValid) {
       alert(`میانگین زمان تست‌ها (${Math.round(avg)} ثانیه) کمتر از حد مجاز برای دروس ${getLessonTypeName(lessonType)} است. ثبت نشد.`);
     } else {
@@ -748,7 +916,6 @@ async function stopFocusOverlay() {
       currentUser.pointsTotal += minutes;
       currentUser.pointsSpendable += minutes;
       
-      // **حذف دیتای قدیمی تمرکز (بیشتر از ۳۰ روز)**
       currentUser.focusHistory = currentUser.focusHistory.filter(l => {
         const diff = (new Date() - new Date(l.date)) / (1000 * 60 * 60 * 24);
         return diff <= 30;
@@ -762,6 +929,7 @@ async function stopFocusOverlay() {
     }
     alert('جلسه تمرکز ذخیره شد: ' + formatTime(focusSeconds));
     loadFocusHistory();
+    updateBadgeDisplay();
   }
   
   focusType = '';
@@ -773,11 +941,12 @@ async function stopFocusOverlay() {
 function loadPlanNew() {
   const div = document.getElementById('plan-subjects-list');
   const lessons = currentUser.lessons || [];
+  const isStudent = userType === 'student';
   if (lessons.length === 0) {
-    div.innerHTML = '<div class="card"><p>ابتدا درس اضافه کنید.</p><button class="btn btn-info" onclick="goToPage(\'lessons\')">رفتن به درس‌های من</button></div>';
+    div.innerHTML = `<div class="card"><p>ابتدا از منوی «${isStudent ? 'درس‌های من' : 'کارهای من'}» ${isStudent ? 'درس' : 'کار'} اضافه کنید.</p><button class="btn btn-info" onclick="goToPage('lessons')">رفتن به ${isStudent ? 'درس‌های من' : 'کارهای من'}</button></div>`;
     return;
   }
-  let html = '<div class="card"><h4 style="color:var(--primary);">انتخاب درس و زمان</h4>';
+  let html = `<div class="card"><h4 style="color:var(--primary);">انتخاب ${isStudent ? 'درس' : 'کار'} و زمان</h4>`;
   lessons.forEach(l => {
     html += `<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
       <input type="checkbox" value="${l.name}" class="plan-checkbox" style="width:auto;">
@@ -805,7 +974,7 @@ async function submitPlan() {
   const days = [];
   document.querySelectorAll('.plan-day:checked').forEach(cb => days.push(cb.value));
   
-  if (selected.length === 0 || days.length === 0) return alert('حداقل یک درس و یک روز انتخاب کنید');
+  if (selected.length === 0 || days.length === 0) return alert('حداقل یک مورد و یک روز انتخاب کنید');
   
   const schedule = currentUser.schedule || {};
   days.forEach(day => {
@@ -827,8 +996,66 @@ async function submitPlan() {
   goToPage('schedule');
 }
 
-// ================== TESTS ==================
+// ================== LESSONS / WORKS ==================
+function loadMyLessons() {
+  const isStudent = userType === 'student';
+  const lessons = currentUser.lessons || [];
+  
+  document.getElementById('lessons-title').textContent = isStudent ? '📚 درس‌های من' : '💼 کارهای من';
+  document.getElementById('lessons-guide-text').textContent = isStudent 
+    ? 'راهنما: درس‌هایی که می‌خواهید روی آن‌ها برنامه‌ریزی کنید را اینجا اضافه کنید.'
+    : 'راهنما: کارهایی که می‌خواهید روی آن‌ها برنامه‌ریزی کنید را اینجا اضافه کنید.';
+  document.getElementById('new-lesson-label').textContent = isStudent ? 'اسم درس جدید' : 'اسم کار جدید';
+  document.getElementById('add-lesson-btn').textContent = isStudent ? '➕ افزودن درس' : '➕ افزودن کار';
+  document.getElementById('lesson-type-group').classList.toggle('hidden', !isStudent);
+  
+  let html = '';
+  if (lessons.length === 0) {
+    html = `<div class="card">هنوز ${isStudent ? 'درسی' : 'کاری'} اضافه نکردی.</div>`;
+  } else {
+    lessons.forEach(l => {
+      let typeName = '';
+      if (isStudent) {
+        typeName = l.type === 'special' ? 'تخصصی' : (l.type === 'memorize' ? 'حفظی' : 'عادی');
+        typeName = ` <small style="color:var(--accent);">(${typeName})</small>`;
+      }
+      html += `<div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,255,255,.1);border-radius:8px;margin-bottom:8px;">
+        <span>${isStudent ? '📖' : '💼'} ${l.name}${typeName}</span>
+        <button class="btn btn-danger btn-small" onclick="deleteLesson('${l.name}')">🗑</button>
+      </div>`;
+    });
+  }
+  document.getElementById('my-lessons-list').innerHTML = html;
+}
+
+async function addNewLesson() {
+  const name = document.getElementById('new-lesson-name').value.trim();
+  const type = userType === 'student' ? document.getElementById('new-lesson-type').value : 'normal';
+  const isStudent = userType === 'student';
+  if (!name) return alert(`اسم ${isStudent ? 'درس' : 'کار'} را وارد کنید`);
+  
+  const lessons = currentUser.lessons || [];
+  if (lessons.find(l => l.name === name)) return alert(`این ${isStudent ? 'درس' : 'کار'} قبلاً اضافه شده`);
+  
+  lessons.push({ name, type });
+  await updateDoc(doc(db, 'users', currentUser.id), { lessons });
+  currentUser.lessons = lessons;
+  document.getElementById('new-lesson-name').value = '';
+  loadMyLessons();
+}
+
+async function deleteLesson(name) {
+  const isStudent = userType === 'student';
+  if (!confirm('حذف شود؟')) return;
+  const lessons = (currentUser.lessons || []).filter(l => l.name !== name);
+  await updateDoc(doc(db, 'users', currentUser.id), { lessons });
+  currentUser.lessons = lessons;
+  loadMyLessons();
+  }
+
+// ================== TESTS (Student Only) ==================
 function loadTestsPage() {
+  if (userType !== 'student') return;
   const select = document.getElementById('test-lesson');
   if (!select) return;
   select.innerHTML = '';
@@ -840,21 +1067,55 @@ function loadTestsPage() {
   if (ctx) {
     if (charts.tests) charts.tests.destroy();
     const tests = currentUser.tests || {};
-    const labels = Object.keys(tests);
-    const data = labels.map(l => {
-      const arr = tests[l];
-      if (!arr || arr.length === 0) return 0;
-      return arr[arr.length - 1].avgSeconds;
+    const labels = [];
+    const datasets = [];
+    const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#1A535C', '#FF9F1C', '#E71D36', '#8338EC', '#2EC4B6'];
+    
+    let maxCount = 0;
+    Object.keys(tests).forEach((lesson, idx) => {
+      const arr = tests[lesson] || [];
+      arr.forEach(t => { if (t.count > maxCount) maxCount = t.count; });
     });
+    
+    if (maxCount === 0) maxCount = 10;
+    const countSteps = [];
+    for (let i = 10; i <= maxCount; i += 10) countSteps.push(i);
+    if (countSteps.length === 0) countSteps.push(10);
+    
+    Object.keys(tests).forEach((lesson, idx) => {
+      const arr = tests[lesson] || [];
+      const dataPoints = countSteps.map(step => {
+        const found = arr.find(t => t.count === step);
+        return found ? found.avgSeconds : null;
+      });
+      datasets.push({
+        label: lesson,
+        data: dataPoints,
+        borderColor: colors[idx % colors.length],
+        backgroundColor: colors[idx % colors.length],
+        tension: 0.3,
+        spanGaps: true
+      });
+    });
+    
     charts.tests = new Chart(ctx, {
-      type: 'bar',
-      data: { labels, datasets: [{ label: 'میانگین ثانیه', data, backgroundColor: '#FFD700' }] },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true }, x: { ticks: { color: '#fff' } } } }
+      type: 'line',
+      data: { labels: countSteps.map(c => c + ' تست'), datasets },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { 
+          y: { beginAtZero: true, title: { display: true, text: 'میانگین ثانیه', color: '#fff' }, ticks: { color: '#fff' } }, 
+          x: { ticks: { color: '#fff' } } 
+        },
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
     });
   }
 }
 
 function startTestSession() {
+  if (userType !== 'student') return;
   testLesson = document.getElementById('test-lesson').value;
   const count = parseInt(document.getElementById('test-count').value) || 0;
   if (!testLesson || count <= 0) return alert('درس و تعداد تست را وارد کنید');
@@ -868,6 +1129,10 @@ function startTestSession() {
   document.getElementById('focus-quote').textContent = getMotivationText();
   document.getElementById('focus-overlay').style.display = 'flex';
   
+  try {
+    if ('wakeLock' in navigator) navigator.wakeLock.request('screen').then(wl => { wakeLock = wl; }).catch(()=>{});
+  } catch (e) {}
+
   if (testInterval) clearInterval(testInterval);
   testInterval = setInterval(() => {
     testSeconds++;
@@ -884,10 +1149,11 @@ function getLessonTypeName(type) {
   if (type === 'special') return 'تخصصی (حداقل ۳۵ ثانیه)';
   if (type === 'memorize') return 'حفظی (حداقل ۱۰ ثانیه)';
   return 'عادی (حداقل ۱۵ ثانیه)';
-  }
+}
 
-  // ================== FOCUS HISTORY & DEEP FOCUS ==================
+// ================== FOCUS (Student Only) ==================
 function loadFocusHistory() {
+  if (userType !== 'student') return;
   const history = currentUser.focusHistory || [];
   let html = '<h4 style="color:var(--primary);margin-bottom:10px;">تاریخچه تمرکز</h4>';
   if (history.length === 0) html += '<p style="color:var(--accent);">هنوز جلسه‌ای ثبت نشده است.</p>';
@@ -903,6 +1169,7 @@ function loadFocusHistory() {
 }
 
 async function startFocusSession() {
+  if (userType !== 'student') return;
   const mins = parseInt(document.getElementById('focus-minutes').value);
   if (!mins || mins < 1 || mins > 120) return alert('زمان باید بین ۱ تا ۱۲۰ دقیقه باشد');
   
@@ -930,24 +1197,35 @@ function loadGoals() {
   const div = document.getElementById('goals-list');
   const goals = currentUser.goals || {};
   const weekStart = getSaturdayOfWeek();
+  const isStudent = userType === 'student';
   
   let html = '';
-  const goalTypes = [
-    { key: 'study', label: 'مطالعه (ساعت)', min: 10 },
-    { key: 'tests', label: 'تست‌زنی (تعداد)', min: 50 },
-    { key: 'focus', label: 'تمرکز عمیق (جلسه)', min: 3 }
-  ];
+  let goalTypes;
+  
+  if (isStudent) {
+    goalTypes = [
+      { key: 'study', label: 'مطالعه (ساعت)', min: 10, unit: 'ساعت' },
+      { key: 'tests', label: 'تست‌زنی (تعداد)', min: 50, unit: 'تست' },
+      { key: 'focus', label: 'تمرکز عمیق (جلسه)', min: 3, unit: 'جلسه' }
+    ];
+  } else {
+    goalTypes = [
+      { key: 'work', label: 'ساعت کاری (ساعت)', min: 20, unit: 'ساعت' },
+      { key: 'savings', label: 'پس‌انداز (تومان)', min: 500000, unit: 'تومان' }
+    ];
+  }
   
   goalTypes.forEach(g => {
     const current = goals[g.key];
     html += `<div class="card">
       <h4 style="color:var(--primary);">${g.label}</h4>
       ${current && current.week === weekStart 
-        ? `<p>هدف: ${current.target} | پیشرفت: ${current.progress || 0}</p>
+        ? `<p>هدف: ${current.target} ${g.unit} | پیشرفت: ${current.progress || 0} ${g.unit}</p>
            <div style="background:rgba(0,0,0,.3);height:20px;border-radius:10px;overflow:hidden;">
              <div style="width:${Math.min(100, (current.progress / current.target) * 100)}%;height:100%;background:var(--success);"></div>
-           </div>`
-        : `<input type="number" id="goal-${g.key}" placeholder="حداقل ${g.min}">
+           </div>
+           ${current.progress >= current.target ? '<p style="color:var(--success);font-weight:bold;margin-top:10px;">✅ به هدف رسیدید!</p>' : ''}`
+        : `<input type="number" id="goal-${g.key}" placeholder="حداقل ${g.min} ${g.unit}">
            <button class="btn btn-info btn-full" onclick="setGoal('${g.key}', ${g.min})">تنظیم هدف</button>`
       }
     </div>`;
@@ -967,11 +1245,128 @@ async function setGoal(key, min) {
   loadGoals();
 }
 
+// ================== FINANCE (Adult Only) ==================
+function loadFinance() {
+  if (userType !== 'adult') return;
+  
+  const dateInput = document.getElementById('finance-date');
+  if (!dateInput.value) dateInput.value = new Date().toISOString().split('T')[0];
+  
+  const incomeInput = document.getElementById('finance-income');
+  const expenseInput = document.getElementById('finance-expense');
+  const savingsDisplay = document.getElementById('finance-savings-display');
+  
+  function updateSavings() {
+    const inc = parseFloat(incomeInput.value) || 0;
+    const exp = parseFloat(expenseInput.value) || 0;
+    const sav = inc - exp;
+    savingsDisplay.textContent = sav.toLocaleString('fa-IR') + ' تومان';
+    savingsDisplay.style.color = sav >= 0 ? 'var(--success)' : 'var(--danger)';
+  }
+  
+  incomeInput.oninput = updateSavings;
+  expenseInput.oninput = updateSavings;
+  
+  const history = currentUser.financeLogs || [];
+  let histHtml = '<h4 style="color:var(--primary);margin-bottom:10px;">📋 تاریخچه اخیر</h4>';
+  if (history.length === 0) histHtml += '<p style="color:var(--accent);">هنوز رکوردی ثبت نشده.</p>';
+  else {
+    history.slice(-7).reverse().forEach(f => {
+      histHtml += `<div style="padding:8px;background:rgba(255,255,255,.1);border-radius:8px;margin-bottom:5px;display:flex;justify-content:space-between;">
+        <span>${f.date}</span>
+        <span style="color:${f.savings >= 0 ? 'var(--success)' : 'var(--danger)'};">${f.savings.toLocaleString('fa-IR')} تومان</span>
+      </div>`;
+    });
+  }
+  document.getElementById('finance-history').innerHTML = histHtml;
+  
+  const ctx = document.getElementById('financeChart');
+  if (ctx) {
+    if (charts.finance) charts.finance.destroy();
+    const last7 = [];
+    const labels = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const rec = history.find(f => f.date === dateStr);
+      labels.push(dateStr.slice(5));
+      last7.push(rec ? rec.savings / 1000 : 0);
+    }
+    charts.finance = new Chart(ctx, {
+      type: 'line',
+      data: { 
+        labels, 
+        datasets: [{ 
+          label: 'پس‌انداز (هزار تومان)', 
+          data: last7, 
+          borderColor: '#4CAF50', 
+          backgroundColor: 'rgba(76,175,80,0.2)', 
+          fill: true, 
+          tension: 0.3 
+        }] 
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        scales: { 
+          y: { beginAtZero: true, ticks: { color: '#fff' } }, 
+          x: { ticks: { color: '#fff' } } 
+        },
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
+    });
+  }
+}
+
+async function saveFinanceRecord() {
+  if (userType !== 'adult') return;
+  const date = document.getElementById('finance-date').value;
+  const income = parseFloat(document.getElementById('finance-income').value) || 0;
+  const expense = parseFloat(document.getElementById('finance-expense').value) || 0;
+  
+  if (!date) return alert('تاریخ را انتخاب کنید');
+  if (income === 0 && expense === 0) return alert('حداقل یکی از مبالغ را وارد کنید');
+  
+  const savings = income - expense;
+  const today = new Date().toISOString().split('T')[0];
+  
+  const financeLogs = currentUser.financeLogs || [];
+  const existing = financeLogs.find(f => f.date === date);
+  if (existing) {
+    existing.income = income;
+    existing.expense = expense;
+    existing.savings = savings;
+  } else {
+    financeLogs.push({ date, income, expense, savings });
+  }
+  currentUser.financeLogs = financeLogs;
+  
+  let pointsEarned = 0;
+  if (currentUser.lastFinanceDate !== today) {
+    pointsEarned = 5;
+    currentUser.pointsTotal += 5;
+    currentUser.pointsSpendable += 5;
+    currentUser.lastFinanceDate = today;
+  }
+  
+  await updateDoc(doc(db, 'users', currentUser.id), {
+    financeLogs: currentUser.financeLogs,
+    pointsTotal: currentUser.pointsTotal,
+    pointsSpendable: currentUser.pointsSpendable,
+    lastFinanceDate: currentUser.lastFinanceDate
+  });
+  
+  alert(pointsEarned > 0 ? '✅ ذخیره شد + ۵ امتیاز' : '✅ ذخیره شد (امتیاز امروز قبلاً گرفته شده)');
+  loadFinance();
+  updateBadgeDisplay();
+  }
 // ================== REWARDS & BADGES ==================
 function loadRewards() {
   const pts = currentUser.pointsTotal || 0;
   const spend = currentUser.pointsSpendable || 0;
   document.getElementById('total-points-display').textContent = pts;
+  document.getElementById('spendable-points-display').textContent = spend;
   
   let badge = '🌱', name = 'تازه‌کار';
   if (pts >= 50000) { badge = '👑'; name = 'افسانه'; }
@@ -995,7 +1390,7 @@ function loadRewards() {
   rewards.forEach(r => {
     const can = spend >= r.pts;
     html += `<div style="padding:10px;background:rgba(255,255,255,.1);border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-      <span><strong>${r.pts} امتیاز:</strong> ${r.desc}</span>
+      <span><strong>${r.pts.toLocaleString('fa-IR')} امتیاز:</strong> ${r.desc}</span>
       ${can ? `<button class="btn btn-success btn-small" onclick="claimReward(${r.pts}, '${r.desc}')">دریافت</button>` : '🔒'}
     </div>`;
   });
@@ -1021,6 +1416,7 @@ async function claimReward(pts, desc) {
   
   alert(`جایزه شما فعال شد: ${desc}`);
   loadRewards();
+  updateBadgeDisplay();
 }
 
 // ================== FRIENDS ==================
@@ -1028,12 +1424,12 @@ function loadFriends() {
   const div = document.getElementById('friends-list');
   const friends = currentUser.friends || [];
   let html = '';
-  if (friends.length === 0) html = '<div class="card">هنوز دوستی اضافه نکردی.</div>';
+  if (friends.length === 0) html = '<div class="card">هنوز دوستی اضافه نکردی. با کد معرف دوستت رو اضافه کن.</div>';
   else {
     friends.forEach(f => {
       html += `<div class="card" style="display:flex;justify-content:space-between;align-items:center;">
         <span>👤 ${f.name || f.username}</span>
-        <button class="btn btn-danger btn-small" onclick="removeFriend('${f.id}')">حذف از لیست</button>
+        <button class="btn btn-danger btn-small" onclick="removeFriend('${f.id}')">حذف از مقایسه</button>
       </div>`;
     });
   }
@@ -1049,14 +1445,27 @@ async function addFriend() {
   const snap = await getDocs(q);
   if (snap.empty) return alert('کد معرف نامعتبر است');
   
-  const friend = snap.docs[0];
-  const friends = currentUser.friends || [];
-  if (friends.find(f => f.id === friend.id)) return alert('قبلاً اضافه شده');
+  const friendDoc = snap.docs[0];
+  const friendId = friendDoc.id;
+  const friendData = friendDoc.data();
   
-  friends.push({ id: friend.id, name: friend.data().name, username: friend.data().username });
+  const friends = currentUser.friends || [];
+  if (friends.find(f => f.id === friendId)) return alert('این دوست قبلاً اضافه شده');
+  
+  friends.push({ id: friendId, name: friendData.name, username: friendData.username });
+  
+  // دو طرفه کردن
+  const friendFriends = friendData.friends || [];
+  if (!friendFriends.find(f => f.id === currentUser.id)) {
+    friendFriends.push({ id: currentUser.id, name: currentUser.name, username: currentUser.username });
+    await updateDoc(doc(db, 'users', friendId), { friends: friendFriends });
+  }
+  
   await updateDoc(doc(db, 'users', currentUser.id), { friends });
   currentUser.friends = friends;
+  alert('دوست اضافه شد!');
   loadFriends();
+  document.getElementById('friend-code').value = '';
 }
 
 async function removeFriend(id) {
@@ -1066,67 +1475,44 @@ async function removeFriend(id) {
   loadFriends();
 }
 
-// ================== LESSONS ==================
-function loadMyLessons() {
-  const lessons = currentUser.lessons || [];
+// ================== GUIDE ==================
+function loadGuide() {
+  const isStudent = userType === 'student';
+  const div = document.getElementById('guide-content');
+  
   let html = '';
-  if (lessons.length === 0) html = '<div class="card">درسی اضافه نکردی.</div>';
-  else {
-    lessons.forEach(l => {
-      let typeName = 'عادی';
-      if(l.type === 'special') typeName = 'تخصصی';
-      if(l.type === 'memorize') typeName = 'حفظی';
-      
-      html += `<div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,255,255,.1);border-radius:8px;margin-bottom:8px;">
-        <span>📖 ${l.name} <small style="color:var(--accent);">(${typeName})</small></span>
-        <button class="btn btn-danger btn-small" onclick="deleteLesson('${l.name}')">🗑</button>
-      </div>`;
-    });
+  if (isStudent) {
+    html = `
+      <h3 style="color:var(--primary);margin-bottom:20px;">📖 راهنمای دانش‌آموز</h3>
+      <ol style="padding-right:20px;line-height:2.5;">
+        <li><strong>اول:</strong> برو به «درس‌های من» و درس‌هایت را اضافه کن.</li>
+        <li><strong>دوم:</strong> برو به «برنامه‌ریزی جدید» و برای هر درس، زمان و روز تعیین کن.</li>
+        <li><strong>سوم:</strong> در «برنامه هفتگی»، دکمه ▶️ را بزن تا تایمر شروع شود.</li>
+        <li><strong>چهارم:</strong> برای تست‌زنی، برو به «تست‌زنی» و درس و تعداد را انتخاب کن.</li>
+        <li><strong>پنجم:</strong> اهداف هفتگی‌ات را در «اهداف هفته» تنظیم کن.</li>
+        <li><strong>ششم:</strong> برای تمرکز عمیق، از تایمر پومودورو استفاده کن.</li>
+        <li><strong>هفتم:</strong> با کد معرف، دوستانت را به برنامه دعوت کن.</li>
+      </ol>
+      <p style="margin-top:20px;color:var(--accent);">💡 با هر فعالیت، امتیاز می‌گیری و نشان می‌گیری!</p>
+    `;
+  } else {
+    html = `
+      <h3 style="color:var(--primary);margin-bottom:20px;">📖 راهنمای بزرگسال</h3>
+      <ol style="padding-right:20px;line-height:2.5;">
+        <li><strong>اول:</strong> برو به «کارهای من» و کارهایت را اضافه کن.</li>
+        <li><strong>دوم:</strong> برو به «برنامه‌ریزی جدید» و برای هر کار، زمان و روز تعیین کن.</li>
+        <li><strong>سوم:</strong> در «برنامه هفتگی»، دکمه ▶️ را بزن تا تایمر شروع شود.</li>
+        <li><strong>چهارم:</strong> اهداف هفتگی (ساعت کاری و پس‌انداز) را در «اهداف هفته» تنظیم کن.</li>
+        <li><strong>پنجم:</strong> در «مالی»، درآمد و هزینه روزانه‌ات را ثبت کن و پس‌اندازت را ببین.</li>
+        <li><strong>ششم:</strong> با کد معرف، دوستانت را به برنامه دعوت کن.</li>
+      </ol>
+      <p style="margin-top:20px;color:var(--accent);">💡 با هر فعالیت، امتیاز می‌گیری و نشان می‌گیری!</p>
+    `;
   }
-  document.getElementById('my-lessons-list').innerHTML = html;
+  div.innerHTML = html;
 }
 
-async function addNewLesson() {
-  const name = document.getElementById('new-lesson-name').value.trim();
-  const type = document.getElementById('new-lesson-type').value;
-  if (!name) return alert('اسم درس را وارد کنید');
-  
-  const lessons = currentUser.lessons || [];
-  if (lessons.find(l => l.name === name)) return alert('این درس قبلاً اضافه شده');
-  
-  lessons.push({ name, type });
-  await updateDoc(doc(db, 'users', currentUser.id), { lessons });
-  currentUser.lessons = lessons;
-  document.getElementById('new-lesson-name').value = '';
-  loadMyLessons();
-}
-
-async function deleteLesson(name) {
-  if (!confirm('حذف شود؟')) return;
-  const lessons = (currentUser.lessons || []).filter(l => l.name !== name);
-  await updateDoc(doc(db, 'users', currentUser.id), { lessons });
-  currentUser.lessons = lessons;
-  loadMyLessons();
-}
-
-// ================== SETTINGS ==================
-function loadSettings() {
-  document.getElementById('profile-info').innerHTML = `
-    <div style="padding:10px;background:rgba(255,255,255,.1);border-radius:8px;">
-      <strong>نام:</strong> ${currentUser.name}<br>
-      <strong>نام کاربری:</strong> ${currentUser.username}<br>
-      <strong>کد معرف:</strong> ${currentUser.referralCode}<br>
-      <strong>نوع:</strong> ${currentUser.type === 'student' ? 'دانش‌آموز' : 'بزرگسال'}
-    </div>`;
-  
-  document.getElementById('subscription-info').innerHTML = `
-    <div style="padding:10px;background:rgba(255,255,255,.1);border-radius:8px;">
-      <strong>تاریخ انقضا:</strong> ${new Date(currentUser.subscription.expiresAt).toLocaleDateString('fa-IR')}<br>
-      <strong>وضعیت:</strong> ${new Date(currentUser.subscription.expiresAt) > new Date() ? '✅ فعال' : '❌ منقضی شده'}
-    </div>`;
-  }
-
-// ================== ADMIN PANEL ==================
+// ================== ADMIN ==================
 async function loadAdminPanel() {
   const div = document.getElementById('admin-users-list');
   div.innerHTML = '<p>در حال بارگذاری...</p>';
@@ -1135,9 +1521,16 @@ async function loadAdminPanel() {
     let html = '';
     snap.forEach(d => {
       const u = d.data();
+      const remaining = Math.ceil((new Date(u.subscription.expiresAt) - new Date()) / 864e5);
+      const color = remaining <= 0 ? 'var(--danger)' : (remaining <= 3 ? 'orange' : 'var(--success)');
       html += `<div class="card">
         <strong>${u.name}</strong> (${u.username})<br>
-        <small>امتیاز: ${u.pointsTotal || 0} | انقضا: ${new Date(u.subscription.expiresAt).toLocaleDateString('fa-IR')}</small>
+        <small>📱 ${u.phone || '—'} | 🎓 ${u.grade || u.job || '—'}</small><br>
+        <small>⭐ امتیاز: ${u.pointsTotal || 0} | 📅 ${remaining > 0 ? remaining + ' روز' : 'منقضی'}</small>
+        <div style="margin-top:10px;display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="btn btn-info btn-small" onclick="renewUser('${u.username}', 30)">تمدید ۳۰ روز</button>
+          <button class="btn btn-success btn-small" onclick="renewUser('${u.username}', 90)">تمدید ۹۰ روز</button>
+        </div>
       </div>`;
     });
     div.innerHTML = html || '<p>کاربری نیست.</p>';
@@ -1146,48 +1539,23 @@ async function loadAdminPanel() {
   }
 }
 
-// ================== POSTCARD SYSTEM ==================
-function showPostcard(type) {
-  let container = document.getElementById('postcard-container');
-  let content = '';
-  let cardClass = '';
-  
-  if (type === 'first') {
-    cardClass = 'blue';
-    content = `<h3>🚀 شروع خوب!</h3><p>اولین قدم رو برداشتی! فردا رکورد می‌زنی.</p>`;
-  } else if (type === 'record') {
-    cardClass = 'gold';
-    const models = [
-      `<h3>🥇 رکورد جدید!</h3><p>داری می‌درخشی! به خودت افتخار کن.</p>`,
-      `<h3>🔥 داری می‌سوزونی!</h3><p>این سرعت پیشرفت فوق‌العاده‌ست!</p>`,
-      `<h3>✨ درخشان عمل کردی!</h3><p>ستاره‌ها هم بهت حسادت می‌کنن.</p>`,
-      `<h3>🧠 مغزت داره قوی‌تر می‌شه!</h3><p>تمرین و تلاش، بهترین نتیجه رو داد.</p>`,
-      `<h3>🏅 تو یک قهرمانی!</h3><p>مسیر موفقیت رو داری طی می‌کنی.</p>`,
-      `<h3>🚀 داری اوج می‌گیری!</h3><p>آسمون محدودیتت نیست.</p>`
-    ];
-    content = models[Math.floor(Math.random() * models.length)];
-  } else if (type === 'effort') {
-    cardClass = 'orange';
-    content = `<h3>💪 تلاشت قابل تقدیره!</h3><p>مهم ادامه دادنه، نه رکورد زدن. عالیه!</p>`;
-  } else if (type === 'stable') {
-    cardClass = 'green';
-    content = `<h3>✨ ثابت قدم بودی!</h3><p>یکنواختی و نظم، کلید موفقیت نهایی است.</p>`;
-  }
-
-  container.innerHTML = `
-    <div class="postcard ${cardClass} show" onclick="this.classList.remove('show')">
-      ${content}
-      <p style="margin-top:15px;font-size:.8em;color:#666;">(برای بستن کلیک کنید)</p>
-    </div>
-  `;
-
-  setTimeout(() => {
-    const card = container.querySelector('.postcard');
-    if (card) card.classList.remove('show');
-  }, 6000);
+async function renewUser(username, days) {
+  if (!confirm(`اشتراک ${username} به مدت ${days} روز تمدید شود؟`)) return;
+  try {
+    const userRef = doc(db, 'users', username);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return alert('کاربر یافت نشد');
+    const data = snap.data();
+    const currentExpiry = new Date(data.subscription.expiresAt);
+    const base = currentExpiry > new Date() ? currentExpiry : new Date();
+    const newExpiry = new Date(base.getTime() + days * 864e5);
+    await updateDoc(userRef, { 'subscription.expiresAt': newExpiry.toISOString() });
+    alert(`✅ ${username} تمدید شد`);
+    loadAdminPanel();
+  } catch (e) { alert('خطا: ' + e.message); }
 }
 
-// ================== MOTIVATIONS (کش شده در حافظه) ==================
+// ================== MOTIVATIONS ==================
 const studentMotivations = [
   "نمره‌های عالی، نتیجه‌ی دقیقه‌های مطالعه‌ی امروزته.",
   "مغز تو مثل یک ماشین مسابقه‌ست؛ هرچی بیشتر تمرینش بدی، سریع‌تر می‌دوه.",
@@ -1336,7 +1704,7 @@ const adultMotivations = [
 ];
 
 function getMotivationText() {
-  const isStudent = currentUser && currentUser.type === 'student';
+  const isStudent = userType === 'student';
   const list = isStudent ? studentMotivations : adultMotivations;
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -1347,12 +1715,144 @@ function getRandomMotivation() {
   el.classList.remove('hidden');
   }
 
+// ================== SETTINGS ==================
+function loadSettings() {
+  const isStudent = userType === 'student';
+  const gradeText = isStudent ? (currentUser.grade || '—') : (currentUser.job || '—');
+  
+  document.getElementById('profile-info').innerHTML = `
+    <div style="padding:10px;background:rgba(255,255,255,.1);border-radius:8px;">
+      <strong>${currentUser.avatarEmoji || '👤'} نام:</strong> ${currentUser.name}<br>
+      <strong>نام کاربری:</strong> ${currentUser.username}<br>
+      <strong>نوع:</strong> ${isStudent ? 'دانش‌آموز' : 'بزرگسال'}<br>
+      <strong>${isStudent ? 'پایه' : 'شغل'}:</strong> ${gradeText}
+    </div>`;
+  
+  const expiresAt = new Date(currentUser.subscription.expiresAt);
+  const remaining = Math.ceil((expiresAt - new Date()) / 864e5);
+  const statusText = remaining > 0 ? `✅ فعال (${remaining} روز)` : '❌ منقضی شده';
+  const statusColor = remaining > 0 ? 'var(--success)' : 'var(--danger)';
+  
+  document.getElementById('subscription-info').innerHTML = `
+    <div style="padding:10px;background:rgba(255,255,255,.1);border-radius:8px;">
+      <strong>تاریخ انقضا:</strong> ${expiresAt.toLocaleDateString('fa-IR')}<br>
+      <strong>وضعیت:</strong> <span style="color:${statusColor}">${statusText}</span>
+    </div>`;
+  
+  document.getElementById('my-referral-code').textContent = currentUser.referralCode || '—';
+  
+  // دکمه کد فعال‌سازی
+  const actSection = document.getElementById('activation-section');
+  if (actSection) actSection.classList.remove('hidden');
+}
+
+function showPurchaseButton() {
+  if (confirm('به زودی به درگاه پرداخت بازار منتقل می‌شوید.\n\n(در نسخه فعلی، این بخش به بازار متصل نیست. برای تست، از پنل مدیر استفاده کنید.)')) {
+    alert('🔗 در نسخه نهایی، اینجا به درگاه پرداخت بازار منتقل می‌شوید.');
+  }
+}
+
+async function activateCode() {
+  const code = document.getElementById('activation-code').value.trim().toUpperCase();
+  if (!code) return alert('کد را وارد کنید');
+  if (code === currentUser.referralCode) return alert('کد خودت رو نمی‌تونی وارد کنی');
+  
+  const q = query(collection(db, 'users'), where('referralCode', '==', code));
+  const snap = await getDocs(q);
+  if (snap.empty) return alert('کد نامعتبر است');
+  
+  if (currentUser.activatedCodes && currentUser.activatedCodes.includes(code)) {
+    return alert('این کد رو قبلاً استفاده کردی');
+  }
+  
+  const activatedCodes = currentUser.activatedCodes || [];
+  activatedCodes.push(code);
+  
+  await updateDoc(doc(db, 'users', currentUser.id), {
+    pointsTotal: increment(5),
+    pointsSpendable: increment(5),
+    activatedCodes: activatedCodes
+  });
+  
+  currentUser.pointsTotal += 5;
+  currentUser.pointsSpendable += 5;
+  currentUser.activatedCodes = activatedCodes;
+  
+  document.getElementById('activation-code').value = '';
+  alert('✅ کد فعال شد + ۵ امتیاز');
+  loadSettings();
+  updateBadgeDisplay();
+}
+
+function copyReferralCode() {
+  const code = currentUser.referralCode;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      alert('✅ کد معرف کپی شد: ' + code);
+    }).catch(() => fallbackCopy(code));
+  } else {
+    fallbackCopy(code);
+  }
+}
+
+function fallbackCopy(text) {
+  const input = document.createElement('input');
+  input.value = text;
+  document.body.appendChild(input);
+  input.select();
+  try { document.execCommand('copy'); alert('✅ کپی شد: ' + text); }
+  catch(e) { prompt('کپی کن:', text); }
+  document.body.removeChild(input);
+}
+
+// ================== POSTCARD ==================
+function showPostcard(type) {
+  let container = document.getElementById('postcard-container');
+  let content = '';
+  let cardClass = '';
+  
+  if (type === 'first') {
+    cardClass = 'blue';
+    content = `<h3>🚀 شروع خوب!</h3><p>اولین قدم رو برداشتی! فردا رکورد می‌زنی.</p>`;
+  } else if (type === 'record') {
+    cardClass = 'gold';
+    const models = [
+      `<h3>🥇 رکورد جدید!</h3><p>داری می‌درخشی! به خودت افتخار کن.</p>`,
+      `<h3>🔥 داری می‌سوزونی!</h3><p>این سرعت پیشرفت فوق‌العاده‌ست!</p>`,
+      `<h3>✨ درخشان عمل کردی!</h3><p>ستاره‌ها هم بهت حسادت می‌کنن.</p>`,
+      `<h3>🧠 مغزت داره قوی‌تر می‌شه!</h3><p>تمرین و تلاش، بهترین نتیجه رو داد.</p>`,
+      `<h3>🏅 تو یک قهرمانی!</h3><p>مسیر موفقیت رو داری طی می‌کنی.</p>`,
+      `<h3>🚀 داری اوج می‌گیری!</h3><p>آسمون محدودیتت نیست.</p>`
+    ];
+    content = models[Math.floor(Math.random() * models.length)];
+  } else if (type === 'effort') {
+    cardClass = 'orange';
+    content = `<h3>💪 تلاشت قابل تقدیره!</h3><p>مهم ادامه دادنه، نه رکورد زدن. عالیه!</p>`;
+  } else if (type === 'stable') {
+    cardClass = 'green';
+    content = `<h3>✨ ثابت قدم بودی!</h3><p>یکنواختی و نظم، کلید موفقیت نهایی است.</p>`;
+  }
+
+  container.innerHTML = `
+    <div class="postcard ${cardClass} show" onclick="this.classList.remove('show')">
+      ${content}
+      <p style="margin-top:15px;font-size:.8em;color:#666;">(برای بستن کلیک کنید)</p>
+    </div>
+  `;
+
+  setTimeout(() => {
+    const card = container.querySelector('.postcard');
+    if (card) card.classList.remove('show');
+  }, 6000);
+}
+
 // ================== EXPOSE TO WINDOW ==================
 window.showSection = showSection;
 window.goToPage = goToPage;
 window.toggleSidebar = toggleSidebar;
 window.handleLogoTap = handleLogoTap;
-window.toggleSignupFields = toggleSignupFields;
+window.selectUserType = selectUserType;
+window.selectAvatar = selectAvatar;
 window.signupUser = signupUser;
 window.loginUser = loginUser;
 window.logout = logout;
@@ -1363,6 +1863,7 @@ window.submitPlan = submitPlan;
 window.startTestSession = startTestSession;
 window.setGoal = setGoal;
 window.startFocusSession = startFocusSession;
+window.saveFinanceRecord = saveFinanceRecord;
 window.claimReward = claimReward;
 window.addFriend = addFriend;
 window.removeFriend = removeFriend;
@@ -1371,18 +1872,13 @@ window.deleteLesson = deleteLesson;
 window.getRandomMotivation = getRandomMotivation;
 window.setTheme = setTheme;
 window.setLanguage = setLanguage;
+window.activateCode = activateCode;
+window.copyReferralCode = copyReferralCode;
+window.showPurchaseButton = showPurchaseButton;
 window.loadAdminPanel = loadAdminPanel;
+window.renewUser = renewUser;
 window.showPostcard = showPostcard;
-window.loadSchedule = loadSchedule;
-window.loadTestsPage = loadTestsPage;
-window.loadGoals = loadGoals;
-window.loadRewards = loadRewards;
-window.loadFriends = loadFriends;
-window.loadMyLessons = loadMyLessons;
-window.loadSettings = loadSettings;
-window.loadFocusHistory = loadFocusHistory;
-window.loadHome = loadHome;
-window.loadPlanNew = loadPlanNew;
+window.updateBadgeDisplay = updateBadgeDisplay;
 </script>
 </body>
 </html>
