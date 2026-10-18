@@ -218,7 +218,36 @@ canvas{width:100%!important;height:auto!important;max-height:300px}
 <div id="plan-subjects-list"></div>
 <button class="btn btn-success btn-full" onclick="submitPlan()" style="margin-top:15px;" id="submit-plan-btn">✅ ثبت نهایی</button>
 </div>
+<!-- ============ STATS ============ -->
+<div id="stats" class="section">
+<h2 style="color:var(--primary);margin-bottom:15px;">📈 آمار و نمودارها</h2>
 
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px;" id="stats-1-title">📈 زمان (۷ روز اخیر)</h4>
+<canvas id="statsChart1"></canvas>
+</div>
+
+<div class="card">
+<h4 style="color:var(--primary);margin-bottom:10px;">📈 عملکرد ماهانه (۳۰ روز اخیر)</h4>
+<canvas id="statsChart5"></canvas>
+</div>
+
+<div class="card" id="stats-2-container">
+<h4 style="color:var(--primary);margin-bottom:10px;">📈 پیشرفت هفته (درصد تیک‌ها)</h4>
+<canvas id="statsChart2"></canvas>
+</div>
+
+<div class="card" id="stats-3-container">
+<h4 style="color:var(--primary);margin-bottom:10px;">📈 پیشرفت تست (میانگین ثانیه)</h4>
+<canvas id="statsChart3"></canvas>
+</div>
+
+<div class="card" id="stats-4-container">
+<h4 style="color:var(--primary);margin-bottom:10px;">📈 پس‌انداز (۷ روز اخیر)</h4>
+<canvas id="statsChart4"></canvas>
+</div>
+
+</div>
 <!-- ============ SCHEDULE ============ -->
 <div id="schedule" class="section">
 <h2 style="color:var(--primary);margin-bottom:15px;" id="schedule-title">📅 برنامه هفتگی</h2>
@@ -460,6 +489,7 @@ function goToPage(page) {
   if (page === 'friends') loadFriends();
   if (page === 'lessons') loadMyLessons();
   if (page === 'settings') loadSettings();
+  if (page === 'stats') loadStats();
   if (page === 'guide') loadGuide();
 }
 
@@ -488,6 +518,7 @@ function buildMenu() {
     items.push({ icon: '💰', label: 'مالی', page: 'finance' });
   }
   
+  items.push({ icon: '📈', label: 'آمار و نمودارها', page: 'stats' });
   items.push({ icon: '🏆', label: 'امتیازات', page: 'rewards' });
   items.push({ icon: '👥', label: 'دوستام', page: 'friends' });
   items.push({ icon: '💬', label: 'فال انگیزشی', page: 'motivation' });
@@ -1260,7 +1291,130 @@ async function startFocusSession() {
     document.getElementById('focus-timer').textContent = formatTime(focusSeconds);
   }, 1000);
 }
-
+// ================== STATS PAGE ==================
+function loadStats() {
+  const isStudent = userType === 'student';
+  
+  // نمودار ۱: زمان مطالعه/کار (۷ روز)
+  const ctx1 = document.getElementById('statsChart1');
+  if (ctx1) {
+    if (charts.stats1) charts.stats1.destroy();
+    const last7 = [];
+    const labels = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const mins = (currentUser.studyLogs || []).filter(l => l.date === dateStr).reduce((s, l) => s + l.minutes, 0);
+      labels.push(dateStr.slice(5));
+      last7.push(mins);
+    }
+    charts.stats1 = new Chart(ctx1, {
+      type: 'line',
+      data: { labels, datasets: [{ label: isStudent ? 'دقیقه مطالعه' : 'دقیقه کار', data: last7, borderColor: '#FFD700', backgroundColor: 'rgba(255,215,0,0.2)', fill: true, tension: 0.3 }] },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+    });
+  }
+  
+  // نمودار ۲ (ماهانه): عملکرد ۳۰ روز اخیر
+  const ctx5 = document.getElementById('statsChart5');
+  if (ctx5) {
+    if (charts.stats5) charts.stats5.destroy();
+    const last30 = [];
+    const labels = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const mins = (currentUser.studyLogs || []).filter(l => l.date === dateStr).reduce((s, l) => s + l.minutes, 0);
+      labels.push(dateStr.slice(5));
+      last30.push(mins);
+    }
+    charts.stats5 = new Chart(ctx5, {
+      type: 'line',
+      data: { labels, datasets: [{ label: isStudent ? 'دقیقه مطالعه' : 'دقیقه کار', data: last30, borderColor: '#2196F3', backgroundColor: 'rgba(33,150,243,0.2)', fill: true, tension: 0.3 }] },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff', font: { size: 9 } } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+    });
+  }
+  
+  // نمودار ۳: پیشرفت هفته
+  const ctx2 = document.getElementById('statsChart2');
+  if (ctx2) {
+    if (charts.stats2) charts.stats2.destroy();
+    const days = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+    const progress = days.map(day => {
+      const items = (currentUser.schedule && currentUser.schedule[day]) || [];
+      let total = 0, done = 0;
+      items.forEach(i => { total += i.minutes; if (i.isDone) done += i.minutes; });
+      return total > 0 ? Math.round((done / total) * 100) : 0;
+    });
+    charts.stats2 = new Chart(ctx2, {
+      type: 'line',
+      data: { labels: days, datasets: [{ label: 'درصد تیک', data: progress, borderColor: '#4CAF50', backgroundColor: 'rgba(76,175,80,0.2)', fill: true, tension: 0.3 }] },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+    });
+  }
+  
+  // نمودار ۴: پیشرفت تست (فقط دانش‌آموز)
+  const cont3 = document.getElementById('stats-3-container');
+  const ctx3 = document.getElementById('statsChart3');
+  if (isStudent && ctx3) {
+    if (cont3) cont3.style.display = 'block';
+    if (charts.stats3) charts.stats3.destroy();
+    const tests = currentUser.tests || {};
+    const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#1A535C', '#FF9F1C', '#E71D36', '#8338EC', '#2EC4B6'];
+    let maxCount = 10;
+    Object.keys(tests).forEach(lesson => {
+      (tests[lesson] || []).forEach(t => { if (t.count > maxCount) maxCount = t.count; });
+    });
+    const countSteps = [];
+    for (let i = 10; i <= maxCount; i += 10) countSteps.push(i);
+    
+    const datasets = [];
+    Object.keys(tests).forEach((lesson, idx) => {
+      const arr = tests[lesson] || [];
+      const dataPoints = countSteps.map(step => {
+        const found = arr.find(t => t.count === step);
+        return found ? found.avgSeconds : null;
+      });
+      datasets.push({ label: lesson, data: dataPoints, borderColor: colors[idx % colors.length], backgroundColor: colors[idx % colors.length], tension: 0.3, spanGaps: true });
+    });
+    
+    charts.stats3 = new Chart(ctx3, {
+      type: 'line',
+      data: { labels: countSteps.map(c => c + ' تست'), datasets },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+    });
+  } else if (cont3) {
+    cont3.style.display = 'none';
+  }
+  
+  // نمودار ۵: پس‌انداز (فقط بزرگسال)
+  const cont4 = document.getElementById('stats-4-container');
+  const ctx4 = document.getElementById('statsChart4');
+  if (!isStudent && ctx4) {
+    if (cont4) cont4.style.display = 'block';
+    if (charts.stats4) charts.stats4.destroy();
+    const last7 = [];
+    const labels = [];
+    const history = currentUser.financeLogs || [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const rec = history.find(f => f.date === dateStr);
+      labels.push(dateStr.slice(5));
+      last7.push(rec ? rec.savings / 1000 : 0);
+    }
+    charts.stats4 = new Chart(ctx4, {
+      type: 'line',
+      data: { labels, datasets: [{ label: 'پس‌انداز (هزار تومان)', data: last7, borderColor: '#4CAF50', backgroundColor: 'rgba(76,175,80,0.2)', fill: true, tension: 0.3 }] },
+      options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+    });
+  } else if (cont4) {
+    cont4.style.display = 'none';
+  }
+    }
 // ================== GOALS ==================
 function loadGoals() {
   const div = document.getElementById('goals-list');
