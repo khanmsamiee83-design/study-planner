@@ -294,23 +294,38 @@ canvas{width:100%!important;height:auto!important;max-height:300px}
 
 <!-- ============ FINANCE (Adult Only) ============ -->
 <div id="finance" class="section">
-<h2 style="color:var(--primary);margin-bottom:15px;">💰 مالی</h2>
-<div class="card">
-<div class="form-group"><label>تاریخ</label><input type="date" id="finance-date"></div>
-<div class="form-group"><label>درآمد امروز (تومان)</label><input type="number" id="finance-income" placeholder="0"></div>
-<div class="form-group"><label>هزینه امروز (تومان)</label><input type="number" id="finance-expense" placeholder="0"></div>
-<div class="form-group"><label>پس‌انداز خودکار (درآمد - هزینه)</label><div id="finance-savings-display" style="font-size:1.5em;color:var(--primary);font-weight:bold;text-align:center;">0 تومان</div></div>
-<button class="btn btn-success btn-full" onclick="saveFinanceRecord()">💾 ذخیره (۵ امتیاز)</button>
-</div>
-<div class="card">
-<h4 style="color:var(--primary);margin-bottom:10px;">📈 نمودار پس‌انداز (۷ روز اخیر)</h4>
-<canvas id="financeChart"></canvas>
-</div>
-<div id="finance-history" class="card"></div>
-</div>
+  <h2 style="color:var(--primary);margin-bottom:15px;">💰 مالی و بهره‌وری</h2>
 
-<!-- ============ REWARDS ============ -->
-<div id="rewards" class="section">
+  <div class="card">
+    <label>تاریخ</label>
+    <input type="date" id="finance-date">
+    <label>درآمد امروز (تومان)</label>
+    <input type="number" id="finance-income" placeholder="0">
+    <label>هزینه امروز (تومان)</label>
+    <input type="number" id="finance-expense" placeholder="0">
+    <div style="text-align:center; margin: 15px 0;">
+      <label>پس‌انداز خودکار</label>
+      <div id="finance-savings-display" style="font-size:1.5em;color:var(--primary);font-weight:bold;">0 تومان</div>
+    </div>
+    <button class="btn btn-success btn-full" onclick="saveFinanceRecord()">💾 ذخیره (۵ امتیاز)</button>
+  </div>
+
+  <div class="card">
+    <h4 style="color:var(--primary);margin-bottom:10px;">💸 مدیریت بدهی‌ها</h4>
+    <label>بابت چه چیزی؟</label>
+    <input type="text" id="debt-title" placeholder="مثلاً: قرض به علی">
+    <label>مبلغ (تومان)</label>
+    <input type="number" id="debt-amount">
+    <button class="btn btn-info btn-full" onclick="addDebt()">➕ افزودن بدهی</button>
+    <div id="debts-list" style="margin-top:15px;"></div>
+  </div>
+
+  <div class="card">
+    <h4 style="color:var(--primary);margin-bottom:10px;">📈 نمودار پس‌انداز (۷ روز اخیر)</h4>
+    <canvas id="financeChart"></canvas>
+  </div>
+  <div id="finance-history" class="card"></div>
+  </div>
 <h2 style="color:var(--primary);margin-bottom:15px;">🏆 امتیازات و نشان‌ها</h2>
 <div class="card" style="text-align:center">
 <h3 style="color:var(--primary);font-size:2.5em;" id="total-points-display">0</h3>
@@ -412,6 +427,7 @@ canvas{width:100%!important;height:auto!important;max-height:300px}
 <div id="postcard-container"></div>
 
 <script type="module">
+const API_URL = 'https://YOUR_DOMAIN.com/api.php';
 // ================== FIREBASE ==================
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -683,66 +699,32 @@ async function loginUser() {
   errEl.textContent = '';
   if (!username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
 
-  let userData = null;
-
-  // ۱. تلاش برای ورود از Firebase
   try {
-    const userRef = doc(db, 'users', username);
-    const snap = await getDoc(userRef);
-    if (snap.exists() && snap.data().password === password) {
-      userData = snap.data();
+    const formData = new FormData();
+    formData.append('action', 'login');
+    formData.append('username', username);
+    formData.append('password', password);
+
+    const response = await fetch(API_URL, { method: 'POST', body: formData });
+    const result = await response.json();
+
+    if (result.status === 'error') return errEl.textContent = result.message;
+
+    currentUser = result.data;
+    userType = currentUser.user_type;
+    
+    const today = new Date().toISOString().split('T')[0];
+    if (currentUser.last_login_date !== today) {
+        document.getElementById('mystery-box-container').classList.remove('hidden');
+    } else {
+        document.getElementById('mystery-box-container').classList.add('hidden');
     }
-  } catch (firebaseError) {
-    console.log('Firebase failed, trying Supabase...');
+
+    buildMenu();
+    goToPage('home');
+  } catch (error) {
+    errEl.textContent = 'خطا در ارتباط با سرور';
   }
-
-  // ۲. اگه Firebase فیلتر بود، از Supabase بخون
-  if (!userData) {
-    try {
-      const { data, error } = await supabase.from('users').select('data').eq('username', username);
-      if (!error && data && data.length > 0) {
-        if (data[0].data.password === password) {
-          userData = data[0].data;
-        }
-      }
-    } catch (sbError) {
-      console.log('Supabase also failed');
-    }
-  }
-
-  if (!userData) {
-    return errEl.textContent = 'نام کاربری یا رمز اشتباه است (یا اتصال برقرار نیست)';
-  }
-
-  if (new Date(userData.subscription.expiresAt) < new Date()) {
-    return errEl.textContent = 'اشتراک شما منقضی شده. لطفاً از طریق دکمه «خرید اشتراک» تمدید کنید.';
-  }
-
-  currentUser = { id: username, ...userData };
-  userType = userData.type;
-  saveToCache('user_' + username, currentUser);
-
-  const today = new Date().toISOString().split('T')[0];
-  if (currentUser.lastLoginDate !== today) {
-    currentUser.pointsTotal += 5;
-    currentUser.pointsSpendable += 5;
-    currentUser.lastLoginDate = today;
-    // آپدیت در Firebase یا Supabase
-    try {
-      await updateDoc(doc(db, 'users', username), {
-        pointsTotal: increment(5),
-        pointsSpendable: increment(5),
-        lastLoginDate: today
-      });
-    } catch (e) {
-      try {
-        await supabase.from('users').update({ data: currentUser }).eq('username', username);
-      } catch (e2) {}
-    }
-  }
-
-  buildMenu();
-  goToPage('home');
 }
 function logout() {
   currentUser = null;
@@ -2129,7 +2111,25 @@ function showPostcard(type) {
     if (card) card.classList.remove('show');
   }, 6000);
 }
-
+async function openMysteryBox() {
+  if (!currentUser) return;
+  document.getElementById('mystery-box-container').classList.add('hidden');
+  try {
+    const formData = new FormData();
+    formData.append('action', 'open_mystery_box');
+    formData.append('user_id', currentUser.id);
+    const response = await fetch(API_URL, { method: 'POST', body: formData });
+    const result = await response.json();
+    if (result.status === 'success') {
+      alert('🎉 تبریک! جایزه شما: ' + result.prize_text);
+      currentUser.points_total = result.new_total;
+      currentUser.points_spendable = result.new_spendable;
+      updateBadgeDisplay();
+    } else {
+      alert(result.message);
+    }
+  } catch (e) { alert('خطا در ارتباط با سرور'); }
+}
 // ================== EXPOSE TO WINDOW ==================
 window.showSection = showSection;
 window.goToPage = goToPage;
