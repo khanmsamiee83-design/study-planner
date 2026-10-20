@@ -2108,6 +2108,84 @@ async function openMysteryBox() {
     }
   } catch (e) { alert('خطا در ارتباط با سرور'); }
 }
+
+// ================== اشتراک اضطراری (آفلاین) ==================
+function openEitaa() {
+  if (!currentUser) {
+    alert('لطفاً ابتدا وارد حساب کاربری خود شوید.');
+    return;
+  }
+  
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const message = `سلام مدیر. من ${currentUser.name} (${currentUser.username}) هستم. اشتراک من در برنامه قطع شده و سرور در دسترس نیست. کد اضطراری من: ${code}`;
+  
+  navigator.clipboard.writeText(message).then(() => {
+    alert('متن پیام کپی شد. حالا در ایتا برای مدیر ارسال کنید.');
+  }).catch(e => {
+    prompt('این پیام را برای مدیر در ایتا کپی و ارسال کنید:', message);
+  });
+  
+  // هدایت به ایتا و آیدی شما
+  window.location.href = 'https://eitaa.com/Registration_Admin'; 
+}
+
+async function checkServerStatus() {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); 
+    
+    const response = await fetch(API_URL, { 
+      method: 'POST', 
+      body: new FormData(),
+      signal: controller.signal 
+    });
+    clearTimeout(timeoutId);
+    return true; 
+  } catch (e) {
+    return false; 
+  }
+}
+
+async function showPurchaseButton() {
+  const isServerOnline = await checkServerStatus();
+  
+  if (!isServerOnline) {
+    const emergencyDisplay = document.getElementById('emergency-code-display');
+    if (emergencyDisplay && currentUser) {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      emergencyDisplay.textContent = `کد شناسایی شما: ${code}`;
+    }
+    goToPage('emergency-sub');
+    return;
+  }
+  
+  alert('در حال اتصال به درگاه پرداخت... (این بخش بعداً به زرین‌پال وصل می‌شود)');
+}
+
+// ================== شمارش روزهای آفلاین ==================
+function updateSubscriptionCounter() {
+  if (!currentUser || !currentUser.subscription_expires) return;
+  
+  const expiryDate = new Date(currentUser.subscription_expires);
+  const now = new Date();
+  const diffMs = expiryDate - now;
+  
+  const infoEl = document.getElementById('subscription-info');
+  if (!infoEl) return;
+
+  if (diffMs <= 0) {
+    currentUser.isSubscribed = false;
+    infoEl.innerHTML = '<p style="color:var(--danger);">❌ اشتراک شما منقضی شده است.</p>';
+  } else {
+    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    currentUser.isSubscribed = true;
+    infoEl.innerHTML = `
+      <p style="color:var(--success);">✅ اشتراک فعال است</p>
+      <p>روزهای باقی‌مانده: <strong>${daysLeft}</strong> روز</p>
+      <p style="font-size:0.8em;color:var(--accent);">تاریخ انقضا: ${expiryDate.toLocaleDateString('fa-IR')}</p>
+    `;
+  }
+}
 // ================== EXPOSE TO WINDOW ==================
 window.showSection = showSection;
 window.goToPage = goToPage;
