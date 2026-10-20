@@ -1027,56 +1027,34 @@ async function stopFocusOverlay() {
         tests: tests,
         pointsTotal: currentUser.pointsTotal,
         pointsSpendable: currentUser.pointsSpendable
-      });
-      alert(`آفرین! ${testCount} تست با میانگین ${Math.round(avg)} ثانیه ثبت شد.`);
-      await updateGoalProgress();
-      
-// بررسی رکوردشکنی
-const prevRecords = currentUser.tests[testLesson] || [];
-const isRecord = prevRecords.length <= 1 || (prevRecords.length > 1 && avg < prevRecords[prevRecords.length - 2].avgSeconds);
-if (isRecord) {
-  showPostcard(prevRecords.length <= 1 ? 'first' : 'record');
-} else {
-  showPostcard('effort');
-}
-      loadTestsPage();
-      updateBadgeDisplay();
-    } else if (!isValid) {
-      alert(`میانگین زمان تست‌ها (${Math.round(avg)} ثانیه) کمتر از حد مجاز برای دروس ${getLessonTypeName(lessonType)} است. ثبت نشد.`);
-    } else {
-      alert('حداقل ۱۰ تست برای ثبت امتیاز نیاز است.');
-    }
-    
-  } else if (focusType === 'deep') {
-    const minutes = Math.floor(focusSeconds / 60);
-    if (minutes > 0) {
-      const today = new Date().toISOString().split('T')[0];
-      const focusHistory = currentUser.focusHistory || [];
-      focusHistory.push({ date: today, minutes });
-      currentUser.focusHistory = focusHistory;
-      currentUser.pointsTotal += minutes;
-      currentUser.pointsSpendable += minutes;
-      
-      currentUser.focusHistory = currentUser.focusHistory.filter(l => {
-        const diff = (new Date() - new Date(l.date)) / (1000 * 60 * 60 * 24);
-        return diff <= 30;
-      });
-
-      await updateDoc(doc(db, 'users', currentUser.id), {
-        focusHistory: currentUser.focusHistory,
-        pointsTotal: currentUser.pointsTotal,
-        pointsSpendable: currentUser.pointsSpendable
-      });
-    }
-    alert('جلسه تمرکز ذخیره شد: ' + formatTime(focusSeconds));
-    await updateGoalProgress();
-    loadFocusHistory();
-    updateBadgeDisplay();
-  }
+async function stopFocusOverlay(isCanceled = false) {
+  if (!focusSessionActive) return;
+  focusSessionActive = false;
+  if (focusInterval) clearInterval(focusInterval);
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
   
+  const overlay = document.getElementById('focus-overlay');
+  overlay.style.display = 'none';
+  document.getElementById('focus-timer').style.opacity = '1';
+  document.getElementById('focus-subject').style.opacity = '1';
+  document.getElementById('focus-quote').style.opacity = '1';
+
+  let cachedTimes = JSON.parse(localStorage.getItem('lesson_times') || '{}');
+  cachedTimes['focus'] = focusSeconds;
+  localStorage.setItem('lesson_times', JSON.stringify(cachedTimes));
+
+  if (focusSeconds > 0) {
+      try {
+        const formData = new FormData();
+        formData.append('action', 'sync_time');
+        formData.append('user_id', currentUser.id);
+        formData.append('lesson_name', 'focus');
+        formData.append('total_seconds', focusSeconds);
+        fetch(API_URL, { method: 'POST', body: formData });
+      } catch(e) {}
+  }
   focusType = '';
   focusSeconds = 0;
-  currentFocusItem = null;
 }
 
 // ================== PLAN NEW ==================
