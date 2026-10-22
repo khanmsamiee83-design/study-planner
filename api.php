@@ -48,7 +48,16 @@ if ($action == 'login') {
     if ($user) {
         $today = date('Y-m-d');
         $pdo->prepare("UPDATE users SET last_login_date = ? WHERE id = ?")->execute([$today, $user['id']]);
-        echo json_encode(['status' => 'success', 'data' => $user]);
+        
+        // ارسال تاریخ انقضا به صورت میلی‌ثانیه برای جاوااسکریپت
+        $expiry_date = strtotime($user['subscription_expires']) * 1000; 
+        
+        // یکپارچه کردن پاسخ سرور (فقط یک بار echo می‌کنیم)
+        echo json_encode([
+            'status' => 'success', 
+            'data' => $user, 
+            'expiry_ms' => $expiry_date
+        ]);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'نام کاربری یا رمز اشتباه است']);
     }
