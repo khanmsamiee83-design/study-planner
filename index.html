@@ -1,15 +1,32 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#FFD700">
 <title>برنامه‌ریزی هوشمند</title>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+
 <style>
+/* ============================================================
+   فونت وزیرمتن آفلاین - از فایل کنار برنامه لود می‌شه
+   ============================================================ */
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./Vazirmatn-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./Vazirmatn-Bold.woff2') format('woff2');
+}
 :root{--primary:#FFD700;--secondary:#333;--accent:#A9A9A9;--bg-start:#FFEC8B;--bg-end:#DAA520;--text:#FFF;--success:#4CAF50;--danger:#f44336;--info:#2196F3;--card-bg:rgba(255,255,255,.08);--highlight:#FFEC8B;--purple:#9C27B0}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:'Vazirmatn',sans-serif}
 body{background:linear-gradient(135deg,var(--bg-start),var(--bg-end));min-height:100vh;color:var(--text);display:flex;justify-content:center;align-items:flex-start;padding:15px;overflow-x:hidden;transition:background .3s}
