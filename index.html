@@ -798,6 +798,70 @@ async function loginUser() {
     errEl.textContent = 'خطا در ارتباط با سرور';
   }
 }
+
+// ============================================================
+// 🔄 سیستم صندوق پستی و همگام‌سازی (Sync Queue)
+// ============================================================
+
+function queueOfflinePoints(minutes, lessonName = 'offline_study') {
+    let queue = JSON.parse(localStorage.getItem('sync_queue') || '[]');
+    queue.push({
+        action: 'sync_offline_points',
+        user_id: currentUser.id,
+        minutes: minutes,
+        lesson_name: lessonName,
+        timestamp: Date.now()
+    });
+    localStorage.setItem('sync_queue', JSON.stringify(queue));
+    console.log('📥 امتیاز در صندوق پستی ذخیره شد. تعداد در صف: ' + queue.length);
+}
+
+async function flushSyncQueue() {
+    if (!navigator.onLine) return;
+    let queue = JSON.parse(localStorage.getItem('sync_queue') || '[]');
+    if (queue.length === 0) return;
+
+    console.log('🔄 در حال ارسال ' + queue.length + ' آیتم به سرور...');
+    let newQueue = [];
+
+    for (let item of queue) {
+        try {
+            const formData = new FormData();
+            formData.append('action', item.action);
+            formData.append('user_id', item.user_id);
+            formData.append('minutes', item.minutes);
+            formData.append('lesson_name', item.lesson_name);
+
+            const response = await fetch(API_URL, { method: 'POST', body: formData });
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                console.log('✅ آیتم با موفقیت ارسال شد.');
+            } else {
+                console.warn('❌ سرور خطا داد: ', result.message);
+                newQueue.push(item); 
+            }
+        } catch (e) {
+            console.warn('⚠️ خطا در اتصال، آیتم در صف ماند.');
+            newQueue.push(item); 
+        }
+    }
+
+    localStorage.setItem('sync_queue', JSON.stringify(newQueue));
+    if (newQueue.length === 0) {
+        console.log('🎉 صندوق پستی خالی شد! همه چیز با سرور سینک شد.');
+    }
+}
+
+window.addEventListener('online', () => {
+    console.log('🌐 اینترنت وصل شد! شروع سینک خودکار...');
+    flushSyncQueue();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(flushSyncQueue, 2000); 
+});
+
 function logout() {
   currentUser = null;
   userType = null;
