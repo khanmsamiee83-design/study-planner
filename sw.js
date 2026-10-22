@@ -1,21 +1,33 @@
-// ============ SERVICE WORKER - Auto Update ============
-const CACHE_NAME = 'study-planner-v1';
+// ============ SERVICE WORKER - Cache First (آفلاین قوی) ============
+const CACHE_NAME = 'study-planner-v2'; // نسخه رو عوض کردم تا کش قدیمی پاک بشه
 
-// Install
+const ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  './Vazirmatn-Regular.woff2',
+  './Vazirmatn-Bold.woff2',
+  './icon-192.png',
+  './icon-512.png'
+];
+
+// ۱. نصب: فایل‌های اصلی رو کش میکنه
 self.addEventListener('install', function(event) {
-    console.log('[SW] Installing...');
     self.skipWaiting();
+    event.waitUntil(
+        caches.open(CACHE_NAME).then(function(cache) {
+            return cache.addAll(ASSETS);
+        })
+    );
 });
 
-// Activate - پاک کردن همه کش‌های قدیمی
+// ۲. فعال‌سازی: کش‌های قدیمی رو پاک میکنه
 self.addEventListener('activate', function(event) {
-    console.log('[SW] Activating...');
     event.waitUntil(
         caches.keys().then(function(cacheNames) {
             return Promise.all(
                 cacheNames.map(function(cacheName) {
                     if (cacheName !== CACHE_NAME) {
-                        console.log('[SW] Deleting old cache:', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
@@ -26,19 +38,22 @@ self.addEventListener('activate', function(event) {
     );
 });
 
-// Fetch - استراتژی Network First
+// ۳. واکشی: اول از کش میخونه (آفلاین)، بعد از نت
 self.addEventListener('fetch', function(event) {
     if (event.request.method !== 'GET') return;
     
     var url = new URL(event.request.url);
-    // فقط از دامنه خودمون
-    if (url.origin !== location.origin) {
-        return;
-    }
+    if (url.origin !== location.origin) return;
     
     event.respondWith(
-        fetch(event.request)
-            .then(function(response) {
+        caches.match(event.request).then(function(cachedResponse) {
+            // اگه توی گوشی بود، همون رو بده (حتی اگه نت وصل باشه)
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+            
+            // اگه توی گوشی نبود، از اینترنت بگیر و ذخیره کن
+            return fetch(event.request).then(function(response) {
                 if (response && response.status === 200) {
                     var responseToCache = response.clone();
                     caches.open(CACHE_NAME).then(function(cache) {
@@ -46,21 +61,19 @@ self.addEventListener('fetch', function(event) {
                     });
                 }
                 return response;
-            })
-            .catch(function() {
-                return caches.match(event.request);
-            })
+            }).catch(function() {
+                // اگه نت نبود و فایل هم نبود، صفحه اصلی رو نشون بده
+                if (event.request.mode === 'navigate') {
+                    return caches.match('./index.html');
+                }
+            });
+        })
     );
 });
 
-// Message
+// پیام‌ها
 self.addEventListener('message', function(event) {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
     }
-    if (event.data && event.data.type === 'CLEAR_CACHE') {
-        caches.delete(CACHE_NAME);
-    }
 });
-
-console.log('[SW] Service Worker loaded ✅');
