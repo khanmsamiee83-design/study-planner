@@ -470,6 +470,59 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // ================== STATE ==================
 let currentUser = null;
+// ============================================================
+// 🛡️ نگهبان تایمر بقا (Survival Timer)
+// ============================================================
+async function checkSubscriptionStatus() {
+    if (!currentUser) return;
+
+    const now = Date.now();
+    let lastServerExpiry = localStorage.getItem('server_expiry_' + currentUser.username);
+    
+    // اگر تاریخ انقضا در حافظه نیست (اولین بار)
+    if (!lastServerExpiry) {
+        // از دیتابیس چک کن اگر آنلاین هستیم
+        if (navigator.onLine) {
+            try {
+                // اینجا به api.php وصل میشه (در مرحله بعد کاملش میکنیم)
+                console.log("در حال گرفتن تاریخ از سرور...");
+            } catch(e) {}
+        }
+        return;
+    }
+
+    // تاریخ رو به عدد تبدیل کن (میلی‌ثانیه)
+    const expiryTime = parseInt(lastServerExpiry);
+    const remainingMs = expiryTime - now;
+    const remainingDays = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
+
+    // اگر اشتراک تموم شده باشه
+    if (remainingMs <= 0) {
+        // نمایش پیام قفل و ارجاع به مدیر
+        const overlay = document.createElement('div');
+        overlay.id = 'lock-overlay';
+        overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;text-align:center;padding:20px;font-family:'Vazirmatn',sans-serif;";
+        overlay.innerHTML = `
+            <div style="background:#333;padding:30px;border-radius:20px;border:2px solid #f44336;max-width:400px;">
+                <h2 style="color:#f44336;margin-bottom:20px;">🔒 اشتراک شما به پایان رسیده است</h2>
+                <p style="margin-bottom:20px;line-height:1.8;">برای ادامه استفاده از برنامه، لطفاً پیام زیر را کپی کرده و در ایتا برای مدیر ارسال کنید:</p>
+                <textarea readonly style="width:100%;height:100px;background:#222;color:#fff;border:1px solid #555;border-radius:10px;padding:10px;margin-bottom:15px;font-family:inherit;">سلام مدیر. من ${currentUser.name} (${currentUser.username}) هستم. اشتراک من در حالت آفلاین تمام شده. لطفاً کد تمدید را ارسال کنید.</textarea>
+                <button onclick="navigator.clipboard.writeText(this.previousElementSibling.value); alert('کپی شد!');" style="background:#4CAF50;color:white;border:none;padding:12px;border-radius:8px;width:100%;font-family:inherit;margin-bottom:10px;font-weight:bold;">📋 کپی پیام</button>
+                <button onclick="document.getElementById('activation-section').classList.remove('hidden'); alert('لطفاً به تنظیمات بروید و کد را وارد کنید.')" style="background:#2196F3;color:white;border:none;padding:12px;border-radius:8px;width:100%;font-family:inherit;font-weight:bold;">🔑 وارد کردن کد تمدید</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        return;
+    } else {
+        // اگر هنوز وقت داره، پیام آرامش‌بخش (اختیاری)
+        console.log(`حالت بقا فعال است. ${remainingDays} روز باقی مانده.`);
+    }
+}
+
+// اجرای چک کردن وقتی برنامه باز میشه
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(checkSubscriptionStatus, 1000);
+});
 let userType = null;
 let selectedAvatar = 1;
 let logoTapCount = 0;
@@ -2239,6 +2292,14 @@ window.renewUser = renewUser;
 window.showPostcard = showPostcard;
 window.updateBadgeDisplay = updateBadgeDisplay;
 window.updateGoalProgress = updateGoalProgress;
+</script>
+<!-- ثبت Service Worker برای حالت آفلاین -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
+  });
+}
 </script>
 </body>
 </html>
