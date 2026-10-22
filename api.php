@@ -97,4 +97,27 @@ if ($action == 'sync_time') {
 
     echo json_encode(['status' => 'success']);
 }
+    // ۵. دریافت امتیازات آفلاین (Sync)
+if ($action == 'sync_offline_points') {
+    $user_id = intval($_POST['user_id']);
+    $lesson_name = $_POST['lesson_name'] ?? 'offline_study';
+    $minutes = intval($_POST['minutes']);
+    
+    // بررسی اینکه کاربر وجود داره و اشتراکش منقضی نشده باشه
+    $stmt = $pdo->prepare("SELECT subscription_expires FROM users WHERE id = ?");
+    $stmt->execute([$user_id]);
+    $user = $stmt->fetch();
+    
+    if ($user) {
+        // اگر اشتراک منقضی نشده بود، امتیاز رو اضافه کن
+        if (strtotime($user['subscription_expires']) > time()) {
+            $pdo->prepare("UPDATE users SET points_total = points_total + ?, points_spendable = points_spendable + ? WHERE id = ?")->execute([$minutes, $minutes, $user_id]);
+            echo json_encode(['status' => 'success', 'message' => 'امتیازها با موفقیت ثبت شد']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'اشتراک منقضی شده']);
+        }
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'کاربر یافت نشد']);
+    }
+}
 ?>
