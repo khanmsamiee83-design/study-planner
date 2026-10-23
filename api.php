@@ -120,4 +120,37 @@ if ($action == 'sync_offline_points') {
         echo json_encode(['status' => 'error', 'message' => 'کاربر یافت نشد']);
     }
 }
+// ۶. تولید و بررسی کد اضطراری (فرمول امن و ساده)
+$secret_key = "SECRET_1404"; // 🔑 رمز مخفی شما (این رو یک جای امن یادداشت کن)
+
+if ($action == 'admin_generate_code') {
+    $username = strtolower(trim($_POST['username']));
+    $day = date('d'); // روز ماه
+    $month = date('m'); // ماه
+    
+    // تولید کد بر اساس اسم کاربر، روز و رمز مخفی
+    $seed = crc32($username . $secret_key . $day . $month);
+    $code = substr((string)abs($seed), 0, 6);
+    // اگر کد کمتر از ۶ رقم بود، با صفر پر می‌کنیم
+    $code = str_pad($code, 6, '0', STR_PAD_LEFT);
+    
+    echo json_encode(['status' => 'success', 'code' => $code]);
+}
+
+if ($action == 'verify_emergency_code') {
+    $username = strtolower(trim($_POST['username']));
+    $entered_code = trim($_POST['code']);
+    $day = date('d');
+    $month = date('m');
+    
+    $seed = crc32($username . $secret_key . $day . $month);
+    $valid_code = substr((string)abs($seed), 0, 6);
+    $valid_code = str_pad($valid_code, 6, '0', STR_PAD_LEFT);
+    
+    if ($entered_code === $valid_code) {
+        echo json_encode(['status' => 'success', 'message' => 'کد معتبر است']);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'کد وارد شده نامعتبر است']);
+    }
+}
 ?>
