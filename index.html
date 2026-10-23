@@ -68,9 +68,8 @@ body.lang-en .menu-item{border-right:none;border-left:4px solid transparent}
 body.lang-en .menu-item:hover{border-left-color:var(--primary)}
 #focus-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#111;z-index:99999;display:none;flex-direction:column;justify-content:center;align-items:center;padding:20px}
 .timer-display{font-family:monospace;font-size:3.5em;font-weight:bold;color:var(--primary);background:rgba(0,0,0,.6);padding:20px;border-radius:15px;text-align:center;border:2px solid var(--primary);box-shadow:0 0 30px rgba(255,215,0,.2)}
-.avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:15px}
-.avatar-option{padding:10px;border:3px solid transparent;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,.1);font-size:2.5em;transition:.2s;aspect-ratio:1}
-.avatar-option.selected{border-color:var(--primary);background:rgba(255,215,0,.2);transform:scale(1.1)}
+.avatar-grid{display:grid;grid-template-columns:repeat(6, 1fr);gap:10px;margin-top:15px}
+.avatar-option{padding:5px;border:2px solid transparent;border-radius:50%;cursor:pointer;display:flex;justify-content:center;align-items:center;background:rgba(255,255,255,.1);font-size:1.6em;transition:.2s;aspect-ratio:1}.avatar-option.selected{border-color:var(--primary);background:rgba(255,215,0,.2);transform:scale(1.1)}
 .avatar-option[data-avatar="1"]{background-color:rgba(255,107,107,.3)}
 .avatar-option[data-avatar="2"]{background-color:rgba(78,205,196,.3)}
 .avatar-option[data-avatar="3"]{background-color:rgba(255,230,109,.3)}
@@ -344,6 +343,7 @@ canvas{width:100%!important;height:auto!important;max-height:300px}
     <canvas id="financeChart"></canvas>
   </div>
   <div id="finance-history" class="card"></div>
+  </div>
   </div>
 <h2 style="color:var(--primary);margin-bottom:15px;">🏆 امتیازات و نشان‌ها</h2>
 <div class="card" style="text-align:center">
