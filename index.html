@@ -792,7 +792,12 @@ async function loginUser() {
 
     currentUser = result.data;
     userType = currentUser.user_type;
-    
+
+     
+    if (result.expiry_ms) {
+        localStorage.setItem('server_expiry_' + currentUser.username, result.expiry_ms);
+    }
+
     const today = new Date().toISOString().split('T')[0];
     if (currentUser.last_login_date !== today) {
         document.getElementById('mystery-box-container').classList.remove('hidden');
