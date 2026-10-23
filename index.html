@@ -470,6 +470,20 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // ================== STATE ==================
 let currentUser = null;
+let userType = null;
+let selectedAvatar = 1;
+let logoTapCount = 0;
+let lastLogoTap = 0;
+let charts = {};
+let focusInterval = null;
+let focusSeconds = 0;
+let focusType = '';
+let currentFocusItem = null;
+let wakeLock = null;
+let testInterval = null;
+let testSeconds = 0;
+let testCount = 0;
+let testLesson = '';
 // ============================================================
 // 🛡️ نگهبان تایمر بقا (Survival Timer)
 // ============================================================
@@ -530,20 +544,7 @@ async function checkSubscriptionStatus() {
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(checkSubscriptionStatus, 1000);
 });
-let userType = null;
-let selectedAvatar = 1;
-let logoTapCount = 0;
-let lastLogoTap = 0;
-let charts = {};
-let focusInterval = null;
-let focusSeconds = 0;
-let focusType = '';
-let currentFocusItem = null;
-let wakeLock = null;
-let testInterval = null;
-let testSeconds = 0;
-let testCount = 0;
-let testLesson = '';
+
 
 // ================== CACHE ==================
 function saveToCache(key, data) {
@@ -1108,12 +1109,13 @@ async function stopFocusOverlay() {
     const { day, itemId, item } = currentFocusItem;
     const schedule = currentUser.schedule;
     const sItem = schedule[day].find(i => i.id === itemId);
+    let pointsEarned = 0;
+    
     if (sItem) {
       sItem.secondsStudied = focusSeconds;
-      if (focusSeconds >= sItem.minutes * 60 * 0.9) {
+      if (focusSeconds >= sItem.minutes * 60 * 0.9 && !sItem.isDone) {
         sItem.isDone = true;
-        currentUser.pointsTotal += 10;
-        currentUser.pointsSpendable += 10;
+        pointsEarned += 10;
       }
     }
     
@@ -1122,36 +1124,32 @@ async function stopFocusOverlay() {
       const today = new Date().toISOString().split('T')[0];
       const logs = currentUser.studyLogs || [];
       const existingLog = logs.find(l => l.date === today);
-      if (existingLog) {
-        existingLog.minutes += minutesStudied;
-      } else {
-        logs.push({ date: today, minutes: minutesStudied });
-      }
+      if (existingLog) existingLog.minutes += minutesStudied;
+      else logs.push({ date: today, minutes: minutesStudied });
       currentUser.studyLogs = logs;
-      currentUser.pointsTotal += minutesStudied;
-      currentUser.pointsSpendable += minutesStudied;
+      pointsEarned += minutesStudied;
     }
     
+    currentUser.pointsTotal += pointsEarned;
+    currentUser.pointsSpendable += pointsEarned;
+    
     currentUser.studyLogs = currentUser.studyLogs.filter(l => {
-      const diff = (new Date() - new Date(l.date)) / (1000 * 60 * 60 * 24);
-      return diff <= 30;
+      return (new Date() - new Date(l.date)) / 864e5 <= 30;
     });
     
     if (navigator.onLine) {
-     try {
+      try {
         const formData = new FormData();
         formData.append('action', 'sync_time');
         formData.append('user_id', currentUser.id);
         formData.append('lesson_name', 'focus');
         formData.append('total_seconds', focusSeconds);
         await fetch(API_URL, { method: 'POST', body: formData });
-      } catch(e) { 
-        queueOfflinePoints(minutesStudied); 
-      }
-     } else {
-    queueOfflinePoints(minutesStudied);
-    alert('شما آفلاین هستید. امتیاز شما ذخیره شد و به محض وصل شدن اینترنت ثبت می‌شود.');
-   }
+      } catch(e) { queueOfflinePoints(minutesStudied); }
+    } else {
+      queueOfflinePoints(minutesStudied);
+      alert('شما آفلاین هستید. امتیاز شما ذخیره شد و به محض وصل شدن اینترنت ثبت می‌شود.');
+    }
     
     loadSchedule();
     alert('زمان مطالعه ذخیره شد: ' + formatTime(focusSeconds));
@@ -1175,39 +1173,32 @@ async function stopFocusOverlay() {
       if (!tests[testLesson]) tests[testLesson] = [];
       tests[testLesson].push({ date: today, count: testCount, avgSeconds: avg });
       currentUser.tests = tests;
-      await updateDoc(doc(db, 'users', currentUser.id), {
-        tests: tests,
-        pointsTotal: currentUser.pointsTotal,
-        pointsSpendable: currentUser.pointsSpendable
-async function stopFocusOverlay(isCanceled = false) {
-  if (!focusSessionActive) return;
-  focusSessionActive = false;
-  if (focusInterval) clearInterval(focusInterval);
-  if (wakeLock) { wakeLock.release(); wakeLock = null; }
-  
-  const overlay = document.getElementById('focus-overlay');
-  overlay.style.display = 'none';
-  document.getElementById('focus-timer').style.opacity = '1';
-  document.getElementById('focus-subject').style.opacity = '1';
-  document.getElementById('focus-quote').style.opacity = '1';
-
-  let cachedTimes = JSON.parse(localStorage.getItem('lesson_times') || '{}');
-  cachedTimes['focus'] = focusSeconds;
-  localStorage.setItem('lesson_times', JSON.stringify(cachedTimes));
-
-  if (focusSeconds > 0) {
-      try {
-        const formData = new FormData();
-        formData.append('action', 'sync_time');
-        formData.append('user_id', currentUser.id);
-        formData.append('lesson_name', 'focus');
-        formData.append('total_seconds', focusSeconds);
-        fetch(API_URL, { method: 'POST', body: formData });
-      } catch(e) {}
+      
+      if (navigator.onLine) {
+        try {
+          await updateDoc(doc(db, 'users', currentUser.id), {
+            tests: tests,
+            pointsTotal: currentUser.pointsTotal,
+            pointsSpendable: currentUser.pointsSpendable
+          });
+        } catch(e) {}
+      } else {
+        queueOfflinePoints(5, 'test');
+        alert('شما آفلاین هستید. امتیاز تست شما ذخیره شد.');
+      }
+      
+      alert(`✅ ${testCount} تست ثبت شد. میانگین زمان: ${avg.toFixed(1)} ثانیه`);
+      updateBadgeDisplay();
+    } else {
+      alert('❌ زمان تست کافی نبود. میانگین باید بیشتر باشد.');
+    }
   }
+  
   focusType = '';
+  currentFocusItem = null;
   focusSeconds = 0;
-}
+    }
+
 
 // ================== PLAN NEW ==================
 function loadPlanNew() {
@@ -2142,11 +2133,7 @@ function loadSettings() {
   if (actSection) actSection.classList.remove('hidden');
 }
 
-function showPurchaseButton() {
-  if (confirm('به زودی به درگاه پرداخت بازار منتقل می‌شوید.\n\n(در نسخه فعلی، این بخش به بازار متصل نیست. برای تست، از پنل مدیر استفاده کنید.)')) {
-    alert('🔗 در نسخه نهایی، اینجا به درگاه پرداخت بازار منتقل می‌شوید.');
-  }
-}
+
 
 async function activateCode() {
   const code = document.getElementById('activation-code').value.trim().toUpperCase();
@@ -2389,7 +2376,7 @@ async function submitEmergencyCode() {
         if (result.status === 'success') {
             alert('✅ کد معتبر است! قفل برنامه باز شد.');
             // یک روز به تاریخ انقضای فعلی اضافه میکنیم
-            localStorage.setItem('server_expiry_' + currentUser.username, Date.now() + (1 * 24 * 60 * 60 * 1000)); 
+            localStorage.setItem('server_expiry_' + currentUser.username, Date.now() + (30 * 24 * 60 * 60 * 1000)); 
             location.reload(); 
         } else {
             alert('❌ ' + result.message);
