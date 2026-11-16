@@ -723,7 +723,40 @@ async function signupUser() {
   showSection('login');
 }
 
+async function loginUser() {
+  const username = document.getElementById('login-username').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value.trim();
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  
+  if (!username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
 
+  // خواندن از حافظه گوشی
+  const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+  const user = users[username];
+
+  if (!user) return errEl.textContent = 'کاربری با این نام یافت نشد';
+  if (user.password !== password) return errEl.textContent = 'رمز عبور اشتباه است';
+
+  currentUser = user;
+  userType = currentUser.type;
+
+  // چک کردن تاریخ انقضا
+  const expiryTime = localStorage.getItem('server_expiry_' + username);
+  if (expiryTime) {
+    localStorage.setItem('server_expiry_' + username, expiryTime);
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  if (currentUser.lastLoginDate !== today) {
+      document.getElementById('mystery-box-container').classList.remove('hidden');
+  } else {
+      document.getElementById('mystery-box-container').classList.add('hidden');
+  }
+
+  buildMenu();
+  goToPage('home');
+}
 // ============================================================
 // 🔄 سیستم صندوق پستی و همگام‌سازی (Sync Queue)
 // ============================================================
