@@ -702,7 +702,7 @@ async function signupUser() {
 
   const avatarEmojis = ['','🧑‍🎓','👩‍🎓','🧑‍🔧','👨‍🚀','👮‍♂️','👮‍♀️','👨‍🔬','👩‍🔬','👨‍⚖️','👩‍⚖️','🧑‍🏫','👻'];
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 7 * 864e5).toISOString();
+  const expiresAt = new Date(now.getTime() + 5 * 864e5).toISOString();
   const myCode = username.toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
 
   const newUser = {
