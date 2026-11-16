@@ -701,6 +701,7 @@ async function signupUser() {
   showSection('login');
 }
 async function loginUser() {
+async function loginUser() {
   const username = document.getElementById('login-username').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value.trim();
   const errEl = document.getElementById('login-error');
@@ -709,23 +710,53 @@ async function loginUser() {
   if (!username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
 
   const users = JSON.parse(localStorage.getItem('app_users') || '{}');
-  const user = users[username];
+  const localUser = users[username];
 
-  if (!user) return errEl.textContent = 'کاربری با این نام یافت نشد';
-  if (user.password !== password) return errEl.textContent = 'رمز عبور اشتباه است';
+  // 🛡️ تلاش برای اتصال به سرور
+  try {
+    const formData = new FormData();
+    formData.append('action', 'login');
+    formData.append('username', username);
+    formData.append('password', password);
 
-  currentUser = user;
-  userType = currentUser.type;
+    const response = await fetch('https://bloommap.ir/api.php', { method: 'POST', body: formData });
+    const result = await response.json();
 
-  const now = await getSecureTime();
-  const expiryTime = parseInt(localStorage.getItem('server_expiry_' + username) || '0');
-  
-  if (expiryTime > 0 && now > expiryTime) {
-    // اشتراک منقضی شده
-    return showLockOverlay();
+    if (result.status === 'error') return errEl.textContent = result.message;
+
+    // ذخیره اطلاعات از سرور در حافظه گوشی
+    currentUser = {
+      ...result.data,
+      type: result.data.type || localUser?.type || 'student'
+    };
+    userType = currentUser.type;
+    
+    const updatedUsers = JSON.parse(localStorage.getItem('app_users') || '{}');
+    updatedUsers[username] = { ...currentUser, password: password };
+    localStorage.setItem('app_users', JSON.stringify(updatedUsers));
+    
+    // ذخیره زمان انقضا و آخرین چک سرور
+    localStorage.setItem('server_expiry_' + username, new Date(result.data.subscriptionExpires).getTime().toString());
+    localStorage.setItem('last_server_check_' + username, Date.now().toString());
+    
+  } catch (error) {
+    // 🛡️ حالت آفلاین: از حافظه گوشی استفاده کن
+    if (!localUser) return errEl.textContent = 'شما آنلاین نیستید و قبلاً هم وارد نشده‌اید';
+    if (localUser.password !== password) return errEl.textContent = 'رمز عبور اشتباه است';
+    
+    // چک کردن مرز ۳ روز آفلاین
+    const lastCheck = parseInt(localStorage.getItem('last_server_check_' + username) || '0');
+    const daysOffline = (Date.now() - lastCheck) / 86400000;
+    
+    if (daysOffline > 3) {
+      return errEl.textContent = 'برای ادامه استفاده، به اینترنت وصل شوید';
+    }
+    
+    currentUser = localUser;
+    userType = currentUser.type;
   }
 
-  const today = new Date(now).toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
   if (currentUser.lastLoginDate !== today) {
       document.getElementById('mystery-box-container').classList.remove('hidden');
   } else {
@@ -735,6 +766,7 @@ async function loginUser() {
   buildMenu();
   goToPage('home');
 }
+   
 function showLockOverlay() {
     const overlay = document.createElement('div');
     overlay.id = 'lock-overlay';
@@ -1018,11 +1050,19 @@ async function deleteScheduleItem(day, itemId) {
 }
 
 async function startTimer(day, itemId) {
+let timerStartTime = null;
+let timerAccumulated = 0;
+
+async function startTimer(day, itemId) {
   const item = currentUser.schedule[day].find(i => i.id === itemId);
   if (!item) return;
   
   focusType = 'study';
   currentFocusItem = { day, itemId, item };
+  
+  // 🛡️ زمان شروع را با performance.now() ذخیره کن (ضد تقلب)
+  timerStartTime = performance.now();
+  timerAccumulated = 0;
   focusSeconds = item.secondsStudied || 0;
   
   document.getElementById('focus-subject').textContent = item.lesson;
@@ -1041,6 +1081,27 @@ async function startTimer(day, itemId) {
   }, 1000);
 }
 
+// 🛡️ رویداد خروج از برنامه (توقف تایمر)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (timerStartTime !== null) {
+      timerAccumulated += (performance.now() - timerStartTime) / 1000;
+      timerStartTime = null;
+      if (focusInterval) clearInterval(focusInterval);
+    }
+  } else {
+    if (timerAccumulated > 0 && focusType === 'study') {
+      timerStartTime = performance.now();
+      if (!focusInterval) {
+        focusInterval = setInterval(() => {
+          focusSeconds++;
+          document.getElementById('focus-timer').textContent = formatTime(focusSeconds);
+        }, 1000);
+      }
+    }
+  }
+});
+   
 async function stopFocusOverlay() {
   if (focusInterval) clearInterval(focusInterval);
   if (wakeLock) { wakeLock.release(); wakeLock = null; }
@@ -1116,17 +1177,96 @@ async function stopFocusOverlay() {
       currentUser.tests = tests;
       
       if (navigator.onLine) {
-        try {
-          await updateDoc(doc(db, 'users', currentUser.id), {
-            tests: tests,
-            pointsTotal: currentUser.pointsTotal,
-            pointsSpendable: currentUser.pointsSpendable
-          });
-        } catch(e) {}
-      } else {
-        queueOfflinePoints(5, 'test');
-        alert('شما آفلاین هستید. امتیاز تست شما ذخیره شد.');
+
+  async function stopFocusOverlay() {
+  if (focusInterval) clearInterval(focusInterval);
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+  document.getElementById('focus-overlay').style.display = 'none';
+  
+  // 🛡️ محاسبه زمان واقعی با performance.now()
+  let totalSeconds = focusSeconds;
+  if (timerStartTime !== null) {
+    totalSeconds += (performance.now() - timerStartTime) / 1000;
+  }
+  totalSeconds += timerAccumulated;
+  
+  if (focusType === 'study' && currentFocusItem) {
+    const { day, itemId, item } = currentFocusItem;
+    const schedule = currentUser.schedule;
+    const sItem = schedule[day].find(i => i.id === itemId);
+    let pointsEarned = 0;
+    
+    if (sItem) {
+      sItem.secondsStudied = totalSeconds;
+      if (totalSeconds >= sItem.minutes * 60 * 0.9 && !sItem.isDone) {
+        sItem.isDone = true;
+        pointsEarned += 10;
       }
+    }
+    
+    const minutesStudied = Math.floor(totalSeconds / 60);
+    if (minutesStudied > 0) {
+      const today = new Date().toISOString().split('T')[0];
+      const logs = currentUser.studyLogs || [];
+      const existingLog = logs.find(l => l.date === today);
+      if (existingLog) existingLog.minutes += minutesStudied;
+      else logs.push({ date: today, minutes: minutesStudied });
+      currentUser.studyLogs = logs;
+      pointsEarned += minutesStudied;
+    }
+    
+    currentUser.pointsTotal += pointsEarned;
+    currentUser.pointsSpendable += pointsEarned;
+    
+    // ذخیره در حافظه گوشی
+    const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+    users[currentUser.username] = currentUser;
+    localStorage.setItem('app_users', JSON.stringify(users));
+    
+    // 🛡️ تلاش برای ارسال امتیاز به سرور
+    if (navigator.onLine && pointsEarned > 0) {
+      try {
+        const formData = new FormData();
+        formData.append('action', 'add_points');
+        formData.append('username', currentUser.username);
+        formData.append('points', pointsEarned);
+        formData.append('reason', 'study');
+        await fetch('https://bloommap.ir/api.php', { method: 'POST', body: formData });
+      } catch(e) { 
+        queueOfflinePoints(minutesStudied);
+      }
+    } else if (pointsEarned > 0) {
+      queueOfflinePoints(minutesStudied);
+      alert('شما آفلاین هستید. امتیاز شما ذخیره شد و به محض وصل شدن اینترنت ثبت می‌شود.');
+    }
+    
+    loadSchedule();
+    alert('زمان مطالعه ذخیره شد: ' + formatTime(totalSeconds));
+    await updateGoalProgress();
+    updateBadgeDisplay();
+    
+  } else if (focusType === 'test') {
+    if (testInterval) clearInterval(testInterval);
+    const avg = testSeconds / (testCount || 1);
+    const lessonType = getLessonType(testLesson);
+    let isValid = true;
+    if (lessonType === 'special' && avg < 35) isValid = false;
+    if (lessonType === 'memorize' && avg < 10) isValid = false;
+    if (lessonType === 'normal' && avg < 15) isValid = false;
+    
+    if (isValid && testCount >= 10) {
+      currentUser.pointsTotal += 5;
+      currentUser.pointsSpendable += 5;
+      const tests = currentUser.tests || {};
+      const today = new Date().toISOString().split('T')[0];
+      if (!tests[testLesson]) tests[testLesson] = [];
+      tests[testLesson].push({ date: today, count: testCount, avgSeconds: avg });
+      currentUser.tests = tests;
+      
+      // ذخیره در حافظه گوشی
+      const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+      users[currentUser.username] = currentUser;
+      localStorage.setItem('app_users', JSON.stringify(users));
       
       alert(`✅ ${testCount} تست ثبت شد. میانگین زمان: ${avg.toFixed(1)} ثانیه`);
       updateBadgeDisplay();
@@ -1135,6 +1275,12 @@ async function stopFocusOverlay() {
     }
   }
   
+  focusType = '';
+  currentFocusItem = null;
+  focusSeconds = 0;
+  timerStartTime = null;
+  timerAccumulated = 0;
+}
   focusType = '';
   currentFocusItem = null;
   focusSeconds = 0;
@@ -1733,22 +1879,39 @@ async function claimReward(pts, desc) {
   if (currentUser.pointsSpendable < pts) return alert('امتیاز کافی ندارید');
   if (!confirm(`دریافت ${desc}؟ (${pts} امتیاز کسر می‌شود)`)) return;
   
+  // 🛡️ چک کردن آنلاین بودن
+  if (!navigator.onLine) {
+    return alert('برای دریافت جایزه باید به اینترنت وصل شوید');
+  }
+  
   const days = Math.floor(pts / 1000);
-  const currentExpiry = new Date(currentUser.subscription.expiresAt);
-  const base = currentExpiry > new Date() ? currentExpiry : new Date();
-  const newExpiry = new Date(base.getTime() + days * 864e5);
   
-  await updateDoc(doc(db, 'users', currentUser.id), {
-    pointsSpendable: increment(-pts),
-    'subscription.expiresAt': newExpiry.toISOString()
-  });
-  
-  currentUser.pointsSpendable -= pts;
-  currentUser.subscription.expiresAt = newExpiry.toISOString();
-  
-  alert(`جایزه شما فعال شد: ${desc}`);
-  loadRewards();
-  updateBadgeDisplay();
+  try {
+    const formData = new FormData();
+    formData.append('action', 'claim_reward');
+    formData.append('username', currentUser.username);
+    formData.append('points', pts);
+    formData.append('days', days);
+    
+    const response = await fetch('https://bloommap.ir/api.php', { method: 'POST', body: formData });
+    const result = await response.json();
+    
+    if (result.status === 'error') return alert(result.message);
+    
+    // آپدیت حافظه گوشی
+    currentUser.pointsSpendable -= pts;
+    currentUser.subscriptionExpires = result.newExpiry;
+    
+    const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+    users[currentUser.username] = currentUser;
+    localStorage.setItem('app_users', JSON.stringify(users));
+    
+    alert(`جایزه شما فعال شد: ${desc}`);
+    loadRewards();
+    updateBadgeDisplay();
+  } catch(e) {
+    alert('خطا در ارتباط با سرور');
+  }
 }
 
 // ================== FRIENDS ==================
