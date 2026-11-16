@@ -422,6 +422,25 @@ canvas{width:100%!important;height:auto!important;max-height:300px}
 </div>
 </div>
 <div class="card">
+  <h4 style="color:var(--primary);margin-bottom:10px;">🔔 صدای اتمام تایمر</h4>
+  <div class="form-group">
+    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+      <input type="radio" name="timer-sound" value="default" checked onchange="setTimerSound('default')" style="width:auto;">
+      <span>صدای پیش‌فرض (بیپ)</span>
+    </label>
+  </div>
+  <div class="form-group">
+    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+      <input type="radio" name="timer-sound" value="custom" onchange="setTimerSound('custom')" style="width:auto;">
+      <span>انتخاب صدای دلخواه</span>
+    </label>
+  </div>
+  <div id="custom-sound-upload" class="hidden">
+    <input type="file" accept="audio/*" id="custom-sound-file" onchange="uploadCustomSound(event)" style="width:100%;padding:10px;border:2px dashed var(--accent);border-radius:10px;background:rgba(255,255,255,.05);">
+    <p style="color:var(--accent);font-size:0.8em;margin-top:8px;">فایل صوتی در حافظه گوشی ذخیره می‌شود (نه در هاست).</p>
+  </div>
+</div>
+<div class="card">
 <button class="btn btn-danger btn-full" onclick="logout()">🚪 خروج</button>
 </div>
 </div>
@@ -531,6 +550,104 @@ function uploadCustomSound(event) {
   };
   reader.readAsDataURL(file);
 }
+// ================== 🛡️ بررسی VIP (قفل هوشمند) ==================
+function checkVip(featureName = 'این بخش') {
+  if (!currentUser) return false;
+  
+  // چک کردن تاریخ انقضا
+  const expiryTime = parseInt(localStorage.getItem('server_expiry_' + currentUser.username) || '0');
+  const now = Date.now();
+  const remainingDays = Math.ceil((expiryTime - now) / 86400000);
+  
+  // اگر اشتراک فعال دارد
+  if (expiryTime > now) {
+    return true;
+  }
+  
+  // 🛑 اگر اشتراک ندارد: نمایش پیغام هوشمندانه
+  showVipWall(featureName, remainingDays);
+  return false;
+}
+
+// ================== 🧱 نمایش دیوار VIP (با ۳ تکنیک جذب) ==================
+function showVipWall(featureName, remainingDays) {
+  // ۱. محاسبه امتیاز فعلی و زمان از دست رفته
+  const points = currentUser.pointsSpendable || 0;
+  const daysLost = Math.abs(remainingDays);
+  
+  // ۲. محاسبه اینکه امتیاز فعلی چند روز اشتراک می‌شود
+  let freeDaysFromPoints = 0;
+  if (points >= 50000) freeDaysFromPoints = 30;
+  else if (points >= 20000) freeDaysFromPoints = 15;
+  else if (points >= 10000) freeDaysFromPoints = 7;
+  else if (points >= 5000) freeDaysFromPoints = 3;
+  else if (points >= 2000) freeDaysFromPoints = 1;
+  
+  // ۳. پیغام FOMO
+  let fomoMessage = '';
+  if (daysLost <= 7) {
+    fomoMessage = `📉 ${daysLost} روز از پیشرفتت گذشته! حیفه که ادامه ندی.`;
+  } else {
+    fomoMessage = `😢 ${daysLost} روزه که از برنامه استفاده نکردی. چقدر درس‌هات عقب افتادن!`;
+  }
+  
+  // ۴. نمایش دیوار
+  const overlay = document.createElement('div');
+  overlay.id = 'vip-wall';
+  overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;font-family:'Vazirmatn',sans-serif;overflow-y:auto;";
+  
+  overlay.innerHTML = `
+    <div style="background:linear-gradient(135deg, #333, #1a1a1a);padding:30px;border-radius:20px;border:2px solid #FFD700;max-width:450px;width:100%;text-align:center;">
+      
+      <!-- آیکون قفل -->
+      <div style="font-size:4em;margin-bottom:15px;">🔒</div>
+      
+      <!-- عنوان -->
+      <h2 style="color:#FFD700;margin-bottom:15px;font-size:1.5em;">${featureName} نیاز به اشتراک دارد</h2>
+      
+      <!-- پیغام FOMO -->
+      <p style="color:#E0E0E0;line-height:1.8;margin-bottom:20px;font-size:1em;">${fomoMessage}</p>
+      
+      <!-- نمایش امتیاز و پیشنهاد -->
+      ${points >= 2000 ? `
+        <div style="background:rgba(76,175,80,0.15);border:1px solid #4CAF50;border-radius:15px;padding:15px;margin-bottom:20px;">
+          <p style="color:#4CAF50;margin-bottom:10px;font-weight:bold;">🎁 تو ${points.toLocaleString('fa-IR')} امتیاز داری!</p>
+          <p style="color:#E0E0E0;font-size:0.9em;">اگر همین الان اشتراک بخری، می‌تونی این امتیازها رو به <strong style="color:#4CAF50;">${freeDaysFromPoints} روز</strong> اشتراک رایگان تبدیل کنی!</p>
+        </div>
+      ` : `
+        <div style="background:rgba(33,150,243,0.15);border:1px solid #2196F3;border-radius:15px;padding:15px;margin-bottom:20px;">
+          <p style="color:#2196F3;margin-bottom:10px;font-weight:bold;">🎁 ۲ دوست رو دعوت کن، ۱۰ روز اشتراک رایگان بگیر!</p>
+          <p style="color:#E0E0E0;font-size:0.9em;">با معرفی دوستات، هم خودت و هم اون‌ها اشتراک رایگان می‌گیرید.</p>
+        </div>
+      `}
+      
+      <!-- پیشنهاد ویژه (Time-Limited) -->
+      <div style="background:rgba(244,67,54,0.15);border:1px solid #f44336;border-radius:15px;padding:15px;margin-bottom:20px;">
+        <p style="color:#f44336;margin-bottom:10px;font-weight:bold;animation:pulse 1.5s infinite;">⚡ پیشنهاد ویژه!</p>
+        <p style="color:#E0E0E0;font-size:0.9em;">فقط تا ۲۴ ساعت آینده، ۵۰٪ تخفیف برای اشتراک ۱ ماهه!</p>
+      </div>
+      
+      <!-- دکمه‌ها -->
+      <button onclick="showPurchaseButton()" style="background:linear-gradient(45deg,#FFD700,#e6c000);color:#333;border:none;padding:15px 30px;border-radius:10px;font-size:1.1em;font-weight:bold;cursor:pointer;width:100%;margin-bottom:10px;font-family:inherit;">💳 خرید اشتراک</button>
+      
+      <button onclick="document.getElementById('vip-wall').remove()" style="background:transparent;color:#A9A9A9;border:1px solid #555;padding:12px 30px;border-radius:10px;font-size:0.9em;cursor:pointer;width:100%;font-family:inherit;">فعلاً نه، بستن</button>
+      
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+}
+
+// ================== 🎬 استایل انیمیشن (برای پیشنهاد ویژه) ==================
+const vipStyle = document.createElement('style');
+vipStyle.textContent = `
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+`;
+document.head.appendChild(vipStyle);
+   
 // ============================================================
 // 🛡️ نگهبان زمان (ضد دور زدن با ساعت گوشی)
 async function getSecureTime() {
@@ -1198,7 +1315,8 @@ async function stopFocusOverlay() {
     wakeLock = null; 
    }  
   document.getElementById('focus-overlay').style.display = 'none';
-  
+  // 🔔 پخش صدای پایان تایمر
+   playTimerSound();
   // 🛡️ محاسبه زمان واقعی با performance.now()
   let totalSeconds = focusSeconds;
   if (timerStartTime !== null) {
