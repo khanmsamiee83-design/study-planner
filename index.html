@@ -723,45 +723,6 @@ async function signupUser() {
   showSection('login');
 }
 
-async function loginUser() {
-  const username = document.getElementById('login-username').value.trim().toLowerCase();
-  const password = document.getElementById('login-password').value.trim();
-  const errEl = document.getElementById('login-error');
-  errEl.textContent = '';
-  if (!username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
-
-  try {
-    const formData = new FormData();
-    formData.append('action', 'login');
-    formData.append('username', username);
-    formData.append('password', password);
-
-    const response = await fetch(API_URL, { method: 'POST', body: formData });
-    const result = await response.json();
-
-    if (result.status === 'error') return errEl.textContent = result.message;
-
-    currentUser = result.data;
-    userType = currentUser.user_type;
-
-     
-    if (result.expiry_ms) {
-        localStorage.setItem('server_expiry_' + currentUser.username, result.expiry_ms);
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    if (currentUser.last_login_date !== today) {
-        document.getElementById('mystery-box-container').classList.remove('hidden');
-    } else {
-        document.getElementById('mystery-box-container').classList.add('hidden');
-    }
-
-    buildMenu();
-    goToPage('home');
-  } catch (error) {
-    errEl.textContent = 'خطا در ارتباط با سرور';
-  }
-}
 
 // ============================================================
 // 🔄 سیستم صندوق پستی و همگام‌سازی (Sync Queue)
