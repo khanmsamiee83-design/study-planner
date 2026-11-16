@@ -1933,6 +1933,7 @@ function loadFinance() {
 
 async function saveFinanceRecord() {
   if (userType !== 'adult') return;
+  if (!checkVip('ثبت مالی')) return;
   const date = document.getElementById('finance-date').value;
   const income = parseFloat(document.getElementById('finance-income').value) || 0;
   const expense = parseFloat(document.getElementById('finance-expense').value) || 0;
@@ -2070,6 +2071,7 @@ function loadFriends() {
 async function addFriend() {
   const code = document.getElementById('friend-code').value.trim().toUpperCase();
   if (!code) return;
+  if (!checkVip('افزودن دوست')) return;
   if (code === currentUser.referralCode) return alert('نمی‌تونی خودت رو اضافه کنی');
   
   const q = query(collection(db, 'users'), where('referralCode', '==', code));
