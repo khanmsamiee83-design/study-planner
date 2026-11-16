@@ -464,6 +464,73 @@ let testInterval = null;
 let testSeconds = 0;
 let testCount = 0;
 let testLesson = '';
+// ================== صدای اتمام تایمر ==================
+function playTimerSound() {
+  const soundSetting = localStorage.getItem('timer_sound') || 'default';
+  
+  if (soundSetting === 'default') {
+    // صدای بیپ پیش‌فرض (بدون فایل خارجی)
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.3);
+      
+      // دو بیپ پشت سر هم
+      setTimeout(() => {
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        osc2.frequency.value = 1200;
+        osc2.type = 'sine';
+        gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
+        osc2.start();
+        osc2.stop(audioContext.currentTime + 0.3);
+      }, 400);
+    } catch(e) { console.warn('Sound error:', e); }
+    
+  } else {
+    // صدای دلخواه کاربر
+    const customSound = localStorage.getItem('custom_timer_sound');
+    if (customSound) {
+      const audio = new Audio(customSound);
+      audio.play().catch(e => console.warn('Sound error:', e));
+    }
+  }
+}
+
+function setTimerSound(type) {
+  localStorage.setItem('timer_sound', type);
+  const uploadDiv = document.getElementById('custom-sound-upload');
+  if (uploadDiv) uploadDiv.classList.toggle('hidden', type !== 'custom');
+}
+
+function uploadCustomSound(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (file.size > 2 * 1024 * 1024) {
+    alert('حجم فایل نباید بیشتر از ۲ مگابایت باشد');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    localStorage.setItem('custom_timer_sound', e.target.result);
+    alert('✅ صدای دلخواه ذخیره شد!');
+  };
+  reader.readAsDataURL(file);
+}
 // ============================================================
 // 🛡️ نگهبان زمان (ضد دور زدن با ساعت گوشی)
 async function getSecureTime() {
@@ -1069,10 +1136,15 @@ async function startTimer(day, itemId) {
   document.getElementById('focus-overlay').style.display = 'flex';
   
   try {
-    if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
-  } catch (e) {}
-
-  if (focusInterval) clearInterval(focusInterval);
+  if ('wakeLock' in navigator && !wakeLock) {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => {
+      console.log('Wake Lock released');
+    });
+   }
+  } catch (e) { console.warn('Wake Lock error:', e); }
+ 
+   if (focusInterval) clearInterval(focusInterval);
   focusInterval = setInterval(() => {
     focusSeconds++;
     document.getElementById('focus-timer').textContent = formatTime(focusSeconds);
@@ -1084,14 +1156,21 @@ async function startTimer(day, itemId) {
   document.getElementById('focus-timer').textContent = formatTime(focusSeconds);
  }, 1000);
 // 🛡️ رویداد خروج از برنامه (توقف تایمر)
-document.addEventListener('visibilitychange', () => {
+document.addEventListener('visibilitychange', async () => {
   if (document.hidden) {
+    // 🛡️ خروج از برنامه: توقف تایمر
     if (timerStartTime !== null) {
       timerAccumulated += (performance.now() - timerStartTime) / 1000;
       timerStartTime = null;
       if (focusInterval) clearInterval(focusInterval);
     }
+    // آزاد کردن Wake Lock
+    if (wakeLock) {
+      try { await wakeLock.release(); } catch(e) {}
+      wakeLock = null;
+    }
   } else {
+    // 🛡️ برگشت به برنامه: ادامه تایمر
     if (timerAccumulated > 0 && focusType === 'study') {
       timerStartTime = performance.now();
       if (!focusInterval) {
@@ -1100,6 +1179,12 @@ document.addEventListener('visibilitychange', () => {
           document.getElementById('focus-timer').textContent = formatTime(focusSeconds);
         }, 1000);
       }
+      // درخواست مجدد Wake Lock
+      try {
+        if ('wakeLock' in navigator && !wakeLock) {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (e) { console.warn('Wake Lock error:', e); }
     }
   }
 });
@@ -1108,7 +1193,10 @@ document.addEventListener('visibilitychange', () => {
 
 async function stopFocusOverlay() {
   if (focusInterval) clearInterval(focusInterval);
-  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+  if (wakeLock) { 
+    await wakeLock.release(); 
+    wakeLock = null; 
+   }  
   document.getElementById('focus-overlay').style.display = 'none';
   
   // 🛡️ محاسبه زمان واقعی با performance.now()
