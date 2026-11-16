@@ -875,11 +875,9 @@ function updateBadgeDisplay() {
 async function updateGoalProgress() {
   if (!currentUser.goals) return;
   const weekStart = getSaturdayOfWeek();
-  const today = new Date().toISOString().split('T')[0];
   const goals = currentUser.goals;
   let changed = false;
   
-  // محاسبه مجموع ساعت مطالعه (برای دانش‌آموز) یا کار (برای بزرگسال)
   if (goals.study && goals.study.week === weekStart) {
     const totalMinutes = (currentUser.studyLogs || []).reduce((s, l) => s + l.minutes, 0);
     goals.study.progress = Math.floor(totalMinutes / 60);
@@ -890,8 +888,6 @@ async function updateGoalProgress() {
     goals.work.progress = Math.floor(totalMinutes / 60);
     changed = true;
   }
-  
-  // محاسبه تعداد تست (برای دانش‌آموز)
   if (goals.tests && goals.tests.week === weekStart) {
     let totalTests = 0;
     Object.keys(currentUser.tests || {}).forEach(lesson => {
@@ -900,14 +896,10 @@ async function updateGoalProgress() {
     goals.tests.progress = totalTests;
     changed = true;
   }
-  
-  // محاسبه تعداد جلسات تمرکز (برای دانش‌آموز)
   if (goals.focus && goals.focus.week === weekStart) {
     goals.focus.progress = (currentUser.focusHistory || []).length;
     changed = true;
   }
-  
-  // محاسبه مجموع پس‌انداز (برای بزرگسال)
   if (goals.savings && goals.savings.week === weekStart) {
     const totalSavings = (currentUser.financeLogs || []).reduce((s, f) => s + f.savings, 0);
     goals.savings.progress = totalSavings;
@@ -915,19 +907,20 @@ async function updateGoalProgress() {
   }
   
   if (changed) {
-    await updateDoc(doc(db, 'users', currentUser.id), { goals });
-    currentUser.goals = goals;
-    // چک کردن رسیدن به هدف (برای کارت پستال)
-Object.keys(goals).forEach(key => {
-  const g = goals[key];
-  if (g.week === weekStart && g.progress >= g.target && !g.celebrated) {
-    g.celebrated = true;
-    showPostcard('record');
-  }
-});
-  }
+    // ذخیره در حافظه گوشی
+    const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+    users[currentUser.username] = currentUser;
+    localStorage.setItem('app_users', JSON.stringify(users));
+    
+    Object.keys(goals).forEach(key => {
+      const g = goals[key];
+      if (g.week === weekStart && g.progress >= g.target && !g.celebrated) {
+        g.celebrated = true;
+        showPostcard('record');
       }
-
+    });
+  }
+}
 // ================== HOME ==================
 async function loadHome() {
   const isStudent = userType === 'student';
@@ -1017,7 +1010,9 @@ async function deleteScheduleItem(day, itemId) {
   if (!confirm('حذف شود؟')) return;
   const schedule = currentUser.schedule;
   schedule[day] = schedule[day].filter(i => i.id !== itemId);
-  await updateDoc(doc(db, 'users', currentUser.id), { schedule });
+  const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+  users[currentUser.username].schedule = schedule;
+  localStorage.setItem('app_users', JSON.stringify(users));
   currentUser.schedule = schedule;
   loadSchedule();
 }
@@ -1173,6 +1168,7 @@ function loadPlanNew() {
 }
 
 async function submitPlan() {
+async function submitPlan() {
   const selected = [];
   document.querySelectorAll('.plan-checkbox:checked').forEach(cb => {
     const lesson = cb.value;
@@ -1199,7 +1195,9 @@ async function submitPlan() {
     });
   });
   
-  await updateDoc(doc(db, 'users', currentUser.id), { schedule });
+  const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+  users[currentUser.username].schedule = schedule;
+  localStorage.setItem('app_users', JSON.stringify(users));
   currentUser.schedule = schedule;
   alert('برنامه ثبت شد!');
   goToPage('schedule');
@@ -1239,6 +1237,8 @@ function loadMyLessons() {
 
 async function addNewLesson() {
   const name = document.getElementById('new-lesson-name').value.trim();
+async function addNewLesson() {
+  const name = document.getElementById('new-lesson-name').value.trim();
   const type = userType === 'student' ? document.getElementById('new-lesson-type').value : 'normal';
   const isStudent = userType === 'student';
   if (!name) return alert(`اسم ${isStudent ? 'درس' : 'کار'} را وارد کنید`);
@@ -1247,21 +1247,23 @@ async function addNewLesson() {
   if (lessons.find(l => l.name === name)) return alert(`این ${isStudent ? 'درس' : 'کار'} قبلاً اضافه شده`);
   
   lessons.push({ name, type });
-  await updateDoc(doc(db, 'users', currentUser.id), { lessons });
+  const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+  users[currentUser.username].lessons = lessons;
+  localStorage.setItem('app_users', JSON.stringify(users));
   currentUser.lessons = lessons;
   document.getElementById('new-lesson-name').value = '';
   loadMyLessons();
 }
-
 async function deleteLesson(name) {
   const isStudent = userType === 'student';
   if (!confirm('حذف شود؟')) return;
   const lessons = (currentUser.lessons || []).filter(l => l.name !== name);
-  await updateDoc(doc(db, 'users', currentUser.id), { lessons });
+  const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+  users[currentUser.username].lessons = lessons;
+  localStorage.setItem('app_users', JSON.stringify(users));
   currentUser.lessons = lessons;
   loadMyLessons();
-  }
-
+}
 // ================== TESTS (Student Only) ==================
 function loadTestsPage() {
   if (userType !== 'student') return;
