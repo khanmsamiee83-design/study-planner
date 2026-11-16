@@ -691,62 +691,6 @@ async function signupUser() {
     if (!grade) return errEl.textContent = 'پایه را انتخاب کنید';
   } else {
     job = document.getElementById('signup-job').value.trim() || 'فعالیت شخصی';
-    if (!job) return errEl.textContent = 'شغل را وارد کنید';
-  }
-
-  const avatarEmojis = ['','🧑‍🎓','👩‍🎓','🧑‍🔧','👨‍🚀','👮‍♂️','👮‍♀️','👨‍🔬','👩‍🔬','👨‍⚖️','👩‍⚖️','🧑‍🏫','👻'];
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + 5 * 864e5).toISOString();
-  const myCode = username.toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-
-  const newUser = {
-    name, username, password, type: userType, grade, job,
-    avatar: selectedAvatar, avatarEmoji: avatarEmojis[selectedAvatar],
-    referralCode: myCode, referredBy: referral || null,
-    pointsTotal: 0, pointsSpendable: 0,
-    subscription: { expiresAt, startDate: now.toISOString(), manuallyClosed: false },
-    lessons: [], schedule: {}, tests: {}, goals: {}, focusHistory: [], studyLogs: [],
-    financeLogs: [], friends: [], createdAt: now.toISOString(), lastLoginDate: null,
-    lastFinanceDate: null, activatedCodes: []
-  };
-
-  // ۱. تلاش برای ثبت‌نام در Firebase
-  try {
-    const userRef = doc(db, 'users', username);
-    const snap = await getDoc(userRef);
-    if (snap.exists()) return errEl.textContent = 'این نام کاربری وجود دارد';
-    
-    await setDoc(userRef, newUser);
-    
-    // اگه کد معرف داشت
-    if (referral) {
-      const q = query(collection(db, 'users'), where('referralCode', '==', referral));
-      const refSnap = await getDocs(q);
-      if (!refSnap.empty) {
-        const refDoc = refSnap.docs[0];
-        const refData = refDoc.data();
-        const refExpiry = new Date(refData.subscription.expiresAt);
-        const base = refExpiry > now ? refExpiry : now;
-        const newRefExpiry = new Date(base.getTime() + 5 * 864e5).toISOString();
-        const refFriends = refData.friends || [];
-        refFriends.push({ id: username, name: name, username: username });
-async function signupUser() {
-  const name = document.getElementById('signup-name').value.trim();
-  const username = document.getElementById('signup-username').value.trim().toLowerCase();
-  const password = document.getElementById('signup-password').value.trim();
-  const referral = document.getElementById('signup-referral').value.trim().toUpperCase();
-  const errEl = document.getElementById('signup-error');
-  errEl.textContent = '';
-
-  if (!name || !username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
-  if (!/^[a-z0-9_]+$/.test(username)) return errEl.textContent = 'نام کاربری فقط حروف انگلیسی، عدد و _';
-
-  let grade = '', job = '';
-  if (userType === 'student') {
-    grade = document.getElementById('signup-grade').value;
-    if (!grade) return errEl.textContent = 'پایه را انتخاب کنید';
-  } else {
-    job = document.getElementById('signup-job').value.trim() || 'فعالیت شخصی';
   }
 
   const avatarEmojis = ['','🧑‍🎓','👩‍🎓','🧑‍🔧','👨‍🚀','👮‍♂️','👮‍♀️','👨‍🔬','👩‍🔬','👨‍⚖️','👩‍⚖️','🧑‍🏫','👻'];
