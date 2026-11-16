@@ -447,11 +447,6 @@ canvas{width:100%!important;height:auto!important;max-height:300px}
 
 <script type="module">
 const API_URL = 'https://YOUR_DOMAIN.com/api.php';
-// ================== FIREBASE ==================
-// ================== SUPABASE ==================
-const supabaseUrl = 'https://wsklxjxfatcimpewbebk.supabase.co';
-const supabaseKey = 'sb_publishable_yiKcUSnHebNmNKwgcaTFXw_ywMzX_p9';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 // ================== STATE ==================
 let currentUser = null;
@@ -679,8 +674,8 @@ async function signupUser() {
   }
 
   const avatarEmojis = ['','🧑‍🎓','👩‍🎓','🧑‍🔧','👨‍🚀','👮‍♂️','👮‍♀️','👨‍🔬','👩‍🔬','👨‍⚖️','👩‍⚖️','🧑‍🏫','👻'];
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + 3 * 864e5).toISOString(); // 3 روز تست
+  const now = await getSecureTime(); // دریافت زمان دقیق از سرور
+  const expiresAt = new Date(now + 3 * 864e5).toISOString(); // 3 روز تست
   const myCode = username.toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
 
   const newUser = {
@@ -688,26 +683,22 @@ async function signupUser() {
     avatar: selectedAvatar, avatarEmoji: avatarEmojis[selectedAvatar],
     referralCode: myCode, referredBy: referral || null,
     pointsTotal: 0, pointsSpendable: 0,
-    subscription: { expiresAt, startDate: now.toISOString(), manuallyClosed: false },
+    subscription: { expiresAt, startDate: new Date(now).toISOString(), manuallyClosed: false },
     lessons: [], schedule: {}, tests: {}, goals: {}, focusHistory: [], studyLogs: [],
-    financeLogs: [], friends: [], createdAt: now.toISOString(), lastLoginDate: null,
+    financeLogs: [], friends: [], createdAt: new Date(now).toISOString(), lastLoginDate: null,
     lastFinanceDate: null, activatedCodes: []
   };
 
-  // ذخیره در حافظه گوشی (LocalStorage)
   const users = JSON.parse(localStorage.getItem('app_users') || '{}');
   if (users[username]) return errEl.textContent = 'این نام کاربری وجود دارد';
   
   users[username] = newUser;
   localStorage.setItem('app_users', JSON.stringify(users));
-
-  // ذخیره تاریخ انقضا برای چک کردن
   localStorage.setItem('server_expiry_' + username, new Date(expiresAt).getTime().toString());
 
   alert('ثبت‌نام موفق! حالا وارد شوید.');
   showSection('login');
 }
-
 async function loginUser() {
   const username = document.getElementById('login-username').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value.trim();
@@ -716,34 +707,52 @@ async function loginUser() {
   
   if (!username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
 
-  try {
-    // ارسال اطلاعات به API سایت خودت
-    const response = await fetch('https://bloommap.ir/api.php?action=login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    
-    const result = await response.json();
-    
-    if (result.status === 'error') return errEl.textContent = result.message;
-    
-    currentUser = result.data;
-    userType = currentUser.type;
-    
-    // ذخیره زمان انقضا که از سرور آمده در حافظه گوشی
-    localStorage.setItem('server_expiry_' + username, result.expiry_ms);
-    
-    // ذخیره اطلاعات لاگین در حافظه گوشی برای استفاده آفلاین
-    localStorage.setItem('app_users', JSON.stringify({ [username]: currentUser }));
+  const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+  const user = users[username];
 
-    buildMenu();
-    goToPage('home');
-  } catch (error) {
-    errEl.textContent = 'خطا در ارتباط با سرور. لطفاً اینترنت خود را بررسی کنید.';
+  if (!user) return errEl.textContent = 'کاربری با این نام یافت نشد';
+  if (user.password !== password) return errEl.textContent = 'رمز عبور اشتباه است';
+
+  currentUser = user;
+  userType = currentUser.type;
+
+  const now = await getSecureTime();
+  const expiryTime = parseInt(localStorage.getItem('server_expiry_' + username) || '0');
+  
+  if (expiryTime > 0 && now > expiryTime) {
+    // اشتراک منقضی شده
+    return showLockOverlay();
   }
+
+  const today = new Date(now).toISOString().split('T')[0];
+  if (currentUser.lastLoginDate !== today) {
+      document.getElementById('mystery-box-container').classList.remove('hidden');
+  } else {
+      document.getElementById('mystery-box-container').classList.add('hidden');
+  }
+
+  buildMenu();
+  goToPage('home');
 }
-   // ============================================================
+function showLockOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'lock-overlay';
+    overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;text-align:center;padding:20px;font-family:'Vazirmatn',sans-serif;";
+    overlay.innerHTML = `
+       <div style="background:#333;padding:30px;border-radius:20px;border:2px solid #f44336;max-width:400px;">
+          <h2 style="color:#f44336;margin-bottom:20px;">🔒 اشتراک شما به پایان رسیده است</h2>
+          <p style="margin-bottom:20px;line-height:1.8;">برای ادامه استفاده، پیام زیر را کپی کرده و در ایتا برای مدیر ارسال کنید:</p>
+          <textarea readonly style="width:100%;height:100px;background:#222;color:#fff;border:1px solid #555;border-radius:10px;padding:10px;margin-bottom:15px;font-family:inherit;">سلام مدیر. من ${currentUser.name} (${currentUser.username}) هستم. اشتراک من تمام شده. لطفاً کد تمدید را ارسال کنید.</textarea>
+          <button onclick="navigator.clipboard.writeText(this.previousElementSibling.value); alert('کپی شد!');" style="background:#4CAF50;color:white;border:none;padding:12px;border-radius:8px;width:100%;font-family:inherit;margin-bottom:20px;font-weight:bold;">📋 کپی پیام</button>
+          <hr style="border-color:#555; margin-bottom:20px;">
+          <p style="margin-bottom:10px;font-size:0.9em;">کد دریافتی از مدیر را وارد کنید:</p>
+          <input type="text" id="emergency-code-input" placeholder="مثلاً: 123456" style="width:100%;padding:12px;border-radius:8px;border:1px solid #555;background:#222;color:#fff;text-align:center;font-size:1.2em;margin-bottom:15px;">
+          <button onclick="submitEmergencyCode()" style="background:#2196F3;color:white;border:none;padding:12px;border-radius:8px;width:100%;font-family:inherit;font-weight:bold;">✅ تایید کد و باز کردن قفل</button>
+       </div>
+    `;
+    document.body.appendChild(overlay);
+}
+// ============================================================
 // 🔄 سیستم صندوق پستی و همگام‌سازی (Sync Queue)
 // ============================================================
 
