@@ -730,40 +730,53 @@ async function signupUser() {
         const newRefExpiry = new Date(base.getTime() + 5 * 864e5).toISOString();
         const refFriends = refData.friends || [];
         refFriends.push({ id: username, name: name, username: username });
-        await updateDoc(doc(db, 'users', refDoc.id), {
-          'subscription.expiresAt': newRefExpiry,
-          friends: refFriends
-        });
-        newUser.friends = [{ id: refDoc.id, name: refData.name, username: refData.username }];
-        await updateDoc(userRef, { friends: newUser.friends });
-      }
-    }
-    alert('ثبت‌نام موفق! حالا وارد شوید.');
-    showSection('login');
-    return;
-    
-  } catch (firebaseError) {
-    console.log('Firebase failed, trying Supabase...', firebaseError);
+async function signupUser() {
+  const name = document.getElementById('signup-name').value.trim();
+  const username = document.getElementById('signup-username').value.trim().toLowerCase();
+  const password = document.getElementById('signup-password').value.trim();
+  const referral = document.getElementById('signup-referral').value.trim().toUpperCase();
+  const errEl = document.getElementById('signup-error');
+  errEl.textContent = '';
+
+  if (!name || !username || !password) return errEl.textContent = 'همه فیلدها را پر کنید';
+  if (!/^[a-z0-9_]+$/.test(username)) return errEl.textContent = 'نام کاربری فقط حروف انگلیسی، عدد و _';
+
+  let grade = '', job = '';
+  if (userType === 'student') {
+    grade = document.getElementById('signup-grade').value;
+    if (!grade) return errEl.textContent = 'پایه را انتخاب کنید';
+  } else {
+    job = document.getElementById('signup-job').value.trim() || 'فعالیت شخصی';
   }
 
-  // ۲. اگه Firebase فیلتر بود، برو سراغ Supabase
-  try {
-    const { data, error } = await supabase.from('users').select('username').eq('username', username);
-    if (error) throw error;
-    if (data && data.length > 0) return errEl.textContent = 'این نام کاربری وجود دارد';
+  const avatarEmojis = ['','🧑‍🎓','👩‍🎓','🧑‍🔧','👨‍🚀','👮‍♂️','👮‍♀️','👨‍🔬','👩‍🔬','👨‍⚖️','👩‍⚖️','🧑‍🏫','👻'];
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 3 * 864e5).toISOString(); // 3 روز تست
+  const myCode = username.toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
 
-    const { error: insertError } = await supabase.from('users').insert([{
-      id: Date.now(),
-      username: username,
-      data: newUser
-    }]);
-    if (insertError) throw insertError;
+  const newUser = {
+    name, username, password, type: userType, grade, job,
+    avatar: selectedAvatar, avatarEmoji: avatarEmojis[selectedAvatar],
+    referralCode: myCode, referredBy: referral || null,
+    pointsTotal: 0, pointsSpendable: 0,
+    subscription: { expiresAt, startDate: now.toISOString(), manuallyClosed: false },
+    lessons: [], schedule: {}, tests: {}, goals: {}, focusHistory: [], studyLogs: [],
+    financeLogs: [], friends: [], createdAt: now.toISOString(), lastLoginDate: null,
+    lastFinanceDate: null, activatedCodes: []
+  };
 
-    alert('ثبت‌نام موفق (از طریق سرور پشتیبان)! حالا وارد شوید.');
-    showSection('login');
-  } catch (sbError) {
-    errEl.textContent = 'خطا در ثبت‌نام: ' + (sbError.message || 'اتصال برقرار نیست');
-  }
+  // ذخیره در حافظه گوشی (LocalStorage)
+  const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+  if (users[username]) return errEl.textContent = 'این نام کاربری وجود دارد';
+  
+  users[username] = newUser;
+  localStorage.setItem('app_users', JSON.stringify(users));
+
+  // ذخیره تاریخ انقضا برای چک کردن
+  localStorage.setItem('server_expiry_' + username, new Date(expiresAt).getTime().toString());
+
+  alert('ثبت‌نام موفق! حالا وارد شوید.');
+  showSection('login');
 }
 
 async function loginUser() {
