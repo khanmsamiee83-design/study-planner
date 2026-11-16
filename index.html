@@ -485,34 +485,32 @@ let testSeconds = 0;
 let testCount = 0;
 let testLesson = '';
 // ============================================================
-// 🛡️ نگهبان تایمر بقا (Survival Timer)
-// ============================================================
+// 🛡️ نگهبان زمان (ضد دور زدن با ساعت گوشی)
+async function getSecureTime() {
+  try {
+    // دریافت زمان دقیق از سرور
+    const response = await fetch('https://worldtimeapi.org/api/timezone/Asia/Tehran');
+    const data = await response.json();
+    return new Date(data.datetime).getTime();
+  } catch (e) {
+    // اگر اینترنت قطع بود، از زمان گوشی استفاده کن
+    return Date.now();
+  }
+}
+
 async function checkSubscriptionStatus() {
     if (!currentUser) return;
 
-    const now = Date.now();
+    const now = await getSecureTime(); // زمان امن
     let lastServerExpiry = localStorage.getItem('server_expiry_' + currentUser.username);
     
-    // اگر تاریخ انقضا در حافظه نیست (اولین بار)
-    if (!lastServerExpiry) {
-        // از دیتابیس چک کن اگر آنلاین هستیم
-        if (navigator.onLine) {
-            try {
-                // اینجا به api.php وصل میشه (در مرحله بعد کاملش میکنیم)
-                console.log("در حال گرفتن تاریخ از سرور...");
-            } catch(e) {}
-        }
-        return;
-    }
+    if (!lastServerExpiry) return; // اگر تاریخ انقضا در حافظه نیست، کاری نکن
 
-    // تاریخ رو به عدد تبدیل کن (میلی‌ثانیه)
     const expiryTime = parseInt(lastServerExpiry);
     const remainingMs = expiryTime - now;
-    const remainingDays = Math.floor(remainingMs / (1000 * 60 * 60 * 24));
-
-    // اگر اشتراک تموم شده باشه
+    
     if (remainingMs <= 0) {
-        // نمایش پیام قفل و ارجاع به مدیر
+        // نمایش پیام قفل (کد قبلی خودت را اینجا بگذار - تغییری نده)
         const overlay = document.createElement('div');
         overlay.id = 'lock-overlay';
         overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;flex-direction:column;justify-content:center;align-items:center;color:white;text-align:center;padding:20px;font-family:'Vazirmatn',sans-serif;";
@@ -533,10 +531,6 @@ async function checkSubscriptionStatus() {
            </div>
         `;
         document.body.appendChild(overlay);
-        return;
-    } else {
-        // اگر هنوز وقت داره، پیام آرامش‌بخش (اختیاری)
-        console.log(`حالت بقا فعال است. ${remainingDays} روز باقی مانده.`);
     }
 }
 
