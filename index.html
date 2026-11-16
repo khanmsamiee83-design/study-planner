@@ -700,7 +700,7 @@ async function signupUser() {
   alert('ثبت‌نام موفق! حالا وارد شوید.');
   showSection('login');
 }
-async function loginUser() {
+
 async function loginUser() {
   const username = document.getElementById('login-username').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value.trim();
@@ -1049,7 +1049,7 @@ async function deleteScheduleItem(day, itemId) {
   loadSchedule();
 }
 
-async function startTimer(day, itemId) {
+
 let timerStartTime = null;
 let timerAccumulated = 0;
 
@@ -1102,83 +1102,9 @@ document.addEventListener('visibilitychange', () => {
   }
 });
    
-async function stopFocusOverlay() {
-  if (focusInterval) clearInterval(focusInterval);
-  if (wakeLock) { wakeLock.release(); wakeLock = null; }
-  document.getElementById('focus-overlay').style.display = 'none';
-  
-  if (focusType === 'study' && currentFocusItem) {
-    const { day, itemId, item } = currentFocusItem;
-    const schedule = currentUser.schedule;
-    const sItem = schedule[day].find(i => i.id === itemId);
-    let pointsEarned = 0;
-    
-    if (sItem) {
-      sItem.secondsStudied = focusSeconds;
-      if (focusSeconds >= sItem.minutes * 60 * 0.9 && !sItem.isDone) {
-        sItem.isDone = true;
-        pointsEarned += 10;
-      }
-    }
-    
-    const minutesStudied = Math.floor(focusSeconds / 60);
-    if (minutesStudied > 0) {
-      const today = new Date().toISOString().split('T')[0];
-      const logs = currentUser.studyLogs || [];
-      const existingLog = logs.find(l => l.date === today);
-      if (existingLog) existingLog.minutes += minutesStudied;
-      else logs.push({ date: today, minutes: minutesStudied });
-      currentUser.studyLogs = logs;
-      pointsEarned += minutesStudied;
-    }
-    
-    currentUser.pointsTotal += pointsEarned;
-    currentUser.pointsSpendable += pointsEarned;
-    
-    currentUser.studyLogs = currentUser.studyLogs.filter(l => {
-      return (new Date() - new Date(l.date)) / 864e5 <= 30;
-    });
-    
-    if (navigator.onLine) {
-      try {
-        const formData = new FormData();
-        formData.append('action', 'sync_time');
-        formData.append('user_id', currentUser.id);
-        formData.append('lesson_name', 'focus');
-        formData.append('total_seconds', focusSeconds);
-        await fetch(API_URL, { method: 'POST', body: formData });
-      } catch(e) { queueOfflinePoints(minutesStudied); }
-    } else {
-      queueOfflinePoints(minutesStudied);
-      alert('شما آفلاین هستید. امتیاز شما ذخیره شد و به محض وصل شدن اینترنت ثبت می‌شود.');
-    }
-    
-    loadSchedule();
-    alert('زمان مطالعه ذخیره شد: ' + formatTime(focusSeconds));
-    await updateGoalProgress();
-    updateBadgeDisplay();
-    
-  } else if (focusType === 'test') {
-    if (testInterval) clearInterval(testInterval);
-    const avg = testSeconds / (testCount || 1);
-    const lessonType = getLessonType(testLesson);
-    let isValid = true;
-    if (lessonType === 'special' && avg < 35) isValid = false;
-    if (lessonType === 'memorize' && avg < 10) isValid = false;
-    if (lessonType === 'normal' && avg < 15) isValid = false;
-    
-    if (isValid && testCount >= 10) {
-      currentUser.pointsTotal += 5;
-      currentUser.pointsSpendable += 5;
-      const tests = currentUser.tests || {};
-      const today = new Date().toISOString().split('T')[0];
-      if (!tests[testLesson]) tests[testLesson] = [];
-      tests[testLesson].push({ date: today, count: testCount, avgSeconds: avg });
-      currentUser.tests = tests;
-      
-      if (navigator.onLine) {
 
-  async function stopFocusOverlay() {
+
+async function stopFocusOverlay() {
   if (focusInterval) clearInterval(focusInterval);
   if (wakeLock) { wakeLock.release(); wakeLock = null; }
   document.getElementById('focus-overlay').style.display = 'none';
