@@ -448,21 +448,6 @@ canvas{width:100%!important;height:auto!important;max-height:300px}
 <script type="module">
 const API_URL = 'https://YOUR_DOMAIN.com/api.php';
 // ================== FIREBASE ==================
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCJAZDHWwQN_SC2Eh8ELCTJvdEEVOwx0E",
-  authDomain: "study-planner-bc211.firebaseapp.com",
-  projectId: "study-planner-bc211",
-  storageBucket: "study-planner-bc211.firebasestorage.app",
-  messagingSenderId: "424514438257",
-  appId: "1:424514438257:web:669d292a77b5555bc447d0"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 // ================== SUPABASE ==================
 const supabaseUrl = 'https://wsklxjxfatcimpewbebk.supabase.co';
 const supabaseKey = 'sb_publishable_yiKcUSnHebNmNKwgcaTFXw_ywMzX_p9';
