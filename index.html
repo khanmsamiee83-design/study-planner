@@ -1167,7 +1167,7 @@ function loadPlanNew() {
   div.innerHTML = html;
 }
 
-async function submitPlan() {
+
 async function submitPlan() {
   const selected = [];
   document.querySelectorAll('.plan-checkbox:checked').forEach(cb => {
@@ -1234,9 +1234,6 @@ function loadMyLessons() {
   }
   document.getElementById('my-lessons-list').innerHTML = html;
 }
-
-async function addNewLesson() {
-  const name = document.getElementById('new-lesson-name').value.trim();
 async function addNewLesson() {
   const name = document.getElementById('new-lesson-name').value.trim();
   const type = userType === 'student' ? document.getElementById('new-lesson-type').value : 'normal';
