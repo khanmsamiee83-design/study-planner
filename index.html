@@ -1237,7 +1237,8 @@ async function deleteScheduleItem(day, itemId) {
 
 async function startTimer(day, itemId) {
   const item = currentUser.schedule[day].find(i => i.id === itemId);
-  if (!item) return;
+  if (!checkVip('شروع تایمر مطالعه')) return;
+   if (!item) return;
   
   focusType = 'study';
   currentFocusItem = { day, itemId, item };
@@ -1601,6 +1602,7 @@ function loadTestsPage() {
 
 function startTestSession() {
   if (userType !== 'student') return;
+  if (!checkVip('تست‌زنی')) return;
   testLesson = document.getElementById('test-lesson').value;
   const count = parseInt(document.getElementById('test-count').value) || 0;
   if (!testLesson || count <= 0) return alert('درس و تعداد تست را وارد کنید');
@@ -1655,6 +1657,7 @@ function loadFocusHistory() {
 
 async function startFocusSession() {
   if (userType !== 'student') return;
+  if (!checkVip('تمرکز عمیق')) return;
   const mins = parseInt(document.getElementById('focus-minutes').value);
   if (!mins || mins < 1 || mins > 120) return alert('زمان باید بین ۱ تا ۱۲۰ دقیقه باشد');
   
@@ -1843,6 +1846,7 @@ function loadGoals() {
 
 async function setGoal(key, min) {
   const val = parseInt(document.getElementById('goal-' + key).value);
+  if (!checkVip('تنظیم اهداف هفتگی')) return;
   if (!val || val < min) return alert('حداقل مقدار مجاز ' + min + ' است');
   
   const goals = currentUser.goals || {};
@@ -2008,6 +2012,7 @@ function loadRewards() {
 
 async function claimReward(pts, desc) {
   if (currentUser.pointsSpendable < pts) return alert('امتیاز کافی ندارید');
+  if (!checkVip('دریافت جایزه')) return;
   if (!confirm(`دریافت ${desc}؟ (${pts} امتیاز کسر می‌شود)`)) return;
   
   // 🛡️ چک کردن آنلاین بودن
@@ -2344,6 +2349,7 @@ function getRandomMotivation() {
 // ================== SETTINGS ==================
 function loadSettings() {
   const isStudent = userType === 'student';
+  if (!checkVip('مشاهده آمار و نمودارها')) return;
   const gradeText = isStudent ? (currentUser.grade || '—') : (currentUser.job || '—');
   
   document.getElementById('profile-info').innerHTML = `
