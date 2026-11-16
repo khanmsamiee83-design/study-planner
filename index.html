@@ -1050,8 +1050,6 @@ async function deleteScheduleItem(day, itemId) {
 }
 
 
-let timerStartTime = null;
-let timerAccumulated = 0;
 
 async function startTimer(day, itemId) {
   const item = currentUser.schedule[day].find(i => i.id === itemId);
@@ -1081,6 +1079,10 @@ async function startTimer(day, itemId) {
   }, 1000);
 }
 
+ focusInterval = setInterval(() => {
+  focusSeconds++;
+  document.getElementById('focus-timer').textContent = formatTime(focusSeconds);
+ }, 1000);
 // 🛡️ رویداد خروج از برنامه (توقف تایمر)
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
@@ -1207,10 +1209,7 @@ async function stopFocusOverlay() {
   timerStartTime = null;
   timerAccumulated = 0;
 }
-  focusType = '';
-  currentFocusItem = null;
-  focusSeconds = 0;
-    }
+  
 
 
 // ================== PLAN NEW ==================
