@@ -1960,18 +1960,16 @@ async function saveFinanceRecord() {
     currentUser.lastFinanceDate = today;
   }
   
-  await updateDoc(doc(db, 'users', currentUser.id), {
-    financeLogs: currentUser.financeLogs,
-    pointsTotal: currentUser.pointsTotal,
-    pointsSpendable: currentUser.pointsSpendable,
-    lastFinanceDate: currentUser.lastFinanceDate
-  });
+  // ذخیره در حافظه گوشی
+  const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+  users[currentUser.username] = currentUser;
+  localStorage.setItem('app_users', JSON.stringify(users));
   
   alert(pointsEarned > 0 ? '✅ ذخیره شد + ۵ امتیاز' : '✅ ذخیره شد (امتیاز امروز قبلاً گرفته شده)');
   await updateGoalProgress();
   loadFinance();
   updateBadgeDisplay();
-  }
+}
 // ================== REWARDS & BADGES ==================
 function loadRewards() {
   const pts = currentUser.pointsTotal || 0;
@@ -2071,38 +2069,27 @@ async function addFriend() {
   if (!checkVip('افزودن دوست')) return;
   if (code === currentUser.referralCode) return alert('نمی‌تونی خودت رو اضافه کنی');
   
-  const q = query(collection(db, 'users'), where('referralCode', '==', code));
-  const snap = await getDocs(q);
-  if (snap.empty) return alert('کد معرف نامعتبر است');
+  // 🛡️ نسخه آفلاین: جستجو در localStorage
+  const allUsers = JSON.parse(localStorage.getItem('app_users') || '{}');
+  const friendUser = Object.values(allUsers).find(u => u.referralCode === code);
   
-  const friendDoc = snap.docs[0];
-  const friendId = friendDoc.id;
-  const friendData = friendDoc.data();
+  if (!friendUser) return alert('کد معرف نامعتبر است');
+  if (friendUser.username === currentUser.username) return alert('نمی‌تونی خودت رو اضافه کنی');
   
   const friends = currentUser.friends || [];
-  if (friends.find(f => f.id === friendId)) return alert('این دوست قبلاً اضافه شده');
+  if (friends.find(f => f.id === friendUser.username)) return alert('این دوست قبلاً اضافه شده');
   
-  friends.push({ id: friendId, name: friendData.name, username: friendData.username });
-  
-  // دو طرفه کردن
-  const friendFriends = friendData.friends || [];
-  if (!friendFriends.find(f => f.id === currentUser.id)) {
-    friendFriends.push({ id: currentUser.id, name: currentUser.name, username: currentUser.username });
-    await updateDoc(doc(db, 'users', friendId), { friends: friendFriends });
-  }
-  
-  await updateDoc(doc(db, 'users', currentUser.id), { friends });
+  friends.push({ id: friendUser.username, name: friendUser.name, username: friendUser.username });
   currentUser.friends = friends;
+  
+  // ذخیره در حافظه گوشی
+  const users = JSON.parse(localStorage.getItem('app_users') || '{}');
+  users[currentUser.username] = currentUser;
+  localStorage.setItem('app_users', JSON.stringify(users));
+  
   alert('دوست اضافه شد!');
   loadFriends();
   document.getElementById('friend-code').value = '';
-}
-
-async function removeFriend(id) {
-  const friends = (currentUser.friends || []).filter(f => f.id !== id);
-  await updateDoc(doc(db, 'users', currentUser.id), { friends });
-  currentUser.friends = friends;
-  loadFriends();
 }
 
 // ================== GUIDE ==================
