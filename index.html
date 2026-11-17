@@ -637,7 +637,49 @@ function showVipWall(featureName, remainingDays) {
   
   document.body.appendChild(overlay);
 }
-
+// ================== 🚫 نمایش لیست بخش‌های مسدود ==================
+function showExpiredList() {
+  const overlay = document.createElement('div');
+  overlay.id = 'expired-overlay';
+  overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;font-family:'Vazirmatn',sans-serif;overflow-y:auto;";
+  
+  overlay.innerHTML = `
+    <div style="background:linear-gradient(135deg, #333, #1a1a1a);padding:30px;border-radius:20px;border:2px solid #f44336;max-width:480px;width:100%;text-align:center;">
+      
+      <div style="font-size:4em;margin-bottom:15px;">⏰</div>
+      
+      <h2 style="color:#f44336;margin-bottom:15px;font-size:1.5em;">دوره تست رایگان شما به پایان رسید!</h2>
+      
+      <p style="color:#E0E0E0;line-height:1.8;margin-bottom:20px;font-size:1em;">
+        در ۳ روز گذشته، شما از برنامه استفاده کردید و پیشرفت خوبی داشتید. اما از این پس، بخش‌های زیر برای شما <strong style="color:#f44336;">مسدود</strong> هستند:
+      </p>
+      
+      <div style="background:rgba(244,67,54,0.1);border:1px solid #f44336;border-radius:15px;padding:20px;margin-bottom:20px;text-align:right;">
+        <ul style="list-style:none;padding:0;margin:0;">
+          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 شروع تایمر مطالعه</li>
+          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 تست‌زنی</li>
+          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 تمرکز عمیق</li>
+          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 اهداف هفته</li>
+          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 آمار و نمودارها</li>
+          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 دریافت جوایز</li>
+          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 افزودن دوست</li>
+          <li style="color:#E0E0E0;padding:8px 0;">🔒 ثبت مالی (بزرگسال)</li>
+        </ul>
+      </div>
+      
+      <p style="color:#4CAF50;line-height:1.8;margin-bottom:20px;font-size:0.9em;">
+        🎁 اما نگران نباشید! با خرید اشتراک، دوباره به همه این بخش‌ها دسترسی خواهید داشت. همچنین می‌توانید امتیازهای خود را به اشتراک رایگان تبدیل کنید.
+      </p>
+      
+      <button onclick="showPurchaseButton()" style="background:linear-gradient(45deg,#FFD700,#e6c000);color:#333;border:none;padding:15px 30px;border-radius:10px;font-size:1.1em;font-weight:bold;cursor:pointer;width:100%;margin-bottom:10px;font-family:inherit;">💳 خرید اشتراک</button>
+      
+      <button onclick="document.getElementById('expired-overlay').remove()" style="background:transparent;color:#A9A9A9;border:1px solid #555;padding:12px 30px;border-radius:10px;font-size:0.9em;cursor:pointer;width:100%;font-family:inherit;">فعلاً نه، بستن</button>
+      
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+}
 // ================== 🎬 استایل انیمیشن (برای پیشنهاد ویژه) ==================
 const vipStyle = document.createElement('style');
 vipStyle.textContent = `
@@ -941,7 +983,12 @@ async function loginUser() {
   }
 
   const today = new Date().toISOString().split('T')[0];
-  if (currentUser.lastLoginDate !== today) {
+ // 🚫 چک کردن اینکه آیا اشتراک منقضی شده و لیست مسدود رو نشون بده
+  const expiryTime = parseInt(localStorage.getItem('server_expiry_' + username) || '0');
+   if (expiryTime > 0 && expiryTime < Date.now()) {
+    setTimeout(() => showExpiredList(), 500);
+     }
+   if (currentUser.lastLoginDate !== today) {
       document.getElementById('mystery-box-container').classList.remove('hidden');
   } else {
       document.getElementById('mystery-box-container').classList.add('hidden');
