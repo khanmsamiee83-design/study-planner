@@ -1269,10 +1269,7 @@ async function startTimer(day, itemId) {
   }, 1000);
 }
 
- focusInterval = setInterval(() => {
-  focusSeconds++;
-  document.getElementById('focus-timer').textContent = formatTime(focusSeconds);
- }, 1000);
+
 // 🛡️ رویداد خروج از برنامه (توقف تایمر)
 document.addEventListener('visibilitychange', async () => {
   if (document.hidden) {
@@ -1845,8 +1842,8 @@ function loadGoals() {
 }
 
 async function setGoal(key, min) {
-  const val = parseInt(document.getElementById('goal-' + key).value);
   if (!checkVip('تنظیم اهداف هفتگی')) return;
+  const val = parseInt(document.getElementById('goal-' + key).value);
   if (!val || val < min) return alert('حداقل مقدار مجاز ' + min + ' است');
   
   const goals = currentUser.goals || {};
@@ -2351,7 +2348,6 @@ function getRandomMotivation() {
 // ================== SETTINGS ==================
 function loadSettings() {
   const isStudent = userType === 'student';
-  if (!checkVip('مشاهده آمار و نمودارها')) return;
   const gradeText = isStudent ? (currentUser.grade || '—') : (currentUser.job || '—');
   
   document.getElementById('profile-info').innerHTML = `
