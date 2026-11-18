@@ -1297,9 +1297,7 @@ async function deleteScheduleItem(day, itemId) {
 
 async function startTimer(day, itemId) {
   const item = currentUser.schedule[day].find(i => i.id === itemId);
-  if (!checkVip('شروع تایمر مطالعه')) return;
-   if (!item) return;
-  
+  if (!checkVip(userType === 'student' ? 'شروع تایمر مطالعه' : 'شروع تایمر کار')) return;if (!item) return;
   focusType = 'study';
   currentFocusItem = { day, itemId, item };
   
