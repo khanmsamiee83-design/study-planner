@@ -571,11 +571,10 @@ function checkVip(featureName = 'این بخش') {
 
 // ================== 🧱 نمایش دیوار VIP (با ۳ تکنیک جذب) ==================
 function showVipWall(featureName, remainingDays) {
-  // ۱. محاسبه امتیاز فعلی و زمان از دست رفته
+  const isStudent = userType === 'student';
   const points = currentUser.pointsSpendable || 0;
   const daysLost = Math.abs(remainingDays);
   
-  // ۲. محاسبه اینکه امتیاز فعلی چند روز اشتراک می‌شود
   let freeDaysFromPoints = 0;
   if (points >= 50000) freeDaysFromPoints = 30;
   else if (points >= 20000) freeDaysFromPoints = 15;
@@ -583,15 +582,18 @@ function showVipWall(featureName, remainingDays) {
   else if (points >= 5000) freeDaysFromPoints = 3;
   else if (points >= 2000) freeDaysFromPoints = 1;
   
-  // ۳. پیغام FOMO
+  // پیغام FOMO بر اساس نوع کاربر
   let fomoMessage = '';
   if (daysLost <= 7) {
-    fomoMessage = `📉 ${daysLost} روز از پیشرفتت گذشته! حیفه که ادامه ندی.`;
+    fomoMessage = isStudent 
+      ? `📉 ${daysLost} روز از پیشرفت تحصیلیت گذشته! حیفه که ادامه ندی.`
+      : `📉 ${daysLost} روز از پیشرفت کاریت گذشته! حیفه که ادامه ندی.`;
   } else {
-    fomoMessage = `😢 ${daysLost} روزه که از برنامه استفاده نکردی. چقدر درس‌هات عقب افتادن!`;
+    fomoMessage = isStudent
+      ? `😢 ${daysLost} روزه که از برنامه استفاده نکردی. چقدر درس‌هات عقب افتادن!`
+      : `😢 ${daysLost} روزه که از برنامه استفاده نکردی. چقدر کارهات عقب افتادن!`;
   }
   
-  // ۴. نمایش دیوار
   const overlay = document.createElement('div');
   overlay.id = 'vip-wall';
   overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;font-family:'Vazirmatn',sans-serif;overflow-y:auto;";
@@ -599,16 +601,12 @@ function showVipWall(featureName, remainingDays) {
   overlay.innerHTML = `
     <div style="background:linear-gradient(135deg, #333, #1a1a1a);padding:30px;border-radius:20px;border:2px solid #FFD700;max-width:450px;width:100%;text-align:center;">
       
-      <!-- آیکون قفل -->
       <div style="font-size:4em;margin-bottom:15px;">🔒</div>
       
-      <!-- عنوان -->
       <h2 style="color:#FFD700;margin-bottom:15px;font-size:1.5em;">${featureName} نیاز به اشتراک دارد</h2>
       
-      <!-- پیغام FOMO -->
       <p style="color:#E0E0E0;line-height:1.8;margin-bottom:20px;font-size:1em;">${fomoMessage}</p>
       
-      <!-- نمایش امتیاز و پیشنهاد -->
       ${points >= 2000 ? `
         <div style="background:rgba(76,175,80,0.15);border:1px solid #4CAF50;border-radius:15px;padding:15px;margin-bottom:20px;">
           <p style="color:#4CAF50;margin-bottom:10px;font-weight:bold;">🎁 تو ${points.toLocaleString('fa-IR')} امتیاز داری!</p>
@@ -621,14 +619,12 @@ function showVipWall(featureName, remainingDays) {
         </div>
       `}
       
-      <!-- پیشنهاد ویژه (Time-Limited) -->
       <div style="background:rgba(244,67,54,0.15);border:1px solid #f44336;border-radius:15px;padding:15px;margin-bottom:20px;">
         <p style="color:#f44336;margin-bottom:10px;font-weight:bold;animation:pulse 1.5s infinite;">⚡ پیشنهاد ویژه!</p>
         <p style="color:#E0E0E0;font-size:0.9em;">فقط تا ۲۴ ساعت آینده، ۵۰٪ تخفیف برای اشتراک ۱ ماهه!</p>
       </div>
       
-      <!-- دکمه‌ها -->
-      <button onclick="showPurchaseButton()" style="background:linear-gradient(45deg,#FFD700,#e6c000);color:#333;border:none;padding:15px 30px;border-radius:10px;font-size:1.1em;font-weight:bold;cursor:pointer;width:100%;margin-bottom:10px;font-family:inherit;">💳 خرید اشتراک</button>
+      <button onclick="document.getElementById('vip-wall').remove(); showPurchaseButton();" style="background:linear-gradient(45deg,#FFD700,#e6c000);color:#333;border:none;padding:15px 30px;border-radius:10px;font-size:1.1em;font-weight:bold;cursor:pointer;width:100%;margin-bottom:10px;font-family:inherit;">💳 خرید اشتراک</button>
       
       <button onclick="document.getElementById('vip-wall').remove()" style="background:transparent;color:#A9A9A9;border:1px solid #555;padding:12px 30px;border-radius:10px;font-size:0.9em;cursor:pointer;width:100%;font-family:inherit;">فعلاً نه، بستن</button>
       
@@ -639,6 +635,30 @@ function showVipWall(featureName, remainingDays) {
 }
 // ================== 🚫 نمایش لیست بخش‌های مسدود ==================
 function showExpiredList() {
+  const isStudent = userType === 'student';
+  
+  // ساخت لیست بر اساس نوع کاربر
+  const blockedItems = isStudent ? [
+    '🔒 شروع تایمر مطالعه',
+    '🔒 تست‌زنی',
+    '🔒 تمرکز عمیق',
+    '🔒 اهداف هفته',
+    '🔒 آمار و نمودارها',
+    '🔒 دریافت جوایز',
+    '🔒 افزودن دوست'
+  ] : [
+    '🔒 شروع تایمر کار',
+    '🔒 اهداف هفته',
+    '🔒 آمار و نمودارها',
+    '🔒 دریافت جوایز',
+    '🔒 افزودن دوست',
+    '🔒 ثبت مالی (درآمد و هزینه)'
+  ];
+  
+  const listHTML = blockedItems.map(item => 
+    `<li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">${item}</li>`
+  ).join('');
+  
   const overlay = document.createElement('div');
   overlay.id = 'expired-overlay';
   overlay.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px;font-family:'Vazirmatn',sans-serif;overflow-y:auto;";
@@ -656,14 +676,7 @@ function showExpiredList() {
       
       <div style="background:rgba(244,67,54,0.1);border:1px solid #f44336;border-radius:15px;padding:20px;margin-bottom:20px;text-align:right;">
         <ul style="list-style:none;padding:0;margin:0;">
-          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 شروع تایمر مطالعه</li>
-          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 تست‌زنی</li>
-          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 تمرکز عمیق</li>
-          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 اهداف هفته</li>
-          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 آمار و نمودارها</li>
-          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 دریافت جوایز</li>
-          <li style="color:#E0E0E0;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);">🔒 افزودن دوست</li>
-          <li style="color:#E0E0E0;padding:8px 0;">🔒 ثبت مالی (بزرگسال)</li>
+          ${listHTML}
         </ul>
       </div>
       
@@ -671,7 +684,7 @@ function showExpiredList() {
         🎁 اما نگران نباشید! با خرید اشتراک، دوباره به همه این بخش‌ها دسترسی خواهید داشت. همچنین می‌توانید امتیازهای خود را به اشتراک رایگان تبدیل کنید.
       </p>
       
-      <button onclick="showPurchaseButton()" style="background:linear-gradient(45deg,#FFD700,#e6c000);color:#333;border:none;padding:15px 30px;border-radius:10px;font-size:1.1em;font-weight:bold;cursor:pointer;width:100%;margin-bottom:10px;font-family:inherit;">💳 خرید اشتراک</button>
+      <button onclick="document.getElementById('expired-overlay').remove(); showPurchaseButton();" style="background:linear-gradient(45deg,#FFD700,#e6c000);color:#333;border:none;padding:15px 30px;border-radius:10px;font-size:1.1em;font-weight:bold;cursor:pointer;width:100%;margin-bottom:10px;font-family:inherit;">💳 خرید اشتراک</button>
       
       <button onclick="document.getElementById('expired-overlay').remove()" style="background:transparent;color:#A9A9A9;border:1px solid #555;padding:12px 30px;border-radius:10px;font-size:0.9em;cursor:pointer;width:100%;font-family:inherit;">فعلاً نه، بستن</button>
       
